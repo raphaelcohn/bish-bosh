@@ -10,7 +10,7 @@ function test_assertEquals()
 	if [ "$2" = "$3" ]; then
 		return 0
 	fi
-	test_failureMessage="Assertion Equals Failed $testFullyQualifiedName: $1"
+	test_failureMessage="Assertion Equals Failed: $1"
 	return 1
 }
 
@@ -25,7 +25,7 @@ function test_assertFilesEqual()
 		return 0
 	fi
 	
-	test_failureMessage="Assertion File Equals Failed $testFullyQualifiedName: $1"
+	test_failureMessage="Assertion File Equals Failed: $1"
 	return 1
 }
 
@@ -58,7 +58,7 @@ function test_runAll()
 			#echo "Test Passed: $testFullyQualifiedName" 1>&2
 			passCount=$((passCount+1))
 		else
-			echo "Test Failed: ${testFullyQualifiedName}: $test_failureMessage)" 1>&2
+			echo "Test Failed: ${testFullyQualifiedName}: $test_failureMessage" 1>&2
 			failureCount=$((failureCount+1))
 		fi
 		test_failureMessage=""
