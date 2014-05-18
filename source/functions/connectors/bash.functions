@@ -25,3 +25,10 @@ function connectors_netcat()
 	
 	nc $hostname" $portNumber
 }
+
+# also, stunnel (assume it's running, so use one of the others)
+# also, openssl
+# also, access via SSH
+# also, a WebSockets wrapper?
+
+# http://www.unix.com/shell-programming-and-scripting/130759-bash-read-file-line-line-lines-have-0-not-full-line-has-read.html
