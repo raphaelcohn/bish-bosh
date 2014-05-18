@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+set -e
+
+function test_assertEquals()
+{
+	if [ $# -ne 3 ]; then
+		echo "Broken Test Code $testFullyQualifiedName: assertEquals takes 3 parameters"
+		exit 2
+	fi
+	if [ "$2" = "$3" ]; then
+		return 0
+	fi
+	test_failureMessage="Assertion Equals Failed $testFullyQualifiedName: $1"
+	return 1
+}
+
+function test_assertFilesEqual()
+{
+	if [ $# -ne 3 ]; then
+		echo "Broken Test Code $testFullyQualifiedName: assertEquals takes 3 parameters"
+		exit 2
+	fi
+	
+	if diff "$2" "$3" 1>/dev/null 2>/dev/null; then
+		return 0
+	fi
+	
+	test_failureMessage="Assertion File Equals Failed $testFullyQualifiedName: $1"
+	return 1
+}
+
+function test_runAll()
+{
+	local -r functions="$1"
+	uses "$functions"
+	shift 1
+	
+	local -r testFixturePrefix="test_${functions//-/_}_"
+	local -ir testFixturePrefixLength=${#testFixturePrefix}
+	declare -a testFixtures=()
+	local discard1 discard2 potentialTestFixture
+	while IFS=' ' read -r discard1 discard2 potentialTestFixture
+	do
+		if [ "${potentialTestFixture:0:$testFixturePrefixLength}" = "$testFixturePrefix" ]; then
+			testFixtures+=("$potentialTestFixture")
+		fi
+	done < <(declare -F)
+	
+	local -i passCount=0
+	local -i failureCount=0
+	local testFixture
+	local testFullyQualifiedName
+	local test_failureMessage
+	for testFixture in "${testFixtures[@]}"
+	do
+		testFullyQualifiedName="$functions.$testFixture"
+		if $testFixture; then
+			#echo "Test Passed: $testFullyQualifiedName" 1>&2
+			passCount=$((passCount+1))
+		else
+			echo "Test Failed: ${testFullyQualifiedName}: $test_failureMessage)" 1>&2
+			failureCount=$((failureCount+1))
+		fi
+		test_failureMessage=""
+	done
+
+	if [ $passCount -eq 1 ]; then
+		local -r passPlural=''
+	else
+		local -r passPlural='s'
+	fi
+	echo "Passed: ${passCount} test${passPlural}" 1>&2
+	
+	if [ $failureCount -eq 1 ]; then
+		local -r failurePlural=''
+	else
+		local -r failurePlural='s'
+	fi
+	echo "Failed: ${failureCount} test${failurePlural}" 1>&2
+	
+	if [ $failureCount -ne 0 ]; then
+		exit $failureCount
+	fi
+}
+
+function uses()
+{
+	local functionFileName
+	for functionFileName in "$@"
+	do
+		source ../functions/"$functionFileName".functions
+	done
+}
+
+function test_main()
+{
+	test_runAll "$@"
+}
+
+uses temporaryFiles
+test_main "$@"

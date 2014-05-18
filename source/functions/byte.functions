@@ -1,0 +1,39 @@
+function byte_bit()
+{
+   local value=${1:-0}
+   local bit=${2-0}
+   local bitMask=$(( 1 << $bit ))
+   echo $(( value & bitMask ? 1 : 0 ))
+}
+
+function byte_isBitSet
+{
+   return $(( 1 - $(byte_bit "$@") ))
+}
+
+# could also assign to a variable using printf syntax (printf -v VAR '%s' $binaryValue)
+function byte_printBinary()
+{
+	local binaryValue
+	local bit
+	for ((bit=7; bit!=-1; bit--))
+	do
+		binaryValue=${binaryValue}$(byte_bit $1 $bit)
+	done
+	printf '%s' $binaryValue
+}
+
+function byte_printDecimal()
+{
+	printf '%d' $1
+}
+
+function byte_printOctal()
+{
+	printf '0%o' $1
+}
+
+function byte_printHexadecimalUppercase()
+{
+	printf '0x%X' $1
+}

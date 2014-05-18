@@ -1,0 +1,9 @@
+read_bytesread=''
+function read_bytes()
+{
+	# -t for timeout, with an exit code > 128 if timeout occurs
+	# reads $1 bytes
+	set +e
+	IFS= read -r -s -d '' -N $1 read_bytesread
+	set -e
+}

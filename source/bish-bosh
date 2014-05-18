@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+echo -n '('
+for ((i=0;i<256;i++))
+do
+	echo -n " $"
+	echo -n "'\x"
+	printf '%X' $i
+	echo -n "'"
+done
+echo -n ')'
+
+function bishbosh_byte_examples()
+{
+	# bash supports decimal, octal (0...) and hexadecimal (0x...) formats for numbers, as well as base# for all bases up to 64
+	local hexadecimalValue=0xFF
+	echo $(bishbosh_byte_printDecimal $hexadecimalValue)
+	echo $(bishbosh_byte_printOctal $hexadecimalValue)
+	echo $(bishbosh_byte_printHexadecimalUppercase $hexadecimalValue)
+	# bit zero, should return 0
+	if bishbosh_byte_isBitSet $hexadecimalValue 0; then
+		echo "bit 0 set"
+	fi
+	local hexadecimalValue=255
+	echo $(bishbosh_byte_printDecimal $hexadecimalValue)
+	echo $(bishbosh_byte_printOctal $hexadecimalValue)
+	echo $(bishbosh_byte_printHexadecimalUppercase $hexadecimalValue)
+	# bit zero, should return 0
+	if bishbosh_byte_isBitSet $hexadecimalValue 0; then
+		echo "bit 0 set"
+	fi
+}
+
+#printf '\x01\x02\x00\x32' >/tmp/x
+echo "HELLO" >/tmp/x
+echo "WORLD" >>/tmp/x
+
+function bishbosh_read_examples()
+{	
+	bishbox_byte_convert_od_coproc_start
+	
+	# coproc FDs do not work in subshells!
+	cat /tmp/x >&$bishbox_byte_convert_od_coproc_inputfd
+	while IFS= read -r -u $bishbox_byte_convert_od_coproc_outputfd byteDecimal
+	do
+		echo X $byteDecimal X
+	done
+	
+	bishbox_byte_convert_od_coproc_end
+}
+
+source functions/byte.functions
+source functions/byte-convert.functions
+source functions/read.functions
+
+#bishbosh_byte_examples
+bishbosh_read_examples

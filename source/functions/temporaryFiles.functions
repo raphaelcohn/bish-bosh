@@ -1,0 +1,28 @@
+uses trapHandlers
+
+temporaryFiles_filesToRemoveOnExit=()
+function temporaryFiles_removeAll()
+{
+	rm -rf -- "${temporaryFiles_filesToRemoveOnExit[@]}"
+}
+
+# Not currently used
+function temporaryFiles_addFileToRemoveOnExit()
+{
+	local -r fileToRemove="$1"
+	temporaryFiles_filesToRemoveOnExit+=("$fileToRemove")
+}
+
+function temporaryFiles_newFileToRemoveOnExit()
+{
+	TMP_FILE="$(mktemp -t "$ourName".XXXXXXXXXXXX)"
+	temporaryFiles_filesToRemoveOnExit+=("$TMP_FILE")
+}
+
+function temporaryFiles_newFolderToRemoveOnExit()
+{
+	TMP_FOLDER="$(mktemp -t "$ourName".XXXXXXXXXXXX -d)"
+	temporaryFiles_filesToRemoveOnExit+=("$TMP_FOLDER")
+}
+
+trapHandlers_addNext temporaryFiles_removeAll

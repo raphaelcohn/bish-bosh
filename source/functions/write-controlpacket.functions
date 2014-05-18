@@ -1,0 +1,27 @@
+uses write
+
+readonly write_controlpacket_CONNECT=$((1<<4))
+readonly write_controlpacket_CONNACK=$((2<<4))
+readonly write_controlpacket_PUBLISH=$((3<<4))
+readonly write_controlpacket_PUBACK=$((4<<4))
+readonly write_controlpacket_PUBREC=$((5<<4))
+readonly write_controlpacket_PUBREL=$((6<<4))
+readonly write_controlpacket_PUBCOMP=$((7<<4))
+readonly write_controlpacket_SUBSCRIBE=$((8<<4))
+readonly write_controlpacket_SUBACK=$((9<<4))
+readonly write_controlpacket_UNSUBSCRIBE=$((10<<4))
+readonly write_controlpacket_UNSUBACK=$((11<<4))
+readonly write_controlpacket_PINGREQ=$((12<<4))
+readonly write_controlpacket_PINGRESP=$((13<<4))
+readonly write_controlpacket_DISCONNECT=$((14<<4))
+
+function write_controlpacket_connect()
+{
+	# byte 1
+	# CAN BE OPTIMISED: cache byte (as can all messages, even where there are flags, except for PUBLISH)
+	echo -ne "${write_byteCache[$write_controlpacket_CONNECT]}"
+	
+	# byte 2 remaining length (up to four bytes)
+	
+}
+
