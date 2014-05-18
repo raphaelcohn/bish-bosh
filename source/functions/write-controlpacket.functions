@@ -21,7 +21,13 @@ function write_controlpacket_connect()
 	# CAN BE OPTIMISED: cache byte (as can all messages, even where there are flags, except for PUBLISH)
 	echo -ne "${write_byteCache[$write_controlpacket_CONNECT]}"
 	
-	# byte 2 remaining length (up to four bytes)
+	# byte 2- remaining length (up to four bytes) - 10 + X
+	xxxxx
 	
+	# protocol name, protocol level
+		# byte 1-7 Length MSB, Length LSB, MQTT, Level
+		printf '\000\004MQTT\004'
+	
+	# connect flag - a bitfield
 }
 

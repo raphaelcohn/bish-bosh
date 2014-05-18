@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -e
 
+function test_fail()
+{
+	test_failureMessage="Failed: $1"
+	return 1
+}
+
 function test_assertEquals()
 {
 	if [ $# -ne 3 ]; then
