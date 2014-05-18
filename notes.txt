@@ -17,6 +17,7 @@ Useful programs
 		- bash, if tcp support compiled in (rare) [/dev/tcp/IP/port]
 		- netcat (nc) - standalone
 		- netcat (nc) - busybox
+		- socat, too
 	 - Byte handling
         - native is 5x - 11x faster using a case statement
 	 	- od (busybox / standalone)

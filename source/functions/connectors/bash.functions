@@ -1,0 +1,27 @@
+# http://tldp.org/LDP/abs/html/devref1.html
+function connectors_bash()
+{
+	local -ir connectionIdentifier=5
+	local -r hostname="$1"
+	local -ir portNumber=2
+	
+	exec $connectionIdentifier<>/dev/tcp/"$hostname"/$portNumber
+	
+	#exec 5<>/dev/tcp/www.net.cn/80
+	#cat </dev/tcp/time.nist.gov/13
+	
+	# read all data until EOF
+	cat <&${connectionIdentifier}
+	
+}
+
+# supports proxies, Unix domain sockets, timeouts, source port/ip/interface
+function connectors_netcat()
+{
+
+	local -ir connectionIdentifier=5
+	local -r hostname="$1"
+	local -ir portNumber=2
+	
+	nc $hostname" $portNumber
+}
