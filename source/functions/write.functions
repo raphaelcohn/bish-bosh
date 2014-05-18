@@ -270,7 +270,7 @@ function write_byte()
 	fi
 }
 
-function write_encodeRemainingLength()
+function write_remainingLength()
 {
 	if [ $1 -lt 128 ]; then
 		write_byte $1
@@ -290,4 +290,11 @@ function write_encodeRemainingLength()
 		write_byte $(( (length >> 14 & 127) + 128 ))
 		write_byte $((  length >> 21 & 127 ))
 	fi
+}
+
+function write_twoByteLength()
+{
+	local -ir length=$1
+	write_byte $(( length >> 8 ))
+	write_byte $(( length & 255 ))
 }

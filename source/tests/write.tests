@@ -20,7 +20,7 @@ function _test_write_byte()
 	test_assertFilesEqual "Byte $byte should be encoded to $message" "$actualFile" "$expectedFile"
 }
 
-function _test_write_encodeRemainingLength()
+function _test_write_remainingLength()
 {
 	local -ir length=$1
 	local -r message="$2"
@@ -28,7 +28,7 @@ function _test_write_encodeRemainingLength()
 	
 	temporaryFiles_newFileToRemoveOnExit
 	local -r actualFile="$TMP_FILE"
-	write_encodeRemainingLength $length >"$actualFile"
+	write_remainingLength $length >"$actualFile"
 
 	temporaryFiles_newFileToRemoveOnExit
 	local -r expectedFile="$TMP_FILE"
@@ -49,19 +49,19 @@ function test_write_byte()
 	_test_write_byte 255 0xFF $'\xFF'
 }
 
-function test_write_encodeRemainingLength()
+function test_write_remainingLength()
 {
-	_test_write_encodeRemainingLength 0 0x00 $'\x00'
-	_test_write_encodeRemainingLength 1 0x01 $'\x01'
-	_test_write_encodeRemainingLength 64 0x40 $'\x40'
-	_test_write_encodeRemainingLength 127 0x7F $'\x7F'
-	_test_write_encodeRemainingLength 128 0x8001 $'\x80'$'\x01'
-	_test_write_encodeRemainingLength 321 0xC102 $'\xC1'$'\x02'
-	_test_write_encodeRemainingLength 16383 0xFF7F $'\xFF'$'\x7F'
-	_test_write_encodeRemainingLength 16384 0x808001 $'\x80'$'\x80'$'\x01'
-	_test_write_encodeRemainingLength 2097151 0xFFFF7F $'\xFF'$'\xFF'$'\x7F'
-	_test_write_encodeRemainingLength 2097152 0x80808001 $'\x80'$'\x80'$'\x80'$'\x01'
-	_test_write_encodeRemainingLength 268435455 0xFFFFFF7F $'\xFF'$'\xFF'$'\xFF'$'\x7F'
+	_test_write_remainingLength 0 0x00 $'\x00'
+	_test_write_remainingLength 1 0x01 $'\x01'
+	_test_write_remainingLength 64 0x40 $'\x40'
+	_test_write_remainingLength 127 0x7F $'\x7F'
+	_test_write_remainingLength 128 0x8001 $'\x80'$'\x01'
+	_test_write_remainingLength 321 0xC102 $'\xC1'$'\x02'
+	_test_write_remainingLength 16383 0xFF7F $'\xFF'$'\x7F'
+	_test_write_remainingLength 16384 0x808001 $'\x80'$'\x80'$'\x01'
+	_test_write_remainingLength 2097151 0xFFFF7F $'\xFF'$'\xFF'$'\x7F'
+	_test_write_remainingLength 2097152 0x80808001 $'\x80'$'\x80'$'\x80'$'\x01'
+	_test_write_remainingLength 268435455 0xFFFFFF7F $'\xFF'$'\xFF'$'\xFF'$'\x7F'
 }
 
 source run-tests write

@@ -1,0 +1,8 @@
+function connection_message()
+{
+	local -r code="$1"
+	local -r connectionId="$2"
+	local -r controlPacket="$3"
+	local -r message="$4"
+	echo "$1:Connection:$connectionId:ControlPacket:$controlPackage:Message:$message"
+}

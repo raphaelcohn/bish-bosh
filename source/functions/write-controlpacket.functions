@@ -1,33 +1,574 @@
-uses write
+uses write connection
 
-readonly write_controlpacket_CONNECT=$((1<<4))
-readonly write_controlpacket_CONNACK=$((2<<4))
-readonly write_controlpacket_PUBLISH=$((3<<4))
-readonly write_controlpacket_PUBACK=$((4<<4))
-readonly write_controlpacket_PUBREC=$((5<<4))
-readonly write_controlpacket_PUBREL=$((6<<4))
-readonly write_controlpacket_PUBCOMP=$((7<<4))
-readonly write_controlpacket_SUBSCRIBE=$((8<<4))
-readonly write_controlpacket_SUBACK=$((9<<4))
-readonly write_controlpacket_UNSUBSCRIBE=$((10<<4))
-readonly write_controlpacket_UNSUBACK=$((11<<4))
-readonly write_controlpacket_PINGREQ=$((12<<4))
-readonly write_controlpacket_PINGRESP=$((13<<4))
-readonly write_controlpacket_DISCONNECT=$((14<<4))
-
-function write_controlpacket_connect()
+function _write_controlpacket_CONNECT_verifyFieldPresent()
 {
-	# byte 1
-	# CAN BE OPTIMISED: cache byte (as can all messages, even where there are flags, except for PUBLISH)
-	echo -ne "${write_byteCache[$write_controlpacket_CONNECT]}"
-	
-	# byte 2- remaining length (up to four bytes) - 10 + X
-	xxxxx
-	
-	# protocol name, protocol level
-		# byte 1-7 Length MSB, Length LSB, MQTT, Level
-		printf '\000\004MQTT\004'
-	
-	# connect flag - a bitfield
+	local expectedFieldName="$1"
+	local presentFieldName
+	for presentFieldName in "${!write_controlpacket_CONNECT_arguments[@]}"
+	do
+		if [ "$presentFieldName" = "$expectedFieldName" ]; then
+			return 0
+		fi
+	done
+	return 1
 }
 
+function _write_controlpacket_PUBLISH_verifyFieldPresent()
+{
+	local expectedFieldName="$1"
+	local presentFieldName
+	for presentFieldName in "${!write_controlpacket_PUBLISH_arguments[@]}"
+	do
+		if [ "$presentFieldName" = "$expectedFieldName" ]; then
+			return 0
+		fi
+	done
+	return 1
+}
+
+function _write_controlpacket_SUBSCRIBE_verifyFieldPresent()
+{
+	local expectedFieldName="$1"
+	local presentFieldName
+	for presentFieldName in "${!write_controlpacket_SUBSCRIBE_arguments[@]}"
+	do
+		if [ "$presentFieldName" = "$expectedFieldName" ]; then
+			return 0
+		fi
+	done
+	return 1
+}
+
+function _write_controlpacket_guardUtf8StringOrBinaryFieldLength()
+{
+	if [ $3 -lt 0 ]; then
+		connection_message FAIL $connectionId $1 "Field $2 must not be negative (ie not $3)"
+	fi
+	if [ $3 -gt 65535 ]; then
+		connection_message FAIL $connectionId $2 "Field $2 must be less than 65,536 characters long, not $3"
+	fi
+}
+
+function write_controlpacket_CONNECT()
+{
+	local -r connectionId=$1
+	
+	local -i remainingLength=10
+	local -i connectFlags=0
+	
+	# BUG: username, passwords, will topic, will payload can contain embedded ASCII NULL!
+		
+	if _write_controlpacket_CONNECT_verifyFieldPresent 'clean_session'; then
+		local -r clean_session="${write_controlpacket_CONNECT_arguments['clean_session']}"
+		case "$clean_session" in
+			
+			yes)
+				connectFlags=$(( connectFlags + 1 << 1 ))
+				local -ir cleanSession=1
+			;;
+			
+			no)
+				local -ir cleanSession=0
+			;;
+			
+			*)
+				connection_message FAIL $connectionId CONNECT "clean_session must be yes or no, not '$clean_session'"
+			;;
+			
+		esac
+	else
+		local -ir cleanSession=0
+	fi
+
+	if _write_controlpacket_CONNECT_verifyFieldPresent 'will_retain'; then
+		local -r will_retain="${write_controlpacket_CONNECT_arguments['will_retain']}"
+		
+		case "$will_retain"
+			
+			yes|no)
+				:
+			;;
+			
+			*)
+				connection_message FAIL $connectionId CONNECT "$connectionId will_retain must be yes or no, not '$will_retain'"
+			;;
+			
+		esac
+	else
+		local -r will_retain='no'
+	fi
+	
+	if _write_controlpacket_CONNECT_verifyFieldPresent 'will_qos'; then
+		local -r will_qos="${write_controlpacket_CONNECT_arguments['will_qos']}"
+		
+		case will_qos in
+			
+			0)
+				if [ "$will_retain" != "no" ]; then
+					connection_message FAIL $connectionId CONNECT "if will_qos is 0, then will_retain must not be '$will_retain'"
+				fi
+				local -ir will_topic_fieldLength=-1
+				local -ir will_message_fieldLength=-1
+			;;
+			
+			1|2)
+				# Will flag
+				connectFlags=$(( connectFlags + 1 << 2 ))
+				
+				# Will QoS
+				connectFlags=$(( connectFlags + will_qos << 3 ))
+				
+				# Will Retain
+				if [ "$will_retain" = "yes" ]; then
+					connectFlags=$(( connectFlags + 1 << 5 ))
+				fi
+				
+				# Will Topic
+				if ! _write_controlpacket_CONNECT_verifyFieldPresent 'will_topic'; then
+					connection_message FAIL $connectionId CONNECT "will_topic must be specified"
+				fi
+				local -r will_topic="${write_controlpacket_CONNECT_arguments['will_topic']}"
+				local -ir will_topic_fieldLength="${#will_topic}"
+				_write_controlpacket_guardUtf8StringOrBinaryFieldLength CONNECT 'will_topic' $will_topic_fieldLength
+				remainingLength=$(( remainingLength + 2 + will_topic_fieldLength ))
+				
+				# Will Message
+				if ! _write_controlpacket_CONNECT_verifyFieldPresent 'will_message'; then
+					connection_message FAIL $connectionId CONNECT "will_message must be specified"
+				fi
+				local -r will_message="${write_controlpacket_CONNECT_arguments['will_message']}"
+				local -ir will_message_fieldLength="${#will_message}"
+				_write_controlpacket_guardUtf8StringOrBinaryFieldLength CONNECT 'will_message' $will_message_fieldLength
+				remainingLength=$(( remainingLength + 2 + will_message_fieldLength ))
+			;;
+			
+			3)
+				connection_message FAIL $connectionId CONNECT "will_qos 3 is reserved"
+			;;
+			
+			*)
+				connection_message FAIL $connectionId CONNECT "will_qos must be 0-2, not '$will_qos'"
+			;;
+			
+		esac
+	elif [ "$will_retain" != "no" ]; then
+		connection_message FAIL $connectionId CONNECT "if will_qos is 0, then will_retain must not be '$will_retain'"
+	else
+		local -ir will_topic_fieldLength=-1
+		local -ir will_message_fieldLength=-1
+	fi
+	
+	if _write_controlpacket_CONNECT_verifyFieldPresent 'keep_alive'; then
+		local -r keep_alive="${write_controlpacket_CONNECT_arguments['keep_alive']}"
+		if [ $keep_alive -lt 0 ]; then
+			connection_message FAIL $connectionId CONNECT "keep_alive must not be negative, ie not '$keep_alive'"
+		fi
+		if [ $keep_alive -gt 65535 ]; then
+			connection_message FAIL $connectionId CONNECT "keep_alive must be less than 65,536 seconds, ie not '$keep_alive'"
+		fi
+	else
+		local -ir keep_alive=0
+	fi
+	
+	if _write_controlpacket_CONNECT_verifyFieldPresent 'client_id'; then
+		local -r client_id="${write_controlpacket_CONNECT_arguments['client_id']}"
+	else
+		local -r client_id=''
+	fi
+	local -ir client_id_fieldLength=${#client_id}
+	_write_controlpacket_guardUtf8StringOrBinaryFieldLength CONNECT 'client_id' $client_id_fieldLength
+	remainingLength=$((remainingLength + 2 + client_id_fieldLength))
+	if [ $client_id_fieldLength -eq 0 ]; then
+		if [ $cleanSession -eq 0 ]; then
+			connection_message FAIL $connectionId CONNECT "client_id can not be empty if clean_session is no"
+		fi
+	fi
+	
+	# consider using .netrc
+	if _write_controlpacket_CONNECT_verifyFieldPresent 'username'; then
+		local -r username="${write_controlpacket_CONNECT_arguments['username']}"
+		local -ir username_fieldLength=${#username}
+		_write_controlpacket_guardUtf8StringOrBinaryFieldLength CONNECT 'username' $username_fieldLength
+		remainingLength=$(( remainingLength + 2 + username_fieldLength ))
+		connectFlags=$(( connectFlags + 1 << 8 ))
+	else
+		local -ir username_fieldLength=0
+	fi
+	
+	if _write_controlpacket_CONNECT_verifyFieldPresent 'password'; then
+		local -r password="${write_controlpacket_CONNECT_arguments['password']}"
+		local -ir password_fieldLength=${#password}
+		_write_controlpacket_guardUtf8StringOrBinaryFieldLength CONNECT 'password' $password_fieldLength
+		remainingLength=$(( remainingLength + 2 + password_fieldLength ))
+		connectFlags=$(( connectFlags + 1 << 7 ))
+	else
+		:
+	fi
+	
+	# CONNECT 1 << 4 in Octal (1 byte)
+	printf '\020'
+	
+	# Remaining Length (1 - 3 bytes; 4 bytes would never be required)
+	write_remainingLength $remainingLength
+	
+	# protocol name (MSB, LSB, MQTT), protocol level (7 bytes)
+	printf '\000\004MQTT\004'
+	
+	# connect flag (1 byte)
+	write_byte $connectFlags
+	
+	# two-byte size of Keep Alive (2 bytes)
+	write_twoByteLength $keep_alive
+	
+	# client id
+	write_twoByteLength $client_id_fieldLength
+	printf '%s' "$client_id"
+	
+	# will topic & will message
+	if [ $will_topic_fieldLength -ne -1 ]; then
+		write_twoByteLength $will_topic_fieldLength
+		printf '%s' "$will_topic"
+		write_twoByteLength $will_message_fieldLength
+		printf '%s' "$will_message"
+	fi
+	
+	# username
+	if [ $username_fieldLength -ne 1 ]; then
+		write_twoByteLength $username_fieldLength
+		printf '%s' "$username"
+	fi
+	
+	# password
+	if [ $password_fieldLength -ne 1 ]; then
+		write_twoByteLength $password_fieldLength
+		printf '%s' "$password"
+	fi
+}
+
+# more optimised versions of this function are possible, eg with pre-set flags, flags as ints, etc
+function write_controlpacket_PUBLISH()
+{
+	local -r connectionId=$1
+	local -i remainingLength=0
+	
+	# 3 << 4
+	local -i controlPacketTypeAndFlags=48
+	local -r dup=${write_controlpacket_PUBLISH_arguments['dup']}
+	case "$dup" in
+		
+		yes)
+			controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + 1 << 3 ))
+		;;
+		
+		no)
+			:
+		;;
+		
+		*)
+			connection_message FAIL $connectionId PUBLISH "dup must be yes or no, not '$dup'"
+		;;
+		
+	esac
+
+	if ! _write_controlpacket_PUBLISH_verifyFieldPresent 'qos'; then
+		local -ir packet_identifier=-1
+	else
+		case "$qos" in 
+		
+			0)
+				local -ir packet_identifier=-1
+			;;
+		
+			1|2)
+				controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + qos << 2 ))
+				if ! _write_controlpacket_PUBLISH_verifyFieldPresent 'packet_identifier'; then
+					connection_message FAIL $connectionId PUBLISH "messages published at QoS 1 or 2 must have a packet_identifier"
+				fi
+				local -ir packet_identifier=${write_controlpacket_PUBLISH_arguments['packet_identifier']}
+				remainingLength=$(( remainingLength + 2 ))
+			;;
+		
+			3)
+				connection_message FAIL $connectionId PUBLISH "qos 3 is reserved"
+			;;
+		
+			*)
+				connection_message FAIL $connectionId PUBLISH "qos must be 0-2, not '$qos'"
+			;;
+		esac
+	fi
+	
+	local -r retain="${write_controlpacket_PUBLISH_arguments['retain']}"
+	case "$retain" in
+		
+		yes)
+			controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + 1 ))
+		;;
+		
+		no)
+			:
+		;;
+		
+		*)
+			connection_message FAIL $connectionId PUBLISH "retain must be yes or no, not '$retain'"
+		;;
+		
+	esac
+	
+	# BUG: We don't check for wildcards, ASCII NULL, or empty topic names
+	if ! _write_controlpacket_PUBLISH_verifyFieldPresent 'topic_name'; then
+		connection_message FAIL $connectionId PUBLISH "topic_name is not present"
+	fi
+	local -r topic_name="${write_controlpacket_PUBLISH_arguments['topic_name']}"
+	local -ir topic_name_fieldLength=${#topic_name}
+	_write_controlpacket_guardUtf8StringOrBinaryFieldLength PUBLISH topic_name $topic_name_fieldLength
+	
+	remainingLength=$(( remainingLength + 2 + topic_name_fieldLength ))
+	
+	# BUG: We don't handle binary payloads containing ASCII NULL, and we really ought to also allow the use of files (with offsets, sizes, too, for firmware transmissions) and base64 encoded data
+	
+	if _write_controlpacket_PUBLISH_verifyFieldPresent 'payload'; then
+		local -r payload="${write_controlpacket_PUBLISH_arguments['payload']}"
+		remainingLength=$(( remainingLength + 2 + ${#payload} ))
+	else
+		local -r payload=""
+	fi
+	
+	echo -ne "${write_byteCache[$controlPacketTypeAndFlags]}"
+	write_remainingLength $remainingLength
+	
+	write_twoByteLength $topic_name_fieldLength
+	printf '%s' "$topic_name"
+	
+	if [ $packet_identifier -ne -1 ]; then
+		write_twoByteLength $packet_identifier
+	fi
+	
+	printf '%s' "$payload"
+}
+
+function write_controlpacket_PUBACK()
+{
+	local -r connectionId=$1
+	local -ir packetIdentifier=$2
+	
+	# 4 << 4 in octal, followed by 2 (remaining length)
+	printf '\100\002'
+	
+	write_twoByteLength $packetIdentifier
+}
+
+function write_controlpacket_PUBREC()
+{
+	local -r connectionId=$1
+	local -ir packetIdentifier=$2
+	
+	# 5 << 4 in octal, followed by 2 (remaining length)
+	printf '\120\002'
+	
+	write_twoByteLength $packetIdentifier
+}
+
+function write_controlpacket_PUBREL()
+{
+	local -r connectionId=$1
+	local -ir packetIdentifier=$2
+	
+	# 6 << 4 in octal + 1 << 1, followed by 2 (remaining length)
+	printf '\142\002'
+	
+	write_twoByteLength $packetIdentifier
+}
+
+function write_controlpacket_PUBCOMP()
+{
+	local -r connectionId=$1
+	local -ir packetIdentifier=$2
+	
+	# 7 << 4 in octal, followed by 2 (remaining length)
+	printf '\160\002'
+	
+	write_twoByteLength $packetIdentifier
+}
+
+function write_controlpacket_SUBSCRIBE()
+{
+	local -r connectionId=$1
+	local -ir packetIdentifier=$2
+	shift 2
+
+	local -i remainingLength=2
+	
+	if [ $# -lt 2 ]; then
+		connection_message FAIL $connectionId SUBSCRIBE "control packets must have at least one topic filter - qos pair"
+	fi
+
+	declare -ai topic_filters_size=()
+	declare -a topic_filters=()
+	declare -ai topic_filters_qos=()
+	
+	local topic_filter
+	local -i topic_filter_fieldLength
+	local qos
+	while $# -gt 0
+	do
+		if [ $# -lt 2 ]; then
+			connection_message FAIL $connectionId SUBSCRIBE "control packets must have balanced topic_fiter - qos pairs"
+		fi
+		topic_filter="$1"
+		if [ "${#topic_filter}" -eq 0 ]; then
+			connection_message FAIL $connectionId SUBSCRIBE "topic_filter can not be empty"
+		fi
+		qos="$2"
+		case $qos in
+			0|1|2)
+			
+			;;
+			
+			3)
+				connection_message FAIL $connectionId SUBSCRIBE "qos 3 is reserved"
+			;;
+			
+			*)
+				connection_message FAIL $connectionId SUBSCRIBE "qos must be 0-2, not '$qos'"
+			;;
+		esac
+		
+		# 3 is from 2 for length and 1 for QoS byte
+		topic_filter_fieldLength=${#topic_filter}
+		_write_controlpacket_guardUtf8StringOrBinaryFieldLength SUBSCRIBE topic_filter $topic_filter_fieldLength
+		_write_controlpacket_guardUtf8StringOrBinaryFieldLength 
+		remainingLength=$(( remainingLength + 3 + topic_filter_fieldLength ))
+		topic_filters_size+=($topic_fiter_fieldLength)
+		topic_filters+=(topic_filter)
+		topic_filters_qos+=($qos)
+		shift 2
+	done
+	
+	# 8 << 4 + 1 << 1 in octal
+	printf '\202'
+	write_remainingLength $remainingLength
+	
+	write_twoByteLength $packetIdentifier
+	
+	local -i index
+	for index in ${!topic_filters[@]}
+	do
+		write_twoByteLength ${topic_filters_size[$index]}
+		printf '%s' "${topic_filters[$index]}"
+		write_byte "${topic_filters_qos[$index]}"
+	done
+}
+
+function write_controlpacket_SUBACK()
+{
+	local -r connectionId=$1
+	local -ir packetIdentifier=$2
+	shift 2
+	
+	local -ir remainingLength=$(( 2 + ${#} ))
+	
+	# 9 << 4 in octal
+	printf '\220'
+	
+	write_remainingLength $remainingLength
+	
+	write_twoByteLength $packetIdentifier
+	local -i resultCode
+	for resultCode in "$@"
+	do
+		case $resultCode in
+			
+			0|1|2|128)
+				:
+			;;
+			
+			*)
+				connection_message FAIL $connectionId SUBACK "resultCodes must be 0, 1, 2 or 128, not '$resultCode'"
+			;;
+			
+		esac
+	done
+}
+
+function write_controlpacket_UNSUBSCRIBE()
+{
+	local -r connectionId=$1
+	local -ir packetIdentifier=$2
+	shift 2
+
+	local -i remainingLength=2
+	
+	if [ $# -eq 0 ]; then
+		connection_message FAIL $connectionId UNSUBSCRIBE "control packets must have at least one topic filter"
+	fi
+
+	declare -ai topic_filters_size=()
+	declare -a topic_filters=()
+	
+	local topic_filter
+	local -i topic_filter_fieldLength
+	local qos
+	while $# -gt 0
+	do
+		topic_filter="$1"
+		if [ "${#topic_filter}" -eq 0 ]; then
+			connection_message FAIL $connectionId UNSUBSCRIBE "topic_filter can not be empty"
+		fi
+		
+		topic_filter_fieldLength=${#topic_filter}
+		_write_controlpacket_guardUtf8StringOrBinaryFieldLength UNSUBSCRIBE topic_filter $topic_filter_fieldLength
+		remainingLength=$(( remainingLength + 2 + topic_filter_fieldLength ))
+		topic_filters_size+=($topic_fiter_fieldLength)
+		topic_filters+=(topic_filter)
+		shift 2
+	done
+	
+	# 10 << 4 + 1 << 1 in octal
+	printf '\242'
+	write_remainingLength $remainingLength
+	
+	write_twoByteLength $packetIdentifier
+	
+	local -i index
+	for index in ${!topic_filters[@]}
+	do
+		write_twoByteLength ${topic_filters_size[$index]}
+		printf '%s' "${topic_filters[$index]}"
+	done
+}
+
+function write_controlpacket_UNSUBACK()
+{
+	local -r connectionId=$1
+	local -ir packetIdentifier=$2
+	
+	# 11 << 4 in octal, followed by 2 (remaining length)
+	printf '\260\002'
+	
+	write_twoByteLength $packetIdentifier
+}
+
+function write_controlpacket_PINGREQ()
+{
+	local -r connectionId=$1
+	
+	# 12 << 4 in octal, followed by 0 (remaining length)
+	printf '\300\000'
+}
+
+function write_controlpacket_PINGRESP()
+{
+	local -r connectionId=$1
+	
+	# 13 << 4 in octal, followed by 0 (remaining length)
+	printf '\320\000'
+}
+
+function write_controlpacket_DISCONNECT()
+{
+	local -r connectionId=$1
+	
+	# 14 << 4 in octal, followed by 0 (remaining length)
+	printf '\340\000'
+}
