@@ -52,4 +52,8 @@ function test_byte_isBitSet()
 	_test_byte_isBitUnset 0 0 1 2 3 4 5 6 7
 }
 
+function test_byte_setBit()
+{
+}
+
 source run-tests byte
