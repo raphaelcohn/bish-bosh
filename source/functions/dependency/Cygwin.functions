@@ -1,0 +1,14 @@
+function dependency_Cygwin_checkFunction()
+{
+	if [ -x /bin/cygcheck.exe ]; then
+		readonly distributionName="Cygwin"
+		return 0
+	fi
+	return 1
+}
+dependency_checkFunctions+=(dependency_Cygwin_checkFunction)
+
+function dependency_Cygwin_packageManager()
+{
+	lfs_message FAIL "Please run the Cygwin setup-x86.exe to install the packages $@"
+}

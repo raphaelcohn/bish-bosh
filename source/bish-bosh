@@ -1,15 +1,5 @@
 #!/usr/bin/env bash
 
-echo -n '('
-for ((i=0;i<256;i++))
-do
-	echo -n " $"
-	echo -n "'\x"
-	printf '%X' $i
-	echo -n "'"
-done
-echo -n ')'
-
 function bishbosh_byte_examples()
 {
 	# bash supports decimal, octal (0...) and hexadecimal (0x...) formats for numbers, as well as base# for all bases up to 64
@@ -49,9 +39,331 @@ function bishbosh_read_examples()
 	bishbox_byte_convert_od_coproc_end
 }
 
-source functions/byte.functions
-source functions/byte-convert.functions
-source functions/read.functions
+function bishbosh_message()
+{
+	local messageKind="$1"
+	local message="$2"
+	
+	case "$messageKind" in
+		
+		WARN|FAIL|PASS)
+			echo "$ourName: $messageKind: $message" 1>&2
+			if [ "$messageKind" = "FAIL" ]; then
+				exit 1
+			fi
+		;;
+		
+		INFO)
+			if [ "$bishbosh_beVerbose" = "yes" ]; then
+				echo "$ourName: $messageKind: $message" 1>&2
+			fi
+		;;
+		
+		DEBUG)
+			if [ "$bishbosh_beDebug" = "yes" ]; then
+				echo "$ourName: $messageKind: $message" 1>&2
+			fi
+		;;
+		
+		*)
+			echo "$ourName: $messageKind: $message" 1>&2
+			exit 3
+		;;
+	
+	esac
+}
 
-#bishbosh_byte_examples
-bishbosh_read_examples
+# The purpose of these functions is to provide internal implementations of logic we can't be 100%
+# sure of exists in the environment or is implemented as we would like for critical pieces of code.
+# Such a critical piece is code executed before and during command line arg parsing
+function bishbosh_dirname()
+{
+	local -r converted="${1%/*}"
+	if [ "$converted" = "$1" ]; then
+		echo "."
+	else
+		echo "$converted"
+	fi
+}
+
+function bishbosh_basename()
+{
+	echo "${1##*/}"
+}
+
+function bishbosh_setDebugging()
+{
+	# is set -x on?
+	if [[ "$-" == *x* ]]; then
+		export BISHBOSH_BASH_DEBUGGING="yes"
+	elif [ ! -z "$BISHBOSH_BASH_DEBUGGING" ]; then
+		if [ "$BISHBOSH_BASH_DEBUGGING" = "yes" ]; then
+			set -x
+		fi
+	fi
+}
+
+function bishbosh_setSaneEnvironmentDefaults()
+{
+	set +o allexport -o braceexpand +o emacs -o errexit +o errtrace +o functrace +o hashall +o histexpand +o history +o ignoreeof -o interactive-comments +o keyword +o monitor +o noclobber +o noexec +o noglob +o nolog +o notify +o nounset +o onecmd +o physical +o pipefail +o posix +o verbose +o vi
+	
+	unset BASH_ENV
+	unset BASH_XTRACEFD
+	unset CDPATH
+	unset ENV
+	unset FCEDIT
+	unset FIGNORE
+	unset FUNCNEST
+	unset GLOBIGNORE
+	unset HISTCONTROL
+	unset HISTFILE
+	unset HISTFILESIZE
+	unset HISTIGNORE
+	unset HISTSIZE
+	unset HISTTIMEFORMAT
+	unset HOSTFILE
+	unset IGNOREEOF
+	unset INPUTRC
+	unset MAIL
+	unset MAILCHECK
+	unset MAILPATH
+	unset TMOUT
+	
+	umask 022
+}
+
+function bishbosh_findOurNameAndPath()
+{
+	readonly ourName="$(bishbosh_basename "$0")"
+	pushd "$(bishbosh_dirname "$0")" >/dev/null
+		readonly crudeOurPath="$(pwd)"
+	popd >/dev/null
+}
+
+function bishbosh_exitError()
+{
+	bishbosh_message FAIL "$1"
+}
+
+function bishbosh_exitHelp()
+{
+	echo -n -E "Usage 1: ${ourName} -h
+Usage 2: ${ourName} [-v] [-d] [-c bishbosh_configPath] [-t bishbosh_cachePath] [-n bishbosh_netrcFilePath ] [-r bishbosh_curlrcFilePath] [-m bishbosh_mirror] -- [machine files...]
+
+Usages
+    1       Show Help
+    2       Download, verify and build a machine from scratch for each machine file
+
+Argument-less Switches
+    Switch  Explanation            Default           Configuration*
+    -h      show this help
+    -v      be more verbose        ${bishbosh_beVerbose}  beVerbose
+    -d      output debug messages  ${bishbosh_beDebug}    beDebug
+
+Argumented Switches
+    Switch  Configuration*         Default
+    -c      bishbosh_configPath         ${bishbosh_configPath}
+    -t      bishbosh_cachePath          ${bishbosh_cachePath}
+    -n      bishbosh_netrcFilePath      ${bishbosh_netrcFilePath}
+    -r      bishbosh_curlrcFilePath     ${bishbosh_curlrcFilePath}
+    -m      bishbosh_mirror             ${bishbosh_mirror}
+    --                             End of arguments, beginning of machine files
+
+*See Switch Configuration below
+
+Defaults
+Defaults are used to control common use cases. Defaults for values are sourced as key=value pairs from the following locations:-
+    
+    Location                                   Currently
+    <bishbosh_configPath>/defaults               ${bishbosh_configPath}.d/defaults
+    <bishbosh_configPath>/defaults.d/*.defaults  ${bishbosh_configPath}.d/defaults.d/*.defaults
+
+The values that can be configured are:-
+    
+    Value                                  Built-in Value
+    defaults_curl_supportsNetrcFileOption  ${defaults_curl_supportsNetrcFileOption}
+    defaults_curl_maxRedirs                ${defaults_curl_maxRedirs}
+    defaults_curl_retries                  ${defaults_curl_retries}
+
+Paths
+A path is used to define the location of essential programs used during initial bootstrapping. It also defines a packageManager
+to automatically install any missing dependencies. The PATH variable is reset to empty if they are used. Paths are used if a file
+<bishbosh_configPath>/paths.d/<distributionName> exists for the detected <distributionName>.
+" 1>&2
+	exit 2
+}
+
+function bishbosh_loadAnyConfiguration()
+{
+	readonly bishbosh_configPathOriginal="$crudeOurPath"/config
+	readonly bishbosh_cachePathOriginal="$crudeOurPath"/cache
+	
+	# Switch embedded defaults
+	bishbosh_language="en_GB.UTF-8"
+	bishbosh_beVerbose="no"
+	bishbosh_beDebug="no"
+	
+	bishbosh_netrcFilePath=""
+	bishbosh_curlrcFilePath=""
+	bishbosh_mirror="global"
+	bishbosh_machineFilePaths=()
+#start BISHBOSH_CONFIG_PATH
+	etcPath="/etc"
+	bishbosh_configPath="$bishbosh_configPathOriginal"
+#end BISHBOSH_CONFIG_PATH
+#start BISHBOSH_CACHE_PATH
+	cachePath=/var/cache/"${ourName}"
+	bishbosh_cachePath="$bishbosh_cachePathOriginal"
+#end BISHBOSH_CACHE_PATH
+#start BISHBOSH_DEFAULTS
+	# Insert all our defaults as shipped, too
+#end BISHBOSH_DEFAULTS
+	
+	function bishbosh_makeVariablesReadonly()
+	{
+		readonly bishbosh_language bishbosh_beVerbose bishbosh_beDebug etcPath bishbosh_configPath cachePath bishbosh_cachePath
+		readonly -a bishbosh_machines
+	}
+	
+	local -r etcSwitchConfiguration="${bishbosh_configPath}"/switch-configuration
+	if [ -f "$etcSwitchConfiguration" ]; then
+		source "$etcSwitchConfiguration"
+	fi
+	
+	local -r userSwitchConfiguration=~/."$ourName"
+	if [ -r "$userSwitchConfiguration" ]; then
+		source "$userSwitchConfiguration"
+	fi
+	
+	local -r environmentVariableSwitchConfiguration="$BISHBOSH_CONFIGURATION"
+	if [ -n "$environmentVariableSwitchConfiguration" ]; then
+		if [ -r "$environmentVariableSwitchConfiguration" ]; then
+			source "$environmentVariableSwitchConfiguration"
+		fi
+	fi
+}
+
+function bishbosh_parseCommandLine()
+{
+	local OPTERR=1
+	local OPTIND=1
+	local OPTARG
+	local option
+	while getopts :hvdc:t:n:r:m: option
+	do
+		case "$option" in
+			
+			h)
+				bishbosh_exitHelp
+			;;
+			
+			v)
+				bishbosh_beVerbose="yes"
+			;;
+			
+			d)
+				bishbosh_beDebug="yes"
+			;;
+			
+			c)
+				bishbosh_configPath="$OPTARG"
+			;;
+			
+			t)
+				bishbosh_cachePath="$OPTARG"
+			;;
+			
+			n)
+				bishbosh_netrcFilePath="$OPTARG"
+			;;
+			
+			r)
+				bishbosh_curlrcFilePath="$OPTARG"
+			;;
+			
+			m)
+				bishbosh_mirror="$OPTARG"
+			;;
+			
+			'?')
+				bishbosh_message FAIL "Invalid option -${OPTARG}"
+			;;
+			
+		esac
+	done
+	
+	shift $((OPTIND - 1))
+
+	bishbosh_machineFilePaths=("$@")
+}
+
+function bishbosh_validateCommandLineArguments()
+{
+	if [ ! -d "$bishbosh_configPath" ]; then
+		bishbosh_message FAIL "Config path $bishbosh_configPath does not exist or is not a directory"
+		pushd "$bishbosh_configPath" 1>/dev/null
+			bishbosh_configPath="$(pwd)"
+		popd 1>/dev/null
+	fi
+	
+	if [ ! -d "$bishbosh_cachePath" ]; then
+		bishbosh_message FAIL "Cache path $bishbosh_cachePath does not exist or is not a directory"
+		pushd "$bishbosh_cachePath" 1>/dev/null
+			$bishbosh_cachePath="$(pwd)"
+		popd 1>/dev/null
+	fi
+	
+	if [ -n "$bishbosh_netrcFilePath" ]; then
+		if [ ! -f "$bishbosh_netrcFilePath" ]; then
+			bishbosh_message FAIL "-n bishbosh_netrcFilePath $bishbosh_netrcFilePath does not exist or is not a file"
+		fi
+	fi
+	
+	if [ -n "$bishbosh_curlrcFilePath" ]; then
+		if [ ! -f "$bishbosh_curlrcFilePath" ]; then
+			bishbosh_message FAIL "-r bishbosh_curlrcFilePath $bishbosh_curlrcFilePath does not exist or is not a file"
+		fi
+	fi
+	
+	if [ "${#bishbosh_machineFilePaths[@]}" -eq 0 ]; then
+		bishbosh_message FAIL "Please specify at least one machine file"
+	fi
+}
+
+
+#start BISHBOSH_SOURCE_FUNCTIONS
+function bishbosh_sourceFunctions()
+{
+	bishbosh_sourceFunctionsRecursively "$crudeOurPath"/functions
+}
+
+function uses()
+{
+	local -r functionsPath="$crudeOurPath"/functions
+	
+	local functionFileName
+	for functionFileName in "$@"
+	do
+		source "$functionsPath"/"$functionFileName".functions
+	done
+}
+
+uses temporaryFiles
+
+#end BISHBOSH_SOURCE_FUNCTIONS
+
+function bishbosh_main()
+{
+	bishbosh_setDebugging
+	bishbosh_setSaneEnvironmentDefaults
+	bishbosh_findOurNameAndPath
+	bishbosh_loadAnyConfiguration
+	bishbosh_parseCommandLine "$@"
+	bishbosh_validateCommandLineArguments
+	bishbosh_makeVariablesReadonly
+	bishbosh_sourceFunctions
+	
+	main_executeMainFunctions
+}
+
+bishbosh_main "$@"

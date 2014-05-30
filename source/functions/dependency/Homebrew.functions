@@ -1,0 +1,23 @@
+function dependency_Homebrew_checkFunction()
+{
+	if which brew 1>/dev/null 2>/dev/null; then
+		readonly distributionName="Homebrew"
+		return 0
+	fi
+	return 1
+}
+dependency_checkFunctions+=(dependency_Homebrew_checkFunction)
+
+function dependency_Homebrew_packageManager()
+{
+	# eg diffutils, openssh, awk
+	brew tap homebrew/dupes 1>/dev/null 2>/dev/null
+	
+	# eg gcc
+	brew tap homebrew/versions 1>/dev/null 2>/dev/null
+	
+	brew update
+	brew install "$@"
+	
+	# fakeroot required a  brew link ; rsync required  brew install homebrew/dupes/rsync  for some reason
+}

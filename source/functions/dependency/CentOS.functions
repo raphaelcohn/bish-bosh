@@ -1,0 +1,22 @@
+function dependency_CentOS_checkFunction()
+{
+	if [ -f /etc/centos-release ]; then
+		readonly distributionName="CentOS"
+		return 0
+	fi
+	return 1
+}
+dependency_checkFunctions+=(dependency_CentOS_checkFunction)
+
+function dependency_CentOS_packageManager()
+{
+	if [ "$lfs_beVerbose" = no ]; then
+		local -r yumVerbosity=" --quiet"
+	else
+		local -r yumVerbosity=""
+	fi
+	
+	sudo -p "Please enter your password for sudo to update yum: " yum makecache
+	
+	sudo -p "Please enter your password for sudo to run yum install: " yum${yumVerbosity} --assumeyes install "$@"
+}

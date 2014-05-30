@@ -1,0 +1,2 @@
+netcat-openbsd nc /bin/nc.openbsd
+netcat6 nc6 /bin/nc6

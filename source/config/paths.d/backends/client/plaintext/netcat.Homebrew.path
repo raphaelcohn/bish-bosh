@@ -1,0 +1,2 @@
+netcat nc /usr/local/bin/nc
+netcat6 nc6 /usr/local/bin/nc6
