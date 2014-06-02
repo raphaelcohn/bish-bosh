@@ -1,1 +1,1 @@
-ucspi-tcp-ipv6 tcpserver /usr/bin/tcpserver
+ipsvd sslio /usr/bin/sslio
