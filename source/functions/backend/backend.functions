@@ -5,6 +5,12 @@ function backend_determineIfAuto()
 	local -r pathsFile="$lfs_configPath"/backends/"$backend"/"$kind"/*."$distributionName".path
 }
 
+# note tcpsvd is actually 'busybox tcpsvd' on Debian. Likewise, busybox nc is also possible
+
+# using netcat with a FIFO (need mkfifo): https://unix.stackexchange.com/questions/39362/using-in-out-named-pipes-for-a-tcp-connection
+# reverse bash shell http://www.gnucitizen.org/blog/reverse-shell-with-bash/
+# reverse nc if nc is broken (lacks -e) http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet
+# reverse shell using GAWK! http://www.gnucitizen.org/blog/reverse-shell-with-bash/#comment-122387
 function backend_determineIfAutoClient()
 {
 	backend_determineIfAuto "client" "plaintext"

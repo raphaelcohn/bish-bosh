@@ -1,0 +1,2 @@
+ipsvd tcpsvd /usr/bin/tcpsvd
+ipsvd sslio /usr/bin/sslio
