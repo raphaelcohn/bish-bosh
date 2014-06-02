@@ -1,0 +1,5 @@
+defaults_backend_client_plain=auto
+defaults_backend_client_tls=auto
+defaults_backend_client_ssh=auto
+defaults_backend_server_plain=auto
+defaults_backend_server_tls=auto

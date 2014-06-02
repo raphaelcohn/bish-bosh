@@ -148,7 +148,7 @@ function bishbosh_exitError()
 function bishbosh_exitHelp()
 {
 	echo -n -E "Usage 1: ${ourName} -h
-Usage 2: ${ourName} [-v] [-d] [-c bishbosh_configPath] [-t bishbosh_cachePath] [-n bishbosh_netrcFilePath ] [-r bishbosh_curlrcFilePath] [-m bishbosh_mirror] -- [machine files...]
+Usage 2: ${ourName} [-v] [-d] [-c bishbosh_configPath] [-t bishbosh_cachePath] -- [files...]
 
 Usages
     1       Show Help
@@ -164,9 +164,6 @@ Argumented Switches
     Switch  Configuration*         Default
     -c      bishbosh_configPath         ${bishbosh_configPath}
     -t      bishbosh_cachePath          ${bishbosh_cachePath}
-    -n      bishbosh_netrcFilePath      ${bishbosh_netrcFilePath}
-    -r      bishbosh_curlrcFilePath     ${bishbosh_curlrcFilePath}
-    -m      bishbosh_mirror             ${bishbosh_mirror}
     --                             End of arguments, beginning of machine files
 
 *See Switch Configuration below
@@ -181,14 +178,16 @@ Defaults are used to control common use cases. Defaults for values are sourced a
 The values that can be configured are:-
     
     Value                                  Built-in Value
-    defaults_curl_supportsNetrcFileOption  ${defaults_curl_supportsNetrcFileOption}
-    defaults_curl_maxRedirs                ${defaults_curl_maxRedirs}
-    defaults_curl_retries                  ${defaults_curl_retries}
+    defaults_backend_client_plain          ${defaults_backend_client_plain}
+    defaults_backend_client_tls            ${defaults_backend_client_tls}
+	defaults_backend_client_ssh            ${defaults_backend_client_ssh}
+    defaults_backend_server_plain          ${defaults_backend_server_plain}
+    defaults_backend_server_tls            ${defaults_backend_server_tls}
 
-Paths
-A path is used to define the location of essential programs used during initial bootstrapping. It also defines a packageManager
-to automatically install any missing dependencies. The PATH variable is reset to empty if they are used. Paths are used if a file
-<bishbosh_configPath>/paths.d/<distributionName> exists for the detected <distributionName>.
+Path Files
+A path file is used to define the location of essential programs used during initial bootstrapping. It also defines a packageManager
+to automatically install any missing dependencies. Paths are used if a file <bishbosh_configPath>/paths.d/<distributionName>
+exists for the detected <distributionName>. Additional path files are used for a chosen backend
 " 1>&2
 	exit 2
 }
@@ -330,27 +329,13 @@ function bishbosh_validateCommandLineArguments()
 	fi
 }
 
-
-#start BISHBOSH_SOURCE_FUNCTIONS
-function bishbosh_sourceFunctions()
-{
-	bishbosh_sourceFunctionsRecursively "$crudeOurPath"/functions
-}
-
 function uses()
 {
+	local -r functionFileName="$1"
 	local -r functionsPath="$crudeOurPath"/functions
-	
-	local functionFileName
-	for functionFileName in "$@"
-	do
-		source "$functionsPath"/"$functionFileName".functions
-	done
+	local -r functionsFilePath="$functionsPath"/"${functionFileName//.//}".functions
+	source "$functionsPath"
 }
-
-uses temporaryFiles
-
-#end BISHBOSH_SOURCE_FUNCTIONS
 
 function bishbosh_main()
 {
@@ -361,7 +346,8 @@ function bishbosh_main()
 	bishbosh_parseCommandLine "$@"
 	bishbosh_validateCommandLineArguments
 	bishbosh_makeVariablesReadonly
-	bishbosh_sourceFunctions
+
+	uses temporaryFiles
 	
 	main_executeMainFunctions
 }
