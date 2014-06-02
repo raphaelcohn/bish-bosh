@@ -1,0 +1,101 @@
+backend_client_options=()
+function backend_client_defaultOptions()
+{
+	# Choices are auto (best fit), inet4, inet6, unix
+	backend_client_options['inetFamily']=auto
+	backend_client_options['localInterface']=''
+	backend_client_options['localAddress']=''
+	backend_client_options['localPort']=''
+	
+	backend_client_options['proxyKind']='none'
+	backend_client_options['proxyAddress']=''
+	backend_client_options['proxyPort']=''
+
+	backend_client_options['timeout']=''
+	
+	backend_client_options['remoteAddress']='127.0.0.1'
+	backend_client_options['remotePort']=1883
+}
+
+backend_client_temporaryPath=""
+function backend_client_createTemporaryPath()
+{
+	temporaryFiles_newFolderToRemoveOnExit
+	backend_client_temporaryPath="$TMP_FOLDER"
+}
+
+backend_client_debugLogPath=""
+function backend_client_createDebugLog()
+{
+	backend_client_debugLogPath="$backend_client_temporaryPath"/debug.log
+	touch "$backend_client_debugLogPath"
+}
+
+backend_client_inboundPipe=
+backend_client_outboundPipe=
+function backend_client_createNamedPipes()
+{
+	backend_client_inboundPipe="$backend_client_temporaryPath"/inbound-pipe
+	backend_client_outboundPipe="$backend_client_temporaryPath"/outbound-pipe
+	mkfifo "$backend_client_inboundPipe" "$backend_client_outboundPipe"
+}
+
+function backend_client_normaliseOptions()
+{
+	if [ -z "${backend_client_options['proxyKind']}" ]; then
+		backend_client_options['proxyKind']='none'
+	else
+		case "${backend_client_options['proxyKind']}" in
+			
+			socks4|socks5|https)
+				:
+			;;
+			
+			*)
+				bishbosh_exitError "Backend client 'proxyKind' '${backend_client_options['proxyKind']}' is not known"
+			;;
+		esac
+	fi
+
+	if [ "${backend_client_options['proxyKind']}" = 'none' ]; then
+		if [ -n "${backend_client_options[proxyAddress]}" ]; then
+			bishbosh_exitError "Backend client 'proxyAddress' is set but proxyKind is missing or none"
+		fi
+		if [ -n "${backend_client_options[proxyPort]}" ]; then
+			bishbosh_exitError "Backend client 'proxyPort' is set but proxyKind is missing or none"
+		fi
+	else
+		if [ -z "${backend_client_options[proxyAddress]}" ]; then
+			bishbosh_exitError "Backend client 'proxyAddress' is not set but proxyKind is ${backend_client_options['proxyKind']}"
+		fi
+		if [ -z "${backend_client_options[proxyPort]}" ]; then
+			case "${backend_client_options['proxyKind']}" in
+				
+				socks4|socks5)
+					backend_client_options['proxyPort']=1080
+				;;
+				
+				https)
+					backend_client_options['proxyPort']=3128
+				;;
+				
+			esac
+			
+		fi
+	fi
+}
+
+backend_kind=""
+backend_name=""
+backend_client_prefix=""
+function backend_client_load()
+{
+	backend_kind="$1"
+	backend_name="$2"
+	
+	backend_client_normaliseOptions
+	
+	backend_client_prefix="backend_client_${backend_kind}_${backend_name}"
+	use backend.client.${backend_kind}.${backend_name}
+	${backend_client_prefix}_load
+}
