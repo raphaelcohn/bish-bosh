@@ -56,7 +56,7 @@ function write_controlpacket_CONNECT()
 	local -i remainingLength=10
 	local -i connectFlags=0
 	
-	# BUG: username, passwords, will topic, will payload can contain embedded ASCII NULL!
+	FIX 'username, passwords, will topic, will payload can contain embedded ASCII NULL!'
 		
 	if _write_controlpacket_CONNECT_verifyFieldPresent 'clean_session'; then
 		local -r clean_session="${write_controlpacket_CONNECT_arguments['clean_session']}"
@@ -325,7 +325,7 @@ function write_controlpacket_PUBLISH()
 	
 	remainingLength=$(( remainingLength + 2 + topic_name_fieldLength ))
 	
-	# BUG: We don't handle binary payloads containing ASCII NULL, and we really ought to also allow the use of files (with offsets, sizes, too, for firmware transmissions) and base64 encoded data
+	FIX "We don't handle binary payloads containing ASCII NULL, and we really ought to also allow the use of files (with offsets, sizes, too, for firmware transmissions) and base64 encoded data"
 	
 	if _write_controlpacket_PUBLISH_verifyFieldPresent 'payload'; then
 		local -r payload="${write_controlpacket_PUBLISH_arguments['payload']}"

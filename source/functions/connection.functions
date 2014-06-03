@@ -4,5 +4,5 @@ function connection_message()
 	local -r connectionId="$2"
 	local -r controlPacket="$3"
 	local -r message="$4"
-	echo "$1:Connection:$connectionId:ControlPacket:$controlPackage:Message:$message"
+	echo -e "$1:Connection:$connectionId:ControlPacket:$controlPackage:Message:$message" 1>&2
 }

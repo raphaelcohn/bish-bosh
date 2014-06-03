@@ -1,11 +1,5 @@
 function client_backend_plaintext_netcat_load()
 {
-	backend_client_createTemporaryPath
-	
-	backend_client_createDebugLog
-	
-	backend_client_createNamedPipes
-	
 	declare -a netcatOptions=('nc')
 	
 	if [ -n "${backend_client_options['inetFamily']}" ]; then
@@ -78,6 +72,31 @@ function client_backend_plaintext_netcat_load()
 		;;
 		
 	esac
+
+	netcatOptions+=("${backend_client_options['remoteAddress']}")
 	
-	"${netcatOptions[@]}" <"$backend_client_outboundPipe" 1>"$backend_client_inboundPipe" 2>"$backend_client_debugLogPath"
+	if [ -n "${backend_client_options['remotePort']}" ]; then
+		netcatOptions+=("${backend_client_options['remotePort']}")
+	fi
+	
+	# https://unix.stackexchange.com/questions/39362/using-in-out-named-pipes-for-a-tcp-connection
+	# http://serverfault.com/questions/188936/writing-to-stdin-of-background-process/297095#297095
+	
+	# net cat exits when either stdin or stdout 'receives' EOF
+	# this is the case if we start netcat with nothing writing to the outbound pipe; this logic keeps a cat running constantly
+	# kill -9 $outboundPipeCat will stop the cat, which causes EOF to netcat, which stops netcat
+	# unfortunately this design does not allow errors from netcat to be caught
+	cat >"$backend_client_outboundPipe" &
+	local -ir outboundPipeCat=$!
+	backend_client_processIdsToKill+=($outboundPipeCat)
+	
+	"${netcatOptions[@]}" <"$backend_client_outboundPipe" 1>"$backend_client_inboundPipe" 2>"$backend_client_debugLogPath" &
+	local -ir netcatInstanceId=$1
+	
+	backend_client_processIdsToKill+=($netcatInstanceId)
+}
+
+function client_backend_plaintext_netcat_kill()
+{
+	_backend_client_kill
 }

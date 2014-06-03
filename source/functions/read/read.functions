@@ -1,0 +1,67 @@
+read_bytesread=''
+function read_bytes()
+{
+	# -t for timeout, with an exit code > 128 if timeout occurs
+	# reads $1 bytes
+	set +e
+	IFS= read -r -s -d '' -N $1 read_bytesread
+	set -e
+}
+
+read_debugLogPath=""
+function read_createDebugLog()
+{
+	read_debugLogPath="$backend_client_temporaryPath"/read.debug.log
+	touch "$backend_client_debugLogPath"
+}
+
+read_decimalEncodedInboundPipe=''
+function read_createNamedPipes()
+{
+	backend_client_inboundPipe="$backend_client_temporaryPath"/read.inbound.pipe
+	mkfifo "$read_decimalEncodedInboundPipe"
+}
+
+# awk to do binary reads... http://awk.info/?Graphics
+read_decimalEncodedInboundPipe
+read_processIdsToKill=()
+function read_startOctalDump()
+{
+	cat >"$backend_client_inboundPipe" &
+	local -ir inboundPipeCat=$!
+	read_processIdsToKill+=($inboundPipeCat)
+	
+	# May have upto three leading spaces, not seemingly a problem
+	od --width=1 --address-radix=n --output-duplicates --format=u1 <"$backend_client_inboundPipe" 1>"$read_decimalEncodedInboundPipe" 2>"$read_debugLogPath" &
+	local -ir odProcessId=$!
+	read_processIdsToKill+=($odProcessId)
+	
+	exec 3<>"$backend_client_inboundPipe"
+	exec 4<>"$read_decimalEncodedInboundPipe"
+}
+
+function read_stopOctalDump()
+{
+	exec 3<>&-
+	exec 4<>&-
+	
+	local -i pid
+	for pid in ${read_processIdsToKill[@]}
+	do
+		kill -9 $pid 1>/dev/null 2>/dev/null || true
+	done
+	read_processIdsToKill=()
+}
+
+FIX "Make sure exit closes connections and programs"
+function read_invalid()
+{
+	echo -e "$1:$2"
+	return 3
+}
+
+function read_disconnected()
+{
+	echo -e "$1:$2"
+	return 4
+}

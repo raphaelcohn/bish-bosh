@@ -1,0 +1,206 @@
+uses read
+
+read_controlpacket=()
+read_controlpacket_CONNACK_connectAcknowledgeFlags=()
+
+function read_controlpacket_initialise()
+{
+	local -r isServer="$1"
+	
+	local -i index
+	for((index=0;index<256;index++))
+	do
+		read_controlpacket[$index]=read_controlpacket_duff
+	done
+	
+	if [ "$isServer" = 'yes' ]; then
+		read_controlpacket[16]=read_controlpacket_CONNECT
+	else
+		read_controlpacket[32]=read_controlpacket_CONNACK
+	fi
+	
+	read_controlpacket[48]=read_controlpacket_PUBLISH_0
+	read_controlpacket[49]=read_controlpacket_PUBLISH_1
+	read_controlpacket[50]=read_controlpacket_PUBLISH_2
+	read_controlpacket[51]=read_controlpacket_PUBLISH_3
+	read_controlpacket[52]=read_controlpacket_PUBLISH_4
+	read_controlpacket[53]=read_controlpacket_PUBLISH_5
+	read_controlpacket[54]=read_controlpacket_PUBLISH_6
+	read_controlpacket[55]=read_controlpacket_PUBLISH_7
+	read_controlpacket[56]=read_controlpacket_PUBLISH_8
+	read_controlpacket[57]=read_controlpacket_PUBLISH_9
+	read_controlpacket[58]=read_controlpacket_PUBLISH_10
+	read_controlpacket[59]=read_controlpacket_PUBLISH_11
+	read_controlpacket[60]=read_controlpacket_PUBLISH_12
+	read_controlpacket[61]=read_controlpacket_PUBLISH_13
+	read_controlpacket[62]=read_controlpacket_PUBLISH_14
+	read_controlpacket[63]=read_controlpacket_PUBLISH_15
+	
+	read_controlpacket[64]=read_controlpacket_PUBACK
+	
+	read_controlpacket[80]=read_controlpacket_PUBREC
+	
+	read_controlpacket[98]=read_controlpacket_PUBREL
+	
+	read_controlpacket[112]=read_controlpacket_PUBCOMP
+	
+	if [ "$isServer" = 'yes' ]; then
+		read_controlpacket[130]=read_controlpacket_SUBSCRIBE
+	else
+		read_controlpacket[144]=read_controlpacket_SUBACK
+	fi
+	
+	if [ "$isServer" = 'yes' ]; then
+		read_controlpacket[162]=read_controlpacket_UNSUBSCRIBE
+	else
+		read_controlpacket[176]=read_controlpacket_UNSUBACK
+	fi
+	
+	if [ "$isServer" = 'yes' ]; then
+		read_controlpacket[192]=read_controlpacket_PINGREQ
+	else
+		read_controlpacket[208]=read_controlpacket_PINGRESP
+	fi
+	
+	if [ "$isServer" = 'yes' ]; then
+		read_controlpacket[224]=read_controlpacket_DISCONNECT
+	fi
+}
+
+function read_controlpacket_firstTwoBytes()
+{
+	# yuck!
+	# sped up by at least having a file handle already open
+	# Is there ANY way we can have od just running? Yes, if we can find a way to pump from the nc named pipe to the od one - when we want too! does nc take a signal?
+	# Well, we can do the pump with dd - but how does that differ?
+	# Is it worth seeing what read can do? Again?
+	
+	# If we use sh, then we can use busybox...
+	od --width=1 --address-radix=n --output-duplicates --format=u1 --read-bytes 2 <&3 >&4
+	
+	local -i byte0 byte1
+	IFS= read -u 4 -r byte0 byte1
+	
+	${read_controlpacket[${byte0}]} $byte1
+}
+
+function read_controlpacket_duff()
+{
+	read_invalid "DUFF" "Invalid control packet code $byte0 with length $byte1"
+}
+
+function read_controlpacket_CONNECT()
+{
+	# multi-byte read, etc...
+	:
+}
+
+function read_controlpacket_CONNACK()
+{
+	if [ $byte1 -ne 2 ]; then
+		read_invalid "CONNACK" "Invalid remaining length (was $byte1, not 2)"
+	fi
+	
+	local -i connectAcknowledgeFlags connectReturnCode
+	od --width=1 --address-radix=n --output-duplicates --format=u1 --read-bytes 2 <&3 >&4
+	IFS= read -u 4 -r connectAcknowledgeFlags connectReturnCode
+	
+	if [ $connectAcknowledgeFlags -gt 1 ]; then
+		read_invalid "CONNACK" "Invalid connectAcknowledgeFlags (was $connectAcknowledgeFlags, not 0-1)"
+	fi
+	local -i sessionPresent=$connectAcknowledgeFlags
+	
+	if [ $connectReturnCode -ne 0 ]; then
+		case $connectReturnCode in
+			
+			1)
+				read_disconnected "CONNACK" "Connection Refused, unacceptable protocol version"
+			;;
+			
+			2)
+				read_disconnected "CONNACK" "Connection Refused, identifier rejected"
+			;;
+			
+			3)
+				read_disconnected "CONNACK" "Connection Refused, Server unavailable"
+			;;
+			
+			4)
+				read_disconnected "CONNACK" "Connection Refused, bad user name or password"
+			;;
+			
+			5)
+				read_disconnected "CONNACK" "Connection Refused, not authorized"
+			;;
+			
+			*)
+				read_invalid "CONNACK" "Received reserved connectReturnCode code of $connectReturnCode"
+			;;
+		esac
+	fi
+	
+	# that's it
+}
+
+function read_controlpacket_PUBACK()
+{
+	:
+}
+
+function read_controlpacket_PUBREC()
+{
+	:
+}
+
+function read_controlpacket_PUBREL()
+{
+	:
+}
+
+function read_controlpacket_PUBCOMP()
+{
+	:
+}
+
+function read_controlpacket_SUBSCRIBE()
+{
+	:
+}
+
+function read_controlpacket_SUBACK()
+{
+	:
+}
+
+function read_controlpacket_UNSUBSCRIBE()
+{
+	:
+}
+
+function read_controlpacket_UNSUBACK()
+{
+	:
+}
+
+function read_controlpacket_PINGREQ()
+{
+	if [ $byte1 -ne 0 ]; then
+		read_invalid "DISCONNECT" "Invalid remaining length (was $byte1, not 0)"
+	fi
+	FIX "Immediately write a PINGRESP"
+}
+
+function read_controlpacket_PINGRESP()
+{
+	if [ $byte1 -ne 0 ]; then
+		read_invalid "DISCONNECT" "Invalid remaining length (was $byte1, not 0)"
+	fi
+	FIX "Now reset the timeout handler"
+}
+
+function read_controlpacket_DISCONNECT()
+{
+	if [ $byte1 -ne 0 ]; then
+		read_invalid "DISCONNECT" "Invalid remaining length (was $byte1, not 0)"
+	fi
+}

@@ -202,10 +202,7 @@ function bishbosh_loadAnyConfiguration()
 	bishbosh_beVerbose="no"
 	bishbosh_beDebug="no"
 	
-	bishbosh_netrcFilePath=""
-	bishbosh_curlrcFilePath=""
-	bishbosh_mirror="global"
-	bishbosh_machineFilePaths=()
+	bishbosh_files=()
 #start BISHBOSH_CONFIG_PATH
 	etcPath="/etc"
 	bishbosh_configPath="$bishbosh_configPathOriginal"
@@ -248,7 +245,7 @@ function bishbosh_parseCommandLine()
 	local OPTIND=1
 	local OPTARG
 	local option
-	while getopts :hvdc:t:n:r:m: option
+	while getopts :hvdc:t: option
 	do
 		case "$option" in
 			
@@ -272,18 +269,6 @@ function bishbosh_parseCommandLine()
 				bishbosh_cachePath="$OPTARG"
 			;;
 			
-			n)
-				bishbosh_netrcFilePath="$OPTARG"
-			;;
-			
-			r)
-				bishbosh_curlrcFilePath="$OPTARG"
-			;;
-			
-			m)
-				bishbosh_mirror="$OPTARG"
-			;;
-			
 			'?')
 				bishbosh_message FAIL "Invalid option -${OPTARG}"
 			;;
@@ -293,7 +278,7 @@ function bishbosh_parseCommandLine()
 	
 	shift $((OPTIND - 1))
 
-	bishbosh_machineFilePaths=("$@")
+	bishbosh_files=("$@")
 }
 
 function bishbosh_validateCommandLineArguments()
@@ -312,29 +297,29 @@ function bishbosh_validateCommandLineArguments()
 		popd 1>/dev/null
 	fi
 	
-	if [ -n "$bishbosh_netrcFilePath" ]; then
-		if [ ! -f "$bishbosh_netrcFilePath" ]; then
-			bishbosh_message FAIL "-n bishbosh_netrcFilePath $bishbosh_netrcFilePath does not exist or is not a file"
-		fi
-	fi
-	
-	if [ -n "$bishbosh_curlrcFilePath" ]; then
-		if [ ! -f "$bishbosh_curlrcFilePath" ]; then
-			bishbosh_message FAIL "-r bishbosh_curlrcFilePath $bishbosh_curlrcFilePath does not exist or is not a file"
-		fi
-	fi
-	
-	if [ "${#bishbosh_machineFilePaths[@]}" -eq 0 ]; then
-		bishbosh_message FAIL "Please specify at least one machine file"
-	fi
+	#if [ "${#bishbosh_files[@]}" -eq 0 ]; then
+	#	bishbosh_message FAIL "Please specify at least one file"
+	#fi
 }
 
 function uses()
 {
 	local -r functionFileName="$1"
 	local -r functionsPath="$crudeOurPath"/functions
-	local -r functionsFilePath="$functionsPath"/"${functionFileName//.//}".functions
-	source "$functionsPath"
+	
+	local -r dotsToPathSlashes="${functionFileName//.//}"
+	local functionsFilePath="$functionsPath"/"$dotsToPathSlashes".functions
+	if [ -f "$functionsFilePath" ]; then
+		source "$functionsPath"
+	fi
+	
+	local -r finalPiece="$(bishbosh_basename "$dotsToPathSlashes")"
+	functionsFilePath="$functionsPath"/"$dotsToPathSlashes"/"$finalPiece".functions
+}
+
+function FIX()
+{
+	echo -e "FIX: $@"
 }
 
 function bishbosh_main()
@@ -347,47 +332,21 @@ function bishbosh_main()
 	bishbosh_validateCommandLineArguments
 	bishbosh_makeVariablesReadonly
 
-	uses temporaryFiles
+	uses dependency temporaryFiles read.controlpacket write.controlpacket backend backend.client backend.client.netcat
 	
-	main_executeMainFunctions
+	read_controlpacket_initialise
+	
+	backend_client_defaultOptions
+	# override with some more useful values... perhaps by using defaults
+	
+	backend_client_load
+	backend_client_run
+	backend_client_kill
 }
 
 bishbosh_main "$@"
 
-
-#!/usr/bin/gawk -f
-
-BEGIN {
-        Port    =       8080
-        Prompt  =       "bkd> "
-
-        Service = "/inet/tcp/" Port "/0/0"
-        while (1) {
-                do {
-                        printf Prompt |& Service
-                        Service |& getline cmd
-                        if (cmd) {
-                                while ((cmd |& getline) > 0)
-                                        print $0 |& Service
-                                close(cmd)
-                        }
-                } while (cmd != "exit")
-                close(Service)
-        }
-}
-
 # https://en.wikipedia.org/wiki/Netcat - see ssl example
-
-DETECT IF BASH SUPPORTS TCP
+# DETECT IF BASH SUPPORTS TCP
 # http://www.linuxjournal.com/content/more-using-bashs-built-devtcp-file-tcpip
-This doesn't work:
-
-exec 3<>/dev/tcp/www.google.com/80
-bash: /dev/tcp/www.google.com/80: No such file or directory
-
-bash --version
-GNU bash, version 3.2.48(1)-release (x86_64-pc-linux-gnu)
-Copyright (C) 2007 Free Software Foundation, Inc.
-
-
-
+# Use the dialog program (based on ncurses) to provide dialogs... or whiptail (but not in homebrew)
