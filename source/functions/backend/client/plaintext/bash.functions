@@ -1,0 +1,72 @@
+function backend_client_plaintext_bash_start()
+{
+	if [ -n "${backend_client_options['inetFamily']}" ]; then
+		case "${backend_client_options['inetFamily']}" in
+			
+			auto)
+				:
+			;;
+			
+			inet4)
+				:
+			;;
+			
+			inet6)
+				bishbosh_message WARN "The backend 'client plaintext bash' does not support setting the localInterface"
+			;;
+
+			unix)
+				bishbosh_exitError "The backend client 'inetFamily' '${backend_client_options['inetFamily']}' is not supported for the backend 'client plaintext bash'"
+			;;
+			
+			*)
+				bishbosh_exitError "The backend client 'inetFamily' '${backend_client_options['inetFamily']}' is not known"
+			;;
+		esac
+	fi
+	
+	if [ -n "${backend_client_options['localInterface']}" ]; then
+		bishbosh_message WARN "The backend 'client plaintext bash' does not support setting the localInterface"
+	fi
+	
+	if [ -n "${backend_client_options['localAddress']}" ]; then
+		bishbosh_message WARN "The backend 'client plaintext bash' does not support setting the localAddress"
+	fi
+	
+	if [ -n "${backend_client_options['localPort']}" ]; then
+		bishbosh_message WARN "The backend 'client plaintext bash' does not support setting the localPort"
+	fi
+	
+	if [ -n "${backend_client_options['timeout']}" ]; then
+		bishbosh_message WARN "The backend 'client plaintext bash' does not support setting a timeout"
+	fi
+	
+	case "${backend_client_options['proxyKind']}" in
+		
+		none)
+			:
+		;;
+		
+		socks4|socks5|https)
+			bishbosh_exitError "The backend 'client plaintext bash' does not support a proxy"
+		;;
+		
+		*)
+			bishbosh_exitError "The backend client 'proxyKind' '${backend_client_options['proxyKind']}' is not known"
+		;;
+		
+	esac
+	
+	exec 3<>/dev/tcp/"${backend_client_options['remoteAddress']}"/"${backend_client_options['remotePort']}"
+}
+
+function backend_client_plaintext_bash_read()
+{
+	od --width=1 --address-radix=n --output-duplicates --format=u1 <&3
+}
+
+function backend_client_plaintext_bash_stop()
+{
+	exec 3<&-
+	exec 3>&-
+}

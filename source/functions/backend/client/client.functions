@@ -1,4 +1,3 @@
-backend_client_options=()
 function backend_client_defaultOptions()
 {
 	# Choices are auto (best fit), inet4, inet6, unix
@@ -14,6 +13,7 @@ function backend_client_defaultOptions()
 	backend_client_options['timeout']=''
 	
 	backend_client_options['remoteAddress']='127.0.0.1'
+	backend_client_options['remotePort']=''
 }
 
 backend_client_temporaryPath=""
@@ -46,7 +46,7 @@ function backend_client_normaliseOptions()
 	else
 		case "${backend_client_options['proxyKind']}" in
 			
-			socks4|socks5|https)
+			none|socks4|socks5|https)
 				:
 			;;
 			
@@ -112,8 +112,8 @@ backend_kind=""
 backend_name=""
 backend_client_prefix=""
 backend_client_processIdsToKill=()
-function backend_client_load()
-{
+function backend_client_start()
+{	
 	backend_kind="$1"
 	backend_name="$2"
 	backend_client_processIdsToKill=()
@@ -127,40 +127,61 @@ function backend_client_load()
 	backend_client_createNamedPipes
 	
 	backend_client_prefix="backend_client_${backend_kind}_${backend_name}"
-	use backend.client.${backend_kind}.${backend_name}
-	${backend_client_prefix}_load
+	uses backend.client.${backend_kind}.${backend_name}
+	${backend_client_prefix}_start
 }
 
-function _backend_client_run()
+function backend_client_loop()
 {
-	write_controlpacket_CONNECT
+	exec 10<"$backend_client_outboundPipe"
 	
-	write_controlpacket_DISCONNECT
+	write_controlpacket_CONNECT >&10
+	
+	while true
+	do
+		# We should have a connection object we update
+		read_controlpacket_next
+	
+		write_controlpacket_PINGREQ >&10
+	
+		read_controlpacket_next
+	
+		write_controlpacket_DISCONNECT >&10
+		
+		done < <(${backend_client_prefix}_read)
+
+	exec 10<&-
+	
+	return 0
+	
 	
 	# we could publish messages that are 'dropped' into a folder. The folder name could be the topic, the QoS a folder prefix, leaving just a way to notify
 	# could be a find with a sort, followed by a pause (for a read cycle). Or the read cycle could be size-based, eg after writing 4Kb or 1 second?
 	
-	# this makes the process pretty transparent.
+	# we call a callback (or callbacks) on message recipt. This can be either a built-in or a function or an external program. Slight problem in sending array variables to a program
+	# consider not using arrays for write_controlpacket_*
 	
 	# message records call callbacks. These can be either built in functions or real programs; we pass a QoS, Topic and Path to content (or named pipe) (or an array of functions/programs)
 	
-	return 0
-	
 	# check that the underlying process(es) have not died, otherwise we could block writing to the FIFO...
 	# we should not write more than 4Kb to the FIFO...
-	while true
-	do
-		:
-	done
 	
 }
 
-function backend_client_kill()
+function backend_client_stop()
 {
-	${backend_client_prefix}_kill
+	${backend_client_prefix}_stop
+	
+	backend_client_deleteNamedPipes
 }
 
-function _backend_client_kill()
+function backend_client_deleteNamedPipes()
+{
+	rm -rf "$backend_client_inboundPipe"
+	rm -rf "$backend_client_outboundPipe"
+}
+
+function _backend_client_stop()
 {
 	local -i pid
 	for pid in ${backend_client_processIdsToKill[@]}

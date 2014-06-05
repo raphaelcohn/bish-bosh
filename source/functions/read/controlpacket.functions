@@ -1,7 +1,6 @@
 uses read
 
 read_controlpacket=()
-read_controlpacket_CONNACK_connectAcknowledgeFlags=()
 
 function read_controlpacket_initialise()
 {
@@ -67,20 +66,10 @@ function read_controlpacket_initialise()
 	fi
 }
 
-function read_controlpacket_firstTwoBytes()
+function read_controlpacket_next()
 {
-	# yuck!
-	# sped up by at least having a file handle already open
-	# Is there ANY way we can have od just running? Yes, if we can find a way to pump from the nc named pipe to the od one - when we want too! does nc take a signal?
-	# Well, we can do the pump with dd - but how does that differ?
-	# Is it worth seeing what read can do? Again?
-	
-	# If we use sh, then we can use busybox...
-	od --width=1 --address-radix=n --output-duplicates --format=u1 --read-bytes 2 <&3 >&4
-	
 	local -i byte0 byte1
-	IFS= read -u 4 -r byte0 byte1
-	
+	read_od_nextTwoBytes
 	${read_controlpacket[${byte0}]} $byte1
 }
 

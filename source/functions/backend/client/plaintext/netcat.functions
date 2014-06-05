@@ -1,4 +1,4 @@
-function client_backend_plaintext_netcat_load()
+function backend_client_plaintext_netcat_start()
 {
 	declare -a netcatOptions=('nc')
 	
@@ -73,14 +73,7 @@ function client_backend_plaintext_netcat_load()
 		
 	esac
 
-	netcatOptions+=("${backend_client_options['remoteAddress']}")
-	
-	if [ -n "${backend_client_options['remotePort']}" ]; then
-		netcatOptions+=("${backend_client_options['remotePort']}")
-	fi
-	
-	# https://unix.stackexchange.com/questions/39362/using-in-out-named-pipes-for-a-tcp-connection
-	# http://serverfault.com/questions/188936/writing-to-stdin-of-background-process/297095#297095
+	netcatOptions+=("${backend_client_options['remoteAddress']}:${backend_client_options['remotePort']}")
 	
 	# net cat exits when either stdin or stdout 'receives' EOF
 	# this is the case if we start netcat with nothing writing to the outbound pipe; this logic keeps a cat running constantly
@@ -89,14 +82,20 @@ function client_backend_plaintext_netcat_load()
 	cat >"$backend_client_outboundPipe" &
 	local -ir outboundPipeCat=$!
 	backend_client_processIdsToKill+=($outboundPipeCat)
-	
+
 	"${netcatOptions[@]}" <"$backend_client_outboundPipe" 1>"$backend_client_inboundPipe" 2>"$backend_client_debugLogPath" &
 	local -ir netcatInstanceId=$1
-	
+
 	backend_client_processIdsToKill+=($netcatInstanceId)
 }
 
-function client_backend_plaintext_netcat_kill()
+function backend_client_plaintext_netcat_read()
 {
-	_backend_client_kill
+	# If we use sh, then we can use busybox... which internalises the call to od and to nc!
+	od --width=1 --address-radix=n --output-duplicates --format=u1 <"$backend_client_inboundPipe"
+}
+
+function backend_client_plaintext_netcat_stop()
+{
+	_backend_client_stop
 }

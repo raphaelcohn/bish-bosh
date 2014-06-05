@@ -83,7 +83,7 @@ function write_controlpacket_CONNECT()
 	if _write_controlpacket_CONNECT_verifyFieldPresent 'will_retain'; then
 		local -r will_retain="${write_controlpacket_CONNECT_arguments['will_retain']}"
 		
-		case "$will_retain"
+		case "$will_retain" in
 			
 			yes|no)
 				:

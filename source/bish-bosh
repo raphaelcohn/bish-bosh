@@ -304,17 +304,24 @@ function bishbosh_validateCommandLineArguments()
 
 function uses()
 {
-	local -r functionFileName="$1"
-	local -r functionsPath="$crudeOurPath"/functions
+	while [ $# -ne 0 ]
+	do
+		local functionFileName="$1"
+		local functionsPath="$crudeOurPath"/functions
 	
-	local -r dotsToPathSlashes="${functionFileName//.//}"
-	local functionsFilePath="$functionsPath"/"$dotsToPathSlashes".functions
-	if [ -f "$functionsFilePath" ]; then
-		source "$functionsPath"
-	fi
+		local dotsToPathSlashes="${functionFileName//.//}"
+		local functionsFilePath="$functionsPath"/"$dotsToPathSlashes".functions
+		if [ -f "$functionsFilePath" ]; then
+			source "$functionsFilePath"
+			shift 1
+			continue
+		fi
 	
-	local -r finalPiece="$(bishbosh_basename "$dotsToPathSlashes")"
-	functionsFilePath="$functionsPath"/"$dotsToPathSlashes"/"$finalPiece".functions
+		local finalPiece="$(bishbosh_basename "$dotsToPathSlashes")"
+		functionsFilePath="$functionsPath"/"$dotsToPathSlashes"/"$finalPiece".functions
+		source "$functionsFilePath"
+		shift 1
+	done
 }
 
 function FIX()
@@ -332,16 +339,20 @@ function bishbosh_main()
 	bishbosh_validateCommandLineArguments
 	bishbosh_makeVariablesReadonly
 
-	uses dependency temporaryFiles read.controlpacket write.controlpacket backend backend.client backend.client.netcat
+	uses dependency temporaryFiles read.controlpacket write.controlpacket backend backend.client
+	uses backend.client.plaintext.netcat
 	
 	read_controlpacket_initialise
-	
+
+	declare -A backend_client_options=()
 	backend_client_defaultOptions
 	# override with some more useful values... perhaps by using defaults
 	
-	backend_client_load
-	backend_client_run
-	backend_client_kill
+	backend_client_start plaintext netcat
+	
+	backend_client_loop
+	
+	backend_client_stop
 }
 
 bishbosh_main "$@"
