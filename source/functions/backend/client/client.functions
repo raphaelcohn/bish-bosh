@@ -1,19 +1,21 @@
 function backend_client_defaultOptions()
 {
+	backend_client_options_tunnelling=plaintext
+	
 	# Choices are auto (best fit), inet4, inet6, unix
-	backend_client_options['inetFamily']=auto
-	backend_client_options['localInterface']=''
-	backend_client_options['localAddress']=''
-	backend_client_options['localPort']=''
+	backend_client_options_inetFamily=auto
+	#backend_client_options_localInterface
+	#backend_client_options_localAddress
+	#backend_client_options_localPort
 	
-	backend_client_options['proxyKind']='none'
-	backend_client_options['proxyAddress']=''
-	backend_client_options['proxyPort']=''
+	#backend_client_options_proxyKind
+	#backend_client_options_proxyAddress
+	#backend_client_options_proxyPort=
 
-	backend_client_options['timeout']=''
+	#backend_client_options_timeout
 	
-	backend_client_options['remoteAddress']='127.0.0.1'
-	backend_client_options['remotePort']=''
+	#backend_client_options_remoteAddress
+	#backend_client_options_remotePort
 }
 
 backend_client_temporaryPath=""
@@ -39,43 +41,267 @@ function backend_client_createNamedPipes()
 	mkfifo "$backend_client_inboundPipe" "$backend_client_outboundPipe"
 }
 
-function backend_client_normaliseOptions()
+function backend_client_get_tunelling()
 {
-	if [ -z "${backend_client_options['proxyKind']}" ]; then
-		backend_client_options['proxyKind']='none'
+	if [ "${backend_client_options_tunnelling+unset}" = 'unset' ]; then
+		tunelling=plaintext
+	elif [ -z "$backend_client_options_tunnelling" ]; then
+		bishbosh_exitError 'backend_client_options_tunnelling '$backend_client_options_tunnelling' (empty) is invalid'
 	else
-		case "${backend_client_options['proxyKind']}" in
+		
+		case "$backend_client_options_tunnelling" in
 			
-			none|socks4|socks5|https)
-				:
+			plaintext|ssh|tls)
+				tunelling="$backend_client_options_tunnelling"
 			;;
 			
 			*)
-				bishbosh_exitError "Backend client 'proxyKind' '${backend_client_options['proxyKind']}' is not known"
+				bishbosh_exitError "backend_client_options_tunelling '$backend_client_options_tunelling' is not known"
+			;;
+			
+		esac
+		
+	fi
+}
+
+function backend_client_get_timeout()
+{
+	if [ ${backend_client_options_timeout+unset} = 'unset' ]; then
+		timeout=0
+		return
+	fi
+	if [ -z "$backend_client_options_timout" ]; then
+		bishbosh_exitError 'backend_client_options_timout '$backend_client_options_timeout' (empty) is invalid'
+	fi
+	timeout=$backend_client_options_timout
+	if [ "$timeout" != "$backend_client_options_timout" ]; then
+		bishbosh_exitError 'backend_client_options_timout '$backend_client_options_timeout' must be a positive decimal integer (in seconds) or 0 (infinity)'
+	fi
+	if [ $timeout -lt 0 ]; then
+		bishbosh_exitError 'backend_client_options_timout '$backend_client_options_timeout' must be a positive decimal integer (in seconds) or 0 (infinity)'
+	fi
+}
+
+function backend_client_get_inetFamily()
+{
+	if [ "${backend_client_options_inetFamily+unset}" = 'unset' ]; then
+		inetFamily=auto
+	elif [ -z "$backend_client_options_inetFamily" ]; then
+		bishbosh_exitError "backend_client_options_inetFamily '$backend_client_options_inetFamily' (empty) is required"
+	else
+		case "$backend_client_options_inetFamily" in
+			
+			auto|inet4|inet6|unix)
+				inetFamily="$backend_client_options_inetFamily"
+			;;
+			
+			*)
+				bishbosh_exitError "backend_client_options_inetFamily '$backend_client_options_inetFamily' is not known"
+			;;
+			
+		esac
+	fi
+}
+
+function backend_client_get_proxyKind()
+{
+	if [ "${inetFamily+unset}" = 'unset' ]; then
+		bishbosh_exitError "Please call backend_client_get_inetFamily first"
+	fi
+	if [ "$inetFamily" = 'unix' ]; then
+		bishbosh_exitError "backend_client_options_proxyKind '$(backend_client_get_proxyKind)' is not supported when backend_client_options_inetFamily is 'unix' (Unix Domain Sockets do not support proxies)"
+	fi
+	if [ "${backend_client_options_proxyKind+unset}" = 'unset' ]; then
+		proxyKind='none'
+	elif [ -z "$backend_client_options_proxyKind" ]; then
+		bishbosh_exitError "backend_client_options_proxyKind '$backend_client_options_proxyKind' (empty) is required"
+	else
+		case "$backend_client_options_proxyKind" in
+			
+			none|socks4|socks5|https)
+				proxyKind="$backend_client_options_proxyKind"
+			;;
+			
+			*)
+				bishbosh_exitError "backend_client_options_proxyKind '$backend_client_options_proxyKind' is not valid"
 			;;
 		esac
 	fi
+}
 
-	if [ "${backend_client_options['proxyKind']}" = 'none' ]; then
-		if [ -n "${backend_client_options[proxyAddress]}" ]; then
+function backend_client_get_proxyAddress()
+{
+	if [ "${proxyKind+unset}" = 'unset' ]; then
+		bishbosh_exitError "Please call backend_client_get_proxyKind first"
+	fi
+	
+	if [ "$proxyKind" = 'none' ]; then
+		bishbosh_exitError "Do not call backend_client_get_proxyAddress if proxyKind is 'none'"
+	fi
+	
+	if [ "${backend_client_options_proxyAddress+unset}" = 'unset' ]; then
+		bishbosh_exitError "proxyKind '$proxyKind' does not have a known default proxyAddress; please set backend_client_options_proxyAddress"
+	elif [ -z "$backend_client_options_proxyAddress" ]; then
+		bishbosh_exitError "backend_client_options_proxyAddress '$backend_client_options_proxyAddress' (empty) is required"
+	else
+		proxyAddress="$backend_client_options_proxyAddress"
+	fi
+}
+
+function backend_client_get_proxyPort()
+{
+	if [ "${proxyKind+unset}" = 'unset' ]; then
+		bishbosh_exitError "Please call backend_client_get_proxyKind first"
+	fi
+	
+	if [ "$proxyKind" = 'none' ]; then
+		bishbosh_exitError "Do not call backend_client_get_proxyPort if proxyKind is 'none'"
+	fi
+	
+	if [ "${backend_client_options_proxyPort+unset}" = 'unset' ]; then
+		
+		case "$proxyKind" in
+			
+			socks4|socks5
+				proxyPort=1080
+			;;
+			
+			https)
+				proxyPort=3128
+			;;
+			
+			*)
+				bishbosh_exitError "proxyKind '$proxyKind' does not have a known default proxyPort; please set backend_client_options_proxyPort"
+			;;
+			
+		esac
+		
+	elif [ -z "$backend_client_options_proxyPort" ]; then
+		bishbosh_exitError "backend_client_options_proxyKind '$backend_client_options_proxyKind' (empty) is required"
+	else
+		proxyPort=$backend_client_options_proxyPort
+		if [ "$proxyPort" != "$backend_client_options_proxyPort" ]; then
+			bishbosh_exitError "backend_client_options_proxyPort '$backend_client_options_proxyPort' must be a decimal integer"
+		fi
+		if [ $proxyPort -lt 1 ]; then
+			bishbosh_exitError "backend_client_options_proxyPort '$backend_client_options_proxyPort' must be between 1 and 65535"
+		fi
+		if [ $proxyPort -gt 65535 ]; then
+			bishbosh_exitError "backend_client_options_proxyPort '$backend_client_options_proxyPort' must be between 1 and 65535"
+		fi
+	fi
+}
+
+function backend_client_get_remoteAddress()
+{
+	if [ "${inetFamily+unset}" = 'unset' ]; then
+		bishbosh_exitError "Please call backend_client_get_inetFamily first"
+	fi
+	if [ "${backend_client_options_remoteAddress+unset}" ]; then
+		
+		case "$inetFamily" in
+			
+			auto|inet4|inet6)
+				remoteAddress=localhost
+			;;
+			
+			*)
+				bishbosh_exitError "inetFamily '$inetFamily' does not have a known default remoteAddress; please set backend_client_options_remoteAddress"
+			;;
+			
+		esac
+	else
+		remoteAddress="$backend_client_options_remoteAddress"
+	fi
+
+	if [ "$proxyAddress" = "$remoteAddress" ]; then
+		bishbosh_exitError "proxyAddress '$proxyAddress' is the same as remoteAddress '$remoteAddress'"
+	fi
+}
+
+function backend_client_get_remotePort()
+{
+	if [ "${inetFamily+unset}" = 'unset' ]; then
+		bishbosh_exitError "Please call backend_client_get_inetFamily first"
+	fi
+	if [ "${backend_client_options_remotePort+unset}" ]; then
+		
+		case "$inetFamily" in
+			
+			auto|inet4|inet6)
+				
+				if [ "${backend_client_options_tunnelling+unset}" = 'unset' ]; then
+					bishbosh_exitError "inetFamily '$inetFamily' does not have a known default remotePort because backend_client_options_tunnelling in unset; please set backend_client_options_tunnelling"
+				fi
+				
+				if [ -z "${backend_client_options_tunnelling+unset}" = 'unset' ]; then
+					bishbosh_exitError "inetFamily '$inetFamily' does not have a known default remotePort because backend_client_options_tunnelling in empty; please specify backend_client_options_tunnelling"
+				fi
+				
+				case "$backend_client_options_tunnelling"
+					
+					plaintext|ssh)
+						remotePort=1883
+					;;
+					
+					tls)
+						remotePort=8883
+					;;
+					
+					*)
+						bishbosh_exitError "backend_client_options_tunnelling '$backend_client_options_tunnelling' does not have a known default remotePort; please set backend_client_options_tunnelling"
+					;;
+					
+				esac
+			;;
+			
+			*)
+				bishbosh_exitError "inetFamily '$inetFamily' does support a remotePort"
+			;;
+			
+		esac
+	elif [ -z "$backend_client_options_remotePort" ]; then
+		bishbosh_exitError "backend_client_options_remotePort '$backend_client_options_remotePort' (empty) is required"
+	else	
+		remotePort=$backend_client_options_remotePort
+		if [ "$remotePort" != "$backend_client_options_remotePort" ]; then
+			bishbosh_exitError "backend_client_options_remotePort '$backend_client_options_remotePort' must be a decimal integer"
+		fi
+		if [ $remotePort -lt 1 ]; then
+			bishbosh_exitError "backend_client_options_remotePort '$backend_client_options_remotePort' must be between 1 and 65535"
+		fi
+		if [ $remotePort -gt 65535 ]; then
+			bishbosh_exitError "backend_client_options_remotePort '$backend_client_options_remotePort' must be between 1 and 65535"
+		fi
+	fi
+	
+	if [ "$proxyPort" = "$remotePort" ]; then
+		bishbosh_exitError "proxyPort '$proxyPort' is the same as remotePort '$remotePort'"
+	fi
+}
+
+function backend_client_normaliseOptions()
+{
+	if [ "$backend_client_options_proxyKind" = 'none' ]; then
+		if [ -n "$backend_client_options_proxyAddress" ]; then
 			bishbosh_exitError "Backend client 'proxyAddress' is set but proxyKind is missing or none"
 		fi
-		if [ -n "${backend_client_options[proxyPort]}" ]; then
+		if [ -n "$backend_client_options_proxyPort" ]; then
 			bishbosh_exitError "Backend client 'proxyPort' is set but proxyKind is missing or none"
 		fi
 	else
-		if [ -z "${backend_client_options[proxyAddress]}" ]; then
-			bishbosh_exitError "Backend client 'proxyAddress' is not set but proxyKind is ${backend_client_options['proxyKind']}"
+		if [ -z "$backend_client_options_proxyAddress]" ]; then
+			bishbosh_exitError "Backend client 'proxyAddress' is not set but proxyKind is $backend_client_options_proxyKind"
 		fi
-		if [ -z "${backend_client_options[proxyPort]}" ]; then
-			case "${backend_client_options['proxyKind']}" in
+		if [ -z "$backend_client_options_proxyPort" ]; then
+			case "$backend_client_options_proxyKind" in
 				
 				socks4|socks5)
-					backend_client_options['proxyPort']=1080
+					backend_client_options_proxyPort=1080
 				;;
 				
 				https)
-					backend_client_options['proxyPort']=3128
+					backend_client_options_proxyPort=3128
 				;;
 				
 			esac
@@ -84,24 +310,24 @@ function backend_client_normaliseOptions()
 	fi
 	
 	# depends on security setting
-	if [ -z "${backend_client_options[remotePort]]}" ]; then
-		if [ "${backend_client_options['proxyKind']}" != 'unix' ]; then
-			backend_client_options['remotePort']=1883
+	if [ -z "$backend_client_options_remotePort" ]; then
+		if [ "$backend_client_options_proxyKind" != 'unix' ]; then
+			backend_client_options_remotePort=1883
 		fi
 	fi
 	
-	if [ "${backend_client_options['proxyKind']}" = 'unix' ]; then
-		if [ -n "${backend_client_options[remotePort]]}" ]; then
-			bishbosh_exitError "Backend client 'inetFamily' is unix but a remotePort of '${backend_client_options[remotePort]]}' has been set"
+	if [ "$backend_client_options_proxyKind" = 'unix' ]; then
+		if [ -n "$backend_client_options_remotePort" ]; then
+			bishbosh_exitError "Backend client 'inetFamily' is unix but a remotePort of '$backend_client_options_remotePort' has been set"
 		fi
 	fi
 	
-	local -r remoteAddress="${backend_client_options['remoteAddress']}"
+	local -r remoteAddress="$backend_client_options_remoteAddress"
 	if [ -z "$remoteAddress" ]; then
 		bishbosh_exitError "Backend client 'remoteAddress' is not set"
 	else
-		if [ "$remoteAddress" = "${backend_client_options[proxyAddress]}" ]; then
-			if [ "${backend_client_options[proxyPort]}" = "${backend_client_options[proxyPort]}" ]; then
+		if [ "$remoteAddress" = "$backend_client_options[proxyAddress]" ]; then
+			if [ "$backend_client_options_proxyPort" = "$backend_client_options_proxyPort" ]; then
 				bishbosh_exitError "Backend client 'proxyAddress' and 'proxyPort' are the same as 'remoteAddress' and 'remotePort'"
 			fi
 		fi
@@ -133,25 +359,47 @@ function backend_client_start()
 
 function backend_client_loop()
 {
-	exec 10<"$backend_client_outboundPipe"
+		exec 10<"$backend_client_outboundPipe"
+		exec 11</dev/null
 	
-	write_controlpacket_CONNECT >&10
+		# HERE: Add trap handler to clean up a connection
 	
-	while true
-	do
-		# We should have a connection object we update
-		read_controlpacket_next
+		# Occurs because of a bad connection (connection refused)
+		# /Users/raph/Documents/bish-bosh/source/functions/write/controlpacket.functions: line 209: printf: write error: Bad file descriptor
+		# nc has exited - how do we detect this? just try to write and TRAP the error?
+		# also need to trap clean up
 	
-		write_controlpacket_PINGREQ >&10
+		local -r connectionId=100
 	
-		read_controlpacket_next
+		write_controlpacket_CONNECT_arguments_clean_session=yes
+		#write_controlpacket_CONNECT_arguments_will_topic=
+		#write_controlpacket_CONNECT_arguments_will_message=
+		#write_controlpacket_CONNECT_arguments_will_qos=0
+		#write_controlpacket_CONNECT_arguments_will_retain=no
+		write_controlpacket_CONNECT_arguments_keep_alive=0
+		write_controlpacket_CONNECT_arguments_client_id=MY-CLIENT-ID
+		write_controlpacket_CONNECT_arguments_username=user
+		write_controlpacket_CONNECT_arguments_password=password
 	
-		write_controlpacket_DISCONNECT >&10
+		write_controlpacket_CONNECT
+	
+		while true
+		do
+			# We should have a connection object we update
+			read_controlpacket_next
+	
+			write_controlpacket_PINGREQ
+	
+			read_controlpacket_next
+	
+			write_controlpacket_DISCONNECT
 		
-		done < <(${backend_client_prefix}_read)
+			done < <(${backend_client_prefix}_read)
 
-	exec 10<&-
+		exec 10<&-
+		exec 11<&-
 	
+		
 	return 0
 	
 	

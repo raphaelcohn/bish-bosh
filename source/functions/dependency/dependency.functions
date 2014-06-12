@@ -1,11 +1,9 @@
 dependency_functions=()
 
-dependency_checkFunctions=()
-
 function dependency_ensureWeAreRunningBash4()
 {
 	if [ ${BASH_VERSINFO[0]} != "4" ]; then
-		lfs_message FAIL "$ourName: You are not running bash 4."
+		bishbosh_message FAIL "$ourName: You are not running bash 4."
 	fi
 }
 dependency_functions+=(dependency_ensureWeAreRunningBash4)
@@ -28,13 +26,13 @@ function dependency_determineDistributionName()
 		fi
 	fi
 	
-	lfs_message FAIL "Could not determine distribution"
+	bishbosh_message FAIL "Could not determine distribution"
 }
 dependency_functions+=(dependency_determineDistributionName)
 
 function dependency_setUpAliases()
 {
-	local -r pathsFile="$lfs_configPath"/paths.d/"$distributionName".path
+	local -r pathsFile="$bishbosh_configPath"/paths.d/"$distributionName".path
 	if [ ! -f "$pathsFile" ]; then
 		return 0
 	fi
@@ -54,7 +52,7 @@ function dependency_setUpAliases()
 			hash -p "$absolutePath" "$binaryName"
 		else
 			if [ "$packageName" = "zzz-built-in" ]; then
-				lfs_message FAIL "Essential binary $binaryName not in expected path $absolutePath and no installation is possible"
+				bishbosh_message FAIL "Essential binary $binaryName not in expected path $absolutePath and no installation is possible"
 			fi
 			unaliasedBinaries["${binaryName}"]="$absolutePath"
 			installPackages["${packageName}"]=1
@@ -62,7 +60,7 @@ function dependency_setUpAliases()
 	done <"$pathsFile"
 	
 	if [ ${#installPackages[@]} -ne 0 ]; then
-		lfs_message WARN "Installing missing packages ${!installPackages[@]}"
+		bishbosh_message WARN "Installing missing packages ${!installPackages[@]}"
 		dependency_${distributionName}_packageManager "${!installPackages[@]}"
 		for binaryName in "${!unaliasedBinaries[@]}"
 		do

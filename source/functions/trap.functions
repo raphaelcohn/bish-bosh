@@ -1,0 +1,240 @@
+function trapHandlers_runAll()
+{
+	# Done to make sure we're not got a cwd that prevents us unmounting
+	cd /
+	exiting=yes
+	local trapHandler
+	for trapHandler in "${trapHandlers[@]}"
+	do
+		$trapHandler
+	done
+}
+
+function trapHandlers_addNext()
+{
+	# INT (interrupt) is Ctrl-C
+	# EXIT is just end of program
+	# We could use HUP to reload configuration (perhaps source'd functions for a client)
+	local trapHandler="$1"
+	trap trapHandlers_runAll 0 HUP INT QUIT ILL ABRT FPE SEGV PIPE TERM EXIT
+	trapHandlers+=("$trapHandler")
+}
+
+function trapHandlers_removeLast()
+{
+	unset trapHandlers[$((${#trapHandlers[*]}-1))]
+}
+
+function trap_addOnCleanUp()
+{
+	trap_addOnTrapEXIT "$1"
+	trap_addOnTrapINT "$1"
+	trap_addOnTrapTERM "$1"
+	# should use exit code 3
+	trap_addOnTrapABRT "$1"
+	trap_addOnTrapQUIT "$1"
+	trap_addOnTrapPIPE "$1"
+}
+
+function _trap_executeOnTrap()
+{
+	local handler
+	for handler in "$@"
+	do
+		"${handler}"
+	done
+}
+
+trap_handlersEXIT=()
+
+function trap_executeOnTrapEXIT()
+{
+	_trap_executeOnTrap "${trap_handlersEXIT[@]}"
+}
+
+function trap_addOnTrapEXIT()
+{
+	local -r handler="$1"
+	trap_handlersEXIT+=("$handler")
+}
+
+trap trap_executeOnTrapEXIT EXIT
+
+trap_handlersDEBUG=()
+
+function trap_executeOnTrapDEBUG()
+{
+	_trap_executeOnTrap "${trap_handlersDEBUG[@]}"
+}
+
+function trap_addOnTrapDEBUG()
+{
+	local -r handler="$1"
+	trap_handlersDEBUG+=("$handler")
+}
+
+trap trap_executeOnTrapDEBUG DEBUG
+
+trap_handlersHUP=()
+
+function trap_executeOnTrapHUP()
+{
+	_trap_executeOnTrap "${trap_handlersHUP[@]}"
+}
+
+function trap_addOnTrapHUP()
+{
+	local -r handler="$1"
+	trap_handlersHUP+=("$handler")
+}
+
+trap trap_executeOnTrapHUP HUP
+
+# Ctrl-C: terminate gracefully
+trap_handlersINT=()
+
+function trap_executeOnTrapINT()
+{
+	_trap_executeOnTrap "${trap_handlersINT[@]}"
+}
+
+function trap_addOnTrapINT()
+{
+	local -r handler="$1"
+	trap_handlersINT+=("$handler")
+}
+
+trap trap_executeOnTrapINT INT
+
+# Ctrl-\: terminate and dump core
+trap_handlersQUIT=()
+
+function trap_executeOnTrapQUIT()
+{
+	_trap_executeOnTrap "${trap_handlersQUIT[@]}"
+}
+
+function trap_addOnTrapQUIT()
+{
+	local -r handler="$1"
+	trap_handlersQUIT+=("$handler")
+}
+
+trap trap_executeOnTrapQUIT QUIT
+
+# ILL, TRAP
+
+trap_handlersABRT=()
+
+function trap_executeOnTrapABRT()
+{
+	_trap_executeOnTrap "${trap_handlersABRT[@]}"
+}
+
+function trap_addOnTrapABRT()
+{
+	local -r handler="$1"
+	trap_handlersABRT+=("$handler")
+}
+
+trap trap_executeOnTrapABRT ABRT
+
+# EMT, FPE, KILL, BUS, SEGV, SYS
+
+trap_handlersPIPE=()
+
+function trap_executeOnTrapPIPE()
+{
+	_trap_executeOnTrap "${trap_handlersPIPE[@]}"
+}
+
+function trap_addOnTrapPIPE()
+{
+	local -r handler="$1"
+	trap_handlersPIPE+=("$handler")
+}
+
+trap trap_executeOnTrapPIPE PIPE
+
+# ALRM
+
+trap_handlersTERM=()
+
+function trap_executeOnTrapTERM()
+{
+	_trap_executeOnTrap "${trap_handlersTERM[@]}"
+}
+
+function trap_addOnTrapTERM()
+{
+	local -r handler="$1"
+	trap_handlersTERM+=("$handler")
+}
+
+trap trap_executeOnTrapTERM TERM
+
+# URG, STOP
+
+# Ctrl-Z: suspend execution
+trap_handlersTSTP=()
+
+function trap_executeOnTrapTSTP()
+{
+	_trap_executeOnTrap "${trap_handlersTSTP[@]}"
+}
+
+function trap_addOnTrapTSTP()
+{
+	local -r handler="$1"
+	trap_handlersTSTP+=("$handler")
+}
+
+trap trap_executeOnTrapTSTP TSTP
+
+# TSTP, CONT, CHLD, TTIN, TTOU, IO, XCPU, XFSZ, VTALRM, PROF, WINCH
+
+# Ctrl-T sends INFO
+trap_handlersINFO=()
+
+function trap_executeOnTrapINFO()
+{
+	_trap_executeOnTrap "${trap_handlersINFO[@]}"
+}
+
+function trap_addOnTrapINFO()
+{
+	local -r handler="$1"
+	trap_handlersINFO+=("$handler")
+}
+
+trap trap_executeOnTrapINFO INFO
+
+trap_handlersUSR1=()
+
+function trap_executeOnTrapUSR1()
+{
+	_trap_executeOnTrap "${trap_handlersUSR1[@]}"
+}
+
+function trap_addOnTrapUSR1()
+{
+	local -r handler="$1"
+	trap_handlersUSR1+=("$handler")
+}
+
+trap trap_executeOnTrapUSR1 USR1
+
+trap_handlersUSR2=()
+
+function trap_executeOnTrapUSR2()
+{
+	_trap_executeOnTrap "${trap_handlersUSR2[@]}"
+}
+
+function trap_addOnTrapUSR2()
+{
+	local -r handler="$1"
+	trap_handlersUSR2+=("$handler")
+}
+
+trap trap_executeOnTrapUSR2 USR2

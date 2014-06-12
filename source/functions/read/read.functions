@@ -1,12 +1,16 @@
-FIX "Make sure exit closes connections and programs"
 function read_invalid()
 {
-	echo -e "$1:$2"
+	echo -e "$1:$2" 1>&2
 	return 3
 }
 
 function read_disconnected()
 {
-	echo -e "$1:$2"
+	echo -e "$1:$2" 1>&2
 	return 4
+}
+
+function read_FIX()
+{
+	echo -e "FIX:$1" 1>&2
 }

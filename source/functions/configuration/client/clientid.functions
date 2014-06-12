@@ -1,0 +1,4 @@
+function configuration_client_clientid()
+{
+	# given a client-id, finds ?server, user name, password ?
+}

@@ -1,0 +1,31 @@
+function _dependency_check_determineDistributionName()
+{
+	#"${dependency_check_functions[@]}"
+	local dependency_check_function
+	for dependency_check_function in "$@"
+	do
+		if $dependency_check_function; then
+			return 0
+		fi
+	done
+
+	if which lsb_release 1>/dev/null 2>/dev/null; then
+		local -r lsbDistributor="$(lsb_release --id --short)"
+		if [ -n "$lsbDistributor" ]; then
+			readonly distributionName="$lsbDistributor"
+			return 0
+		fi
+	fi
+	
+	bishbosh_message FAIL "Could not determine distribution"
+}
+
+function dependency_check_register()
+{
+	:
+}
+
+function dependency_check_determineDistributionName()
+{
+	:
+}

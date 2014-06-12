@@ -1,0 +1,11 @@
+dependency_check_functions=()
+
+function dependency_check_register()
+{
+	dependency_check_functions+=("$1")
+}
+
+function dependency_check_determineDistributionName()
+{
+	_dependency_check_determineDistributionName "$@"
+}

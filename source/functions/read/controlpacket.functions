@@ -176,7 +176,7 @@ function read_controlpacket_PINGREQ()
 	if [ $byte1 -ne 0 ]; then
 		read_invalid "DISCONNECT" "Invalid remaining length (was $byte1, not 0)"
 	fi
-	FIX "Immediately write a PINGRESP"
+	read_FIX "Immediately write a PINGRESP"
 }
 
 function read_controlpacket_PINGRESP()
@@ -184,7 +184,7 @@ function read_controlpacket_PINGRESP()
 	if [ $byte1 -ne 0 ]; then
 		read_invalid "DISCONNECT" "Invalid remaining length (was $byte1, not 0)"
 	fi
-	FIX "Now reset the timeout handler"
+	read_FIX "Now reset the timeout handler"
 }
 
 function read_controlpacket_DISCONNECT()

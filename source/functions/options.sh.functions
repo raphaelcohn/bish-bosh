@@ -1,0 +1,34 @@
+function options_prepare()
+{
+	options=''
+	local option
+	for option in "$@"
+	do
+		if [ -z "$options" ]; then
+			options="'$option'"
+		else
+			options="$options '$option'"
+		fi
+	done
+	
+	options="$@"
+}
+
+function options_add()
+{
+	local option
+	for option in "$@"
+	do
+		if [ -z "$options" ]; then
+			options="'$option'"
+		else
+			options="$options '$option'"
+		fi
+	done
+}
+
+function options_execute()
+{
+	eval $options
+	options_instanceId=$!
+}

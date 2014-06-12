@@ -302,6 +302,8 @@ function bishbosh_validateCommandLineArguments()
 	#fi
 }
 
+bishbosh_shell='bash'
+
 function uses()
 {
 	while [ $# -ne 0 ]
@@ -311,15 +313,23 @@ function uses()
 	
 		local dotsToPathSlashes="${functionFileName//.//}"
 		local functionsFilePath="$functionsPath"/"$dotsToPathSlashes".functions
+		local functionsShellSpecificFilePath="$functionsPath"/"$dotsToPathSlashes"."$bishbosh_shell".functions
 		if [ -f "$functionsFilePath" ]; then
 			source "$functionsFilePath"
+			if [ -f "$functionsShellSpecificFilePath" ]; then
+				source "$functionsShellSpecificFilePath"
+			fi
 			shift 1
 			continue
 		fi
 	
 		local finalPiece="$(bishbosh_basename "$dotsToPathSlashes")"
 		functionsFilePath="$functionsPath"/"$dotsToPathSlashes"/"$finalPiece".functions
+		functionsShellSpecificFilePath="$functionsPath"/"$dotsToPathSlashes"/"$finalPiece"."$bishbosh_shell".functions
 		source "$functionsFilePath"
+		if [ -f "$functionsShellSpecificFilePath" ]; then
+			source "$functionsShellSpecificFilePath"
+		fi
 		shift 1
 	done
 }

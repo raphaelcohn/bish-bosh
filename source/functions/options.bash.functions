@@ -1,0 +1,20 @@
+function options_prepare()
+{
+	# can't use declare -a as bash 4.1 on RHEL6 doesn't understand this
+	options=("$@")
+}
+
+function options_add()
+{
+	local option
+	for option in "$@"
+	do
+		options+=("'$option'")
+	done
+}
+
+function options_execute()
+{
+	"${options[@]}"
+	options_instanceId=$!
+}

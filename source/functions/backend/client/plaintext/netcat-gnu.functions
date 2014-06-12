@@ -1,0 +1,29 @@
+# Detect GNU nc:-
+# nc --version
+# First line: 'netcat (The GNU Netcat) 0.7.1'
+# OR
+# nc -h
+# First line: 'GNU netcat 0.7.1, a rewrite of the famous networking tool.'
+
+# Mac OS X old nc:-
+# /usr/bin/nc -h
+# First line: 'usage: nc [-46AcCDdFhklnrtUuvz] [-K tc] [-b boundif] [-i interval] [-p source_port]'
+
+# nc6
+# =ve half-close, -ve no proxies, lots of other oddities
+# nc6 --version
+# First line: 'nc6 version 1.0'
+# nc6 -h
+# First line: 'Usage:' (second line contains 'nc6')
+
+# busybox
+# +ve hexdump, -ve no proxies, no source i/f
+# busybox nc --help
+# 'BusyBox v1.15.1 (2013-11-23 12:50:41 UTC) multi-call binary'
+# busybox nc -v
+# 'nc: no destination'
+
+# So nc version varies by system... I can imagine the busybox one is less supportive
+# BSD busybox got proxy  http://www.monkey.org/openbsd/archive2/tech/200512/msg00068.html
+# GNU netcat vs BSD netcat vs nc6 [no proxy but half close] vs BUSYBOX nc!
+# GNU nc supports --hexdump and --tunnel and --verbose --verbose

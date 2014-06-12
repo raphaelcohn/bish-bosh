@@ -1,8 +1,13 @@
-function connection_message()
+function _connection_message()
 {
 	local -r code="$1"
-	local -r connectionId="$2"
-	local -r controlPacket="$3"
-	local -r message="$4"
-	echo -e "$1:Connection:$connectionId:ControlPacket:$controlPackage:Message:$message" 1>&2
+	local -r controlPacket="$2"
+	local -r message="$3"
+	echo -e "$1:Connection:$connectionId:ControlPacket:$controlPacket:Message:$message" 1>&2
+}
+
+function connection_messageFAIL()
+{
+	_connection_message FAIL "$1" "$2"
+	return 1
 }
