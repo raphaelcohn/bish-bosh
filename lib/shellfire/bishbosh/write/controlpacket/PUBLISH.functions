@@ -1,0 +1,102 @@
+core_usesIn bishbosh write
+
+# TODO: more optimised versions of this function are possible, eg with pre-set flags, flags as ints, etc
+function bishbosh_write_controlpacket_PUBLISH()
+{
+	local -i remainingLength=0
+	
+	# 3 << 4
+	local -i controlPacketTypeAndFlags=48
+	local -r dup=${bishbosh_write_controlpacket_PUBLISH_arguments['dup']}
+	case "$dup" in
+		
+		yes)
+			controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + 1 << 3 ))
+		;;
+		
+		no)
+			:
+		;;
+		
+		*)
+			connection_messageFAIL PUBLISH "dup must be yes or no, not '$dup'"
+		;;
+		
+	esac
+
+	if ! _bishbosh_write_controlpacket_PUBLISH_verifyFieldPresent 'qos'; then
+		local -ir packet_identifier=-1
+	else
+		case "$qos" in 
+		
+			0)
+				local -ir packet_identifier=-1
+			;;
+		
+			1|2)
+				controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + qos << 2 ))
+				if ! _bishbosh_write_controlpacket_PUBLISH_verifyFieldPresent 'packet_identifier'; then
+					connection_messageFAIL PUBLISH "messages published at QoS 1 or 2 must have a packet_identifier"
+				fi
+				local -ir packet_identifier=${bishbosh_write_controlpacket_PUBLISH_arguments['packet_identifier']}
+				remainingLength=$(( remainingLength + 2 ))
+			;;
+		
+			3)
+				connection_messageFAIL PUBLISH "qos 3 is reserved"
+			;;
+		
+			*)
+				connection_messageFAIL PUBLISH "qos must be 0-2, not '$qos'"
+			;;
+		esac
+	fi
+	
+	local -r retain="${bishbosh_write_controlpacket_PUBLISH_arguments['retain']}"
+	case "$retain" in
+		
+		yes)
+			controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + 1 ))
+		;;
+		
+		no)
+			:
+		;;
+		
+		*)
+			connection_messageFAIL PUBLISH "retain must be yes or no, not '$retain'"
+		;;
+		
+	esac
+	
+	# BUG: We don't check for wildcards, ASCII NULL, or empty topic names
+	if ! _bishbosh_write_controlpacket_PUBLISH_verifyFieldPresent 'topic_name'; then
+		connection_messageFAIL PUBLISH "topic_name is not present"
+	fi
+	local -r topic_name="${bishbosh_write_controlpacket_PUBLISH_arguments['topic_name']}"
+	local -ir topic_name_fieldLength=${#topic_name}
+	_bishbosh_write_controlpacket_guardUtf8StringOrBinaryFieldLength PUBLISH topic_name $topic_name_fieldLength
+	
+	remainingLength=$(( remainingLength + 2 + topic_name_fieldLength ))
+	
+	core_TODO "We don't handle binary payloads containing ASCII NULL, and we really ought to also allow the use of files (with offsets, sizes, too, for firmware transmissions) and base64 encoded data"
+	
+	if _bishbosh_write_controlpacket_PUBLISH_verifyFieldPresent 'payload'; then
+		local -r payload="${bishbosh_write_controlpacket_PUBLISH_arguments['payload']}"
+		remainingLength=$(( remainingLength + 2 + ${#payload} ))
+	else
+		local -r payload=""
+	fi
+	
+	echo -ne "${bishbosh_write_byteCache[$controlPacketTypeAndFlags]}"
+	bishbosh_write_remainingLength $remainingLength >&10 2>&11
+	
+	bishbosh_write_twoByteLength $topic_name_fieldLength >&10 2>&11
+	echo -nE "$topic_name" >&10 2>&11
+	
+	if [ $packet_identifier -ne -1 ]; then
+		bishbosh_write_twoByteLength $packet_identifier >&10 2>&11
+	fi
+	
+	echo -nE "$payload" >&10 2>&11
+}

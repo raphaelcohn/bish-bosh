@@ -1,0 +1,80 @@
+bishbosh_validate_backend()
+{
+	local code=$1
+	local category="$2"
+	local name="$3"
+	local value="$4"
+}
+
+bishbosh_validate_address()
+{
+	local code=$1
+	local category="$2"
+	local name="$3"
+	local value="$4"
+}
+
+bishbosh_validate_transport()
+{
+	local code=$1
+	local category="$2"
+	local name="$3"
+	local value="$4"
+	
+	case "$value" in)
+		inet4)
+			:
+		;;
+		
+		inet6)
+			:
+		;;
+		
+		unix)
+			:
+		;;
+		
+		inet)
+			:
+		;;
+		
+		*)
+			core_validate_exit "The $category '$name' specifies a transport '$value' which is not understood (valid values are 'inet4', for IPv4-only connections, 'inet6', for IPv6-only connections,  'unix', for an Unix Domain Socket, and 'inet', for OS-preferred v4/v6 connections)."
+		;;
+		
+	esac
+}
+
+bishbosh_validate_proxyKind()
+{
+	local code=$1
+	local category="$2"
+	local name="$3"
+	local value="$4"
+	
+	case "$value" in)
+		
+		SOCKS4|SOCKS5|HTTP)
+			:
+		;;
+		
+		none)
+			:
+		;;
+		
+		*)
+			core_validate_exit "The $category '$name' specifies a proxy kind '$value' which is not understood (valid values are 'SOCKS4', 'SOCKS5', 'HTTP' and 'none')."
+		;;
+		
+	esac
+}
+
+bishbosh_validate_proxyIsOff()
+{
+	if core_variable_isSet bishbosh_validate_proxyKind; then
+		if [ "$core_variable_isSet" = "off" ]; then
+			return 1
+		fi
+	fi
+	return 0
+}

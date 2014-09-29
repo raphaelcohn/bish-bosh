@@ -1,0 +1,134 @@
+bishbosh_port_mqtt=1883
+bishbosh_port_mqtts=8883
+
+core_dependency_requires '*' uname
+core_dependency_requires '*' grep
+core_dependency_requires '*' head
+core_dependency_requires '*' tail
+bishbosh_client_plaintext_find()
+{
+	if [ "$core_init_preferredShell" = 'bash' ]; then
+		bishbosh_client_plaintext=bash
+		bishbosh_client_plaintextPath=''
+		return 0
+	fi
+	
+	local binary
+	
+	local toyboxName
+	for toyboxName in toybox toybox-"$(uname -m)"
+	do
+		if core_compatibility_whichNoOutput "$toyboxName"; then
+			binary="$(core_compatibility_which "$toyboxName")"
+			if "$toyboxName" 2>/dev/null | grep -q -E '^nc$| nc | nc$'; then
+				bishbosh_client_plaintext=netcatToyBox
+				bishbosh_client_plaintextPath="$binary"
+				return 0
+			fi
+		fi
+	done
+
+	if core_compatibility_whichNoOutput busybox; then
+		binary="$(core_compatibility_which busybox)"
+		if busybox --list 2>/dev/null | grep -q '^nc$'; then
+			bishbosh_client_plaintext=netcatBusyBox
+			bishbosh_client_plaintextPath="$binary"
+			return 0
+		fi
+	fi
+	
+	# Widely available but abandoned
+	if core_compatibility_whichNoOutput nc6; then
+		binary="$(core_compatibility_which nc.openbsd)"
+		bishbosh_client_plaintext=netcat6
+		bishbosh_client_plaintextPath="$binary"
+		return 0
+	fi
+	
+	# Not installed by default on Ubuntu/Debian (the versiomn by Hobbit, last updated 2004 on freecode, now points to GNU netcat)
+	if core_compatibility_whichNoOutput nc.traditional; then
+		binary="$(core_compatibility_which nc.traditional)"
+		bishbosh_client_plaintext=netcatOpenBSDDebian
+		bishbosh_client_plaintextPath="$binary"
+		return 0
+	fi
+	
+	# Default on Debian, lacks -e and -c (execute program / script)
+	if core_compatibility_whichNoOutput nc.openbsd; then
+		binary="$(core_compatibility_which nc.openbsd)"
+		bishbosh_client_plaintext=netcatOpenBSDDebian
+		bishbosh_client_plaintextPath="$binary"
+		return 0
+	fi
+	
+	# ncat, part of nmap; provides built-in ssl support; offered as separate RPM (but debian and homebrew bundle it with nmap)
+	if core_compatibility_whichNoOutput ncat; then
+		binary="$(core_compatibility_which ncat)"
+		bishbosh_client_plaintext=netcatNmap
+		bishbosh_client_plaintextPath="$binary"
+		return 0
+	fi
+	
+	if core_compatibility_whichNoOutput nc; then
+		binary="$(core_compatibility_which nc)"
+		
+		# eg  'GNU netcat 0.7.1, a rewrite of the famous networking tool.'
+		if "$binary" -h | head -n 1 | grep -q -E '^GNU netcat '; then
+			bishbosh_client_plaintext=netcatGNU
+			bishbosh_client_plaintextPath="$binary"
+			return 0
+		fi
+		
+		# eg  'OpenBSD netcat (Debian patchlevel 1.105-7ubuntu1)'
+		if "$binary" -h 2>&1 1>/dev/null | head -n 1 | grep -q -E '^OpenBSD netcat (Debian '; then
+			bishbosh_client_plaintext=netcatOpenBSDDebian
+			bishbosh_client_plaintextPath="$binary"
+			return 0
+		fi
+		
+		# eg [v1.10-40] \n connect to somewhere:   nc [-options] hostname port[s] [ports] ...
+		if "$binary" -h 2>&1 1>/dev/null | head -n 2 | tail -n 1 | grep -q -E '^connect to somewhere:	nc \[-'; then
+			bishbosh_client_plaintext=netcatTraditionalDebian
+			bishbosh_client_plaintextPath="$binary"
+			return 0
+		fi
+		
+		# eg  'usage: nc [-46AcCDdFhklnrtUuvz] [-K tc] [-b boundif] [-i interval] [-p source_port]'
+		if "$binary" -h 2>&1 1>/dev/null | head -n 1 | grep -q -E '^usage: nc \[-'; then
+			bishbosh_client_plaintext=netcatMacOSX
+			bishbosh_client_plaintextPath="$binary"
+			return 0
+		fi
+
+		core_message WARN "Could not determine which netcat (nc) you are using, defaulting to handling as Debian's 'netcat-traditional' (ie Hobbit's from 2003)."
+		bishbosh_client_plaintext=netcatTraditionalDebian
+		bishbosh_client_plaintextPath="$binary"
+	fi
+	
+	# Homebrew, Debian
+	if core_compatibility_whichNoOutput socat; then
+		binary="$(core_compatibility_which socat)"
+		bishbosh_client_plaintext=socat
+		bishbosh_client_plaintextPath="$binary"
+		return 0
+	fi
+	
+	# Homebrew, Debian
+	if core_compatibility_whichNoOutput socat; then
+		binary="$(core_compatibility_which socat)"
+		bishbosh_client_plaintext=socat
+		bishbosh_client_plaintextPath="$binary"
+		return 0
+	fi
+	
+	# DJB's tcpclient / tcpserver (part of ucspi-tcp)
+	# Homebrew, Debian
+	if core_compatibility_whichNoOutput tcpclient; then
+		binary="$(core_compatibility_which tcpclient)"
+		bishbosh_client_plaintext=tcpclient
+		bishbosh_client_plaintextPath="$tcpclient"
+		return 0
+	fi
+	
+	core_exitError $core_commandLine_exitCode_OSFILE "Could not find an external program (such as nc, nc6, ncat, socat or tcpclient) on the PATH ('$PATH') to make socket connections."
+}

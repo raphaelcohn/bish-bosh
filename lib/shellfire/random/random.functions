@@ -1,0 +1,76 @@
+core_dependency_requires '*' od head awk
+random_generateBetween0To255()
+{
+	if core_compatibility_whichNoOutput openssl; then
+		local fromHex=0x$(openssl rand -hex 1)
+		printf '%s' $fromHex
+	elif [ -r /dev/urandom ]; then
+		# head -n 1  is required for Mac OS X's od
+		od -A n -t u1 -N 1 /dev/urandom | head -n 1 | awk  '{print $1}'
+	elif [ -r /dev/random ]; then
+		od -A n -t u1 -N 1 /dev/urandom | head -n 1 | awk  '{print $1}'
+	else
+		# Will only work on bash
+		printf '%s' $(( RANDOM % 256 ))
+	fi
+	
+	# Between 0 and 1 using srand() : echo | awk ' { srand(); print rand() } '
+}
+
+function random_generateBetweenOAndModulus()
+{
+	local modulus=$1
+	local randomNumber="$(random_generateBetween0To255)"
+	printf '%s' $(($randomNumber % $modulus))
+}
+
+function random_characterForEncodingLowerCaseOnly()
+{
+	local number0To35=$(random_generateBetween0AndModulus 36)
+	if [ $number0To35 -lt 26 ]; then
+		local subtract=0
+		local base=97
+	else
+		local subtract=26
+		local base=48
+	fi
+	printf '%s' $((number0To35 - subtract + base))
+}
+
+function random_characterForEncodingLettersAndNumbers()
+{
+	local number0To61=$(random_generateBetween0AndModulus 62)
+	if [ $number0To61 -lt 26 ]; then
+		local subtract=0
+		local base=65
+	elif [ $number0To61 -lt 52 ]; then
+		local subtract=26
+		local base=97
+	else
+		local subtract=52
+		local base=48
+	fi
+	printf '%s' $((number0To61 - subtract + base))
+}
+
+function random_characterForEncodingBase64Like()
+{
+	local number0To63=$(random_generateBetween0AndModulus 64)
+	if [ $number0To63 -lt 26 ]; then
+		local subtract=0
+		local base=65
+	elif [ $number0To63 -lt 52 ]; then
+		local subtract=26
+		local base=97
+	elif [ $number0To63 -lt 62 ]; then
+		local subtract=52
+		local base=48
+	elif [ $number0To63 -lt 63 ]; then
+		local subtract=62
+		local base=47
+	else
+		local subtract=63
+		local base=43
+	fi
+	printf '%s' $((number0To63 - subtract + base))
+}

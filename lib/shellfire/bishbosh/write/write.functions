@@ -1,0 +1,33 @@
+bishbosh_write_byte()
+{
+	printf "\\$(printf '%o' $1)"
+}
+
+bishbosh_write_remainingLength()
+{
+	if [ $1 -lt 128 ]; then
+		bishbosh_write_byte $1
+	elif [ $1 -lt 16384 ]; then
+		local -ir length=$1
+		bishbosh_write_byte $(( length % 128 + 128 ))
+		bishbosh_write_byte $(( length / 128))
+	elif [ $1 -lt 2097152 ]; then
+		local -ir length=$1
+		bishbosh_write_byte $(( (length & 127) + 128 ))
+		bishbosh_write_byte $(( (length >> 7 & 127) + 128 ))
+		bishbosh_write_byte $((  length >> 14 & 127 ))
+	else
+		local -ir length=$1
+		bishbosh_write_byte $(( (length & 127) + 128 ))
+		bishbosh_write_byte $(( (length >> 7 & 127) + 128 ))
+		bishbosh_write_byte $(( (length >> 14 & 127) + 128 ))
+		bishbosh_write_byte $((  length >> 21 & 127 ))
+	fi
+}
+
+bishbosh_write_twoByteLength()
+{
+	local length=$1
+	bishbosh_write_byte $(( length >> 8 ))
+	bishbosh_write_byte $(( length & 255 ))
+}

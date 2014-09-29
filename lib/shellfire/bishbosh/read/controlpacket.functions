@@ -1,0 +1,195 @@
+core_usesIn bishbosh read
+
+bishbosh_read_controlpacket=()
+
+function bishbosh_read_controlpacket_initialise()
+{
+	local -r isServer="$1"
+	
+	local -i index
+	for((index=0;index<256;index++))
+	do
+		bishbosh_read_controlpacket[$index]=bishbosh_read_controlpacket_duff
+	done
+	
+	if [ "$isServer" = 'yes' ]; then
+		bishbosh_read_controlpacket[16]=bishbosh_read_controlpacket_CONNECT
+	else
+		bishbosh_read_controlpacket[32]=bishbosh_read_controlpacket_CONNACK
+	fi
+	
+	bishbosh_read_controlpacket[48]=bishbosh_read_controlpacket_PUBLISH_0
+	bishbosh_read_controlpacket[49]=bishbosh_read_controlpacket_PUBLISH_1
+	bishbosh_read_controlpacket[50]=bishbosh_read_controlpacket_PUBLISH_2
+	bishbosh_read_controlpacket[51]=bishbosh_read_controlpacket_PUBLISH_3
+	bishbosh_read_controlpacket[52]=bishbosh_read_controlpacket_PUBLISH_4
+	bishbosh_read_controlpacket[53]=bishbosh_read_controlpacket_PUBLISH_5
+	bishbosh_read_controlpacket[54]=bishbosh_read_controlpacket_PUBLISH_6
+	bishbosh_read_controlpacket[55]=bishbosh_read_controlpacket_PUBLISH_7
+	bishbosh_read_controlpacket[56]=bishbosh_read_controlpacket_PUBLISH_8
+	bishbosh_read_controlpacket[57]=bishbosh_read_controlpacket_PUBLISH_9
+	bishbosh_read_controlpacket[58]=bishbosh_read_controlpacket_PUBLISH_10
+	bishbosh_read_controlpacket[59]=bishbosh_read_controlpacket_PUBLISH_11
+	bishbosh_read_controlpacket[60]=bishbosh_read_controlpacket_PUBLISH_12
+	bishbosh_read_controlpacket[61]=bishbosh_read_controlpacket_PUBLISH_13
+	bishbosh_read_controlpacket[62]=bishbosh_read_controlpacket_PUBLISH_14
+	bishbosh_read_controlpacket[63]=bishbosh_read_controlpacket_PUBLISH_15
+	
+	bishbosh_read_controlpacket[64]=bishbosh_read_controlpacket_PUBACK
+	
+	bishbosh_read_controlpacket[80]=bishbosh_read_controlpacket_PUBREC
+	
+	bishbosh_read_controlpacket[98]=bishbosh_read_controlpacket_PUBREL
+	
+	bishbosh_read_controlpacket[112]=bishbosh_read_controlpacket_PUBCOMP
+	
+	if [ "$isServer" = 'yes' ]; then
+		bishbosh_read_controlpacket[130]=bishbosh_read_controlpacket_SUBSCRIBE
+	else
+		bishbosh_read_controlpacket[144]=bishbosh_read_controlpacket_SUBACK
+	fi
+	
+	if [ "$isServer" = 'yes' ]; then
+		bishbosh_read_controlpacket[162]=bishbosh_read_controlpacket_UNSUBSCRIBE
+	else
+		bishbosh_read_controlpacket[176]=bishbosh_read_controlpacket_UNSUBACK
+	fi
+	
+	if [ "$isServer" = 'yes' ]; then
+		bishbosh_read_controlpacket[192]=bishbosh_read_controlpacket_PINGREQ
+	else
+		bishbosh_read_controlpacket[208]=bishbosh_read_controlpacket_PINGRESP
+	fi
+	
+	if [ "$isServer" = 'yes' ]; then
+		bishbosh_read_controlpacket[224]=bishbosh_read_controlpacket_DISCONNECT
+	fi
+}
+
+function bishbosh_read_controlpacket_next()
+{
+	local -i byte0 byte1
+	bishbosh_read_od_nextTwoBytes
+	${bishbosh_read_controlpacket[${byte0}]} $byte1
+}
+
+function bishbosh_read_controlpacket_duff()
+{
+	bishbosh_read_invalid "DUFF" "Invalid control packet code $byte0 with length $byte1"
+}
+
+function bishbosh_read_controlpacket_CONNECT()
+{
+	# multi-byte read, etc...
+	:
+}
+
+function bishbosh_read_controlpacket_CONNACK()
+{
+	if [ $byte1 -ne 2 ]; then
+		bishbosh_read_invalid "CONNACK" "Invalid remaining length (was $byte1, not 2)"
+	fi
+	
+	local -i connectAcknowledgeFlags connectReturnCode
+	od --width=1 --address-radix=n --output-duplicates --format=u1 --read-bytes 2 <&3 >&4
+	IFS= read -u 4 -r connectAcknowledgeFlags connectReturnCode
+	
+	if [ $connectAcknowledgeFlags -gt 1 ]; then
+		bishbosh_read_invalid "CONNACK" "Invalid connectAcknowledgeFlags (was $connectAcknowledgeFlags, not 0-1)"
+	fi
+	local -i sessionPresent=$connectAcknowledgeFlags
+	
+	if [ $connectReturnCode -ne 0 ]; then
+		case $connectReturnCode in
+			
+			1)
+				bishbosh_read_disconnected "CONNACK" "Connection Refused, unacceptable protocol version"
+			;;
+			
+			2)
+				bishbosh_read_disconnected "CONNACK" "Connection Refused, identifier rejected"
+			;;
+			
+			3)
+				bishbosh_read_disconnected "CONNACK" "Connection Refused, Server unavailable"
+			;;
+			
+			4)
+				bishbosh_read_disconnected "CONNACK" "Connection Refused, bad user name or password"
+			;;
+			
+			5)
+				bishbosh_read_disconnected "CONNACK" "Connection Refused, not authorized"
+			;;
+			
+			*)
+				bishbosh_read_invalid "CONNACK" "Received reserved connectReturnCode code of $connectReturnCode"
+			;;
+		esac
+	fi
+	
+	# that's it
+}
+
+function bishbosh_read_controlpacket_PUBACK()
+{
+	:
+}
+
+function bishbosh_read_controlpacket_PUBREC()
+{
+	:
+}
+
+function bishbosh_read_controlpacket_PUBREL()
+{
+	:
+}
+
+function bishbosh_read_controlpacket_PUBCOMP()
+{
+	:
+}
+
+function bishbosh_read_controlpacket_SUBSCRIBE()
+{
+	:
+}
+
+function bishbosh_read_controlpacket_SUBACK()
+{
+	:
+}
+
+function bishbosh_read_controlpacket_UNSUBSCRIBE()
+{
+	:
+}
+
+function bishbosh_read_controlpacket_UNSUBACK()
+{
+	:
+}
+
+function bishbosh_read_controlpacket_PINGREQ()
+{
+	if [ $byte1 -ne 0 ]; then
+		bishbosh_read_invalid "DISCONNECT" "Invalid remaining length (was $byte1, not 0)"
+	fi
+	bishbosh_core_TODO "Immediately write a PINGRESP"
+}
+
+function bishbosh_read_controlpacket_PINGRESP()
+{
+	if [ $byte1 -ne 0 ]; then
+		bishbosh_read_invalid "DISCONNECT" "Invalid remaining length (was $byte1, not 0)"
+	fi
+	bishbosh_core_TODO "Now reset the timeout handler"
+}
+
+function bishbosh_read_controlpacket_DISCONNECT()
+{
+	if [ $byte1 -ne 0 ]; then
+		bishbosh_read_invalid "DISCONNECT" "Invalid remaining length (was $byte1, not 0)"
+	fi
+}

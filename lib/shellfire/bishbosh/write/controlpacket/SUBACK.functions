@@ -1,0 +1,29 @@
+bishbosh_write_controlpacket_SUBACK()
+{
+	local -ir packetIdentifier=$1
+	shift 1
+	
+	local -ir remainingLength=$(( 2 + ${#} ))
+	
+	# 9 << 4 in octal
+	printf '\220' >&10 2>&11
+	
+	bishbosh_write_remainingLength $remainingLength >&10 2>&11
+	
+	bishbosh_write_twoByteLength $packetIdentifier >&10 2>&11
+	local -i resultCode
+	for resultCode in "$@"
+	do
+		case $resultCode in
+			
+			0|1|2|128)
+				:
+			;;
+			
+			*)
+				connection_messageFAIL SUBACK "resultCodes must be 0, 1, 2 or 128, not '$resultCode'"
+			;;
+			
+		esac
+	done
+}

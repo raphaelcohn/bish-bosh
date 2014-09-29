@@ -1,0 +1,422 @@
+#!/usr/bin/env bash
+
+_program()
+{
+	core_usesIn bishbosh validate
+	
+	bishbosh()
+	{
+		echo hello
+	}
+}
+
+readonly _program_name='bish-bosh'
+readonly _program_version='unversioned'
+readonly _program_package_or_build=''
+readonly _program_copyright='(c) 2014 Raphael Cohn'
+readonly _program_licence='MIT'
+readonly _program_written_by='Raphael Cohn'
+readonly _program_path="$([ "${_program_fattening_program_path+set}" = 'set' ] && printf '%s\n' "$_program_fattening_program_path" || ([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}"))"
+readonly _program_libPath="${_program_path}/lib"
+readonly _program_etcPath="${_program_path}/etc"
+readonly _program_entrypoint='bishbosh'
+
+_program_commandLine_parseInitialise()
+{
+	_program_default_backend=AUTO
+	_program_default_server=127.0.0.1
+	_program_default_port=AUTO
+	
+	if core_variable_isSet bishbosh_transport; then
+		_program_configurationSet_bishbosh_transport=0
+	else
+		_program_configurationSet_bishbosh_transport=1
+	fi
+	
+	if core_variable_isSet bishbosh_sourceAddress; then
+		_program_configurationSet_bishbosh_sourceAddress=0
+	else
+		_program_configurationSet_bishbosh_sourceAddress=1
+	fi
+	
+	if core_variable_isSet bishbosh_sourcePort; then
+		_program_configurationSet_bishbosh_sourcePort=0
+	else
+		_program_configurationSet_bishbosh_sourcePort=1
+	fi
+	
+	if core_variable_isSet bishbosh_server; then
+		_program_configurationSet_bishbosh_server=0
+	else
+		_program_configurationSet_bishbosh_server=1
+	fi
+	
+	if core_variable_isSet bishbosh_port; then
+		_program_configurationSet_bishbosh_port=0
+	else
+		_program_configurationSet_bishbosh_port=1
+	fi
+	
+	if core_variable_isSet bishbosh_proxyKind; then
+		_program_configurationSet_bishbosh_proxyKind=1
+	else
+		_program_configurationSet_bishbosh_proxyKind=0
+	fi
+	
+	if core_variable_isSet bishbosh_proxyServer; then
+		_program_configurationSet_bishbosh_proxyServer=1
+	else
+		_program_configurationSet_bishbosh_proxyServer=0
+	fi
+	
+	if core_variable_isSet bishbosh_proxyPort; then
+		_program_configurationSet_bishbosh_proxyPort=1
+	else
+		_program_configurationSet_bishbosh_proxyPort=0
+	fi
+	
+	if core_variable_isSet bishbosh_proxyUsername; then
+		_program_configurationSet_bishbosh_proxyUsername=1
+	else
+		_program_configurationSet_bishbosh_proxyUsername=0
+	fi
+	
+	if core_variable_isSet bishbosh_proxyPassword; then
+		_program_configurationSet_bishbosh_proxyPassword=1
+	else
+		_program_configurationSet_bishbosh_proxyPassword=0
+	fi
+}
+
+_program_commandLine_helpMessage()
+{
+	_program_commandLine_helpMessage_usage="[OPTION]..."
+	_program_commandLine_helpMessage_description="Connects to MQTT servers."
+	_program_commandLine_helpMessage_options="
+  -b, --backend TYPE     Backend type to use to talk to MQTT server.
+                         Use 'AUTO'.
+                         Defaults to '${_program_default_backend}'.
+  -s, --server HOST      Server hostname, Unix domain socket path, IPv4
+                         or IPv6 address.
+                         Unix domain socket paths must contain a '/' (ie
+                         they can not be in the present working directory).
+                         Defaults to '${_program_default_server}'.
+  -p, --port PORT        Server port. Ignored for Unix domain sockets.
+                         Use 'BACKEND' to let the backend choose.
+                         Defaults to '${_program_default_port}'."
+    _program_commandLine_helpMessage_optionsSpacing=''
+	_program_commandLine_helpMessage_configurationKeys="
+  bishbosh_backend     Equivalent to --backend
+  bishbosh_server      Equivalent to --server
+  bishbosh_port        Equivalent to --port
+"
+	_program_commandLine_helpMessage_examples="
+  ${_program_name}
+"
+}
+
+_program_commandLine_optionExists()
+{
+	case "$optionName" in
+		
+		b|backend)
+			echo 'yes-argumented'
+		;;
+		
+		transport)
+			echo 'yes-argumented'
+		;;
+		
+		source-address)
+			echo 'yes-argumented'
+		;;
+		
+		source-port)
+			echo 'yes-argumented'
+		;;
+		
+		s|server)
+			echo 'yes-argumented'
+		;;
+		
+		p|port)
+			echo 'yes-argumented'
+		;;
+		
+		proxy-kind)
+			echo 'yes-argumentless'
+		;;
+		
+		proxy-port)
+			echo 'yes-argumentless'
+		;;
+		
+		proxy-username)
+			echo 'yes-argumentless'
+		;;
+		
+		proxy-password)
+			echo 'yes-argumentless'
+		;;
+		
+		*)
+			echo 'no'
+		;;
+		
+	esac
+}
+
+_program_commandLine_processOptionWithoutArgument()
+{
+	:
+}
+
+_program_commandLine_processOptionWithArgument()
+{
+	case "$optionName" in
+		
+		b|backend)
+			bishbosh_validate_backend $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_backend="$optionValue"
+		;;
+		
+		transport)
+			bishbosh_validate_transport $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_transport="$optionValue"
+		;;
+		
+		source-address)
+			bishbosh_validate_address $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_sourceAddress="$optionValue"
+		;;
+		
+		source-port)
+			core_validate_nonDynamicPort $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_sourcePort="$optionValue"
+		;;
+		
+		s|server)
+			bishbosh_validate_server $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_server="$optionValue"
+		;;
+		
+		p|port)
+			core_validate_nonDynamicPort $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_port="$optionValue"
+		;;
+		
+		proxy-kind)
+			bishbosh_validate_proxyKind $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_proxyKind="$optionValue"
+			_program_configurationSet_bishbosh_proxyKind=0
+		;;
+		
+		proxy-server)
+			bishbosh_validate_server $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_proxyServer="$optionValue"
+			_program_configurationSet_bishbosh_proxyServer=0
+		;;
+		
+		proxy-port)
+			core_validate_nonDynamicPort $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_proxyPort="$optionValue"
+			_program_configurationSet_bishbosh_proxyPort=0
+		;;
+		
+		proxy-username)
+			core_message WARN "Specifying the option '--proxy-username' on the command line is insecure"
+			bishbosh_proxyUsername="$optionValue"
+			_program_configurationSet_bishbosh_proxyUsername=0
+		;;
+		
+		proxy-password)
+			core_message WARN "Specifying the option '--proxy-password' on the command line is insecure"
+			bishbosh_proxyPassword="$optionValue"
+			_program_configurationSet_bishbosh_proxyPassword=0
+		;;
+		
+		*)
+			echo 'no'
+		;;
+		
+	esac
+}
+
+_program_commandLine_handleNonOptions()
+{
+	if [ $# -ne 0 ]; then
+		core_commandLine_exitBadCommandLine "Non-options are not supported"
+	fi
+}
+
+_program_commandLine_validateTransportSetting()
+{
+	local variableName="$1"
+	local optionName="$2"
+	local description="$3"
+	local configurationSet=$4
+	
+	local code
+	local category
+	local name
+	if core_variable_isSet "$variableName"; then
+		local core_variable_indirectValue_result
+		core_variable_indirectValue "$variableName"
+		
+		if [ $_program_configurationSet_bishbosh_transport -eq 1 ]; then
+			if [ $configurationSet -eq 1 ]; then
+				code=$core_commandLine_exitCode_CONFIG
+				category='configuration setting'
+				name="$variableName"
+			else
+				code=$core_commandLine_exitCode_USAGE
+				category='option'
+				name='--source-address'
+			fi
+			core_exitError $code "The $category '$name' specified a $description ('$core_variable_indirectValue_result') but the transport ($categoryTransport '$nameTransport') is '$bishbosh_transport'"
+		fi
+	fi
+}
+
+_program_commandLine_validateProxySetting()
+{
+	local noneOrUnspecified="$1"
+	local variableName="$2"
+	local optionName="$3"
+	local description="$4"
+	local configurationSet=$5
+	
+	local code
+	local category
+	local name
+	local message
+	
+	if core_variable_isSet "$variableName"; then
+		local core_variable_indirectValue_result
+		core_variable_indirectValue "$variableName"
+		
+		if [ $configurationSet -eq 1 ]; then
+			code=$core_commandLine_exitCode_CONFIG
+			category='configuration setting'
+			name="$variableName"
+		else
+			code=$core_commandLine_exitCode_USAGE
+			category='option'
+			name="$optionName"
+		fi
+		
+		if [ $_program_configurationSet_bishbosh_proxyKind -eq 1 ]; then
+			categoryProxyKind='configuration setting'
+			nameProxyKind='bishbosh_proxyKind'
+		else
+			categoryProxyKind='option'
+			nameProxyKind='--proxy-kind'
+		fi
+		
+		message="The $category '$name' specifies a $description ('$core_variable_indirectValue_result') but the proxy kind ($categoryProxyKind '$nameProxyKind') is $noneOrUnspecified"
+		if [ "$noneOrUnspecified" = "unspecified" ]; then
+			core_exitError $code "$message"
+		else
+			core_message WARN "$message"
+		fi
+	fi
+}
+
+# TODO: There is no current way of overriding username / password (setting to blank is not the same as no password or no username)
+# TODO: Need a secure way to receive password in separate configuration - --proxy-password-file
+# TODO: https://stackoverflow.com/questions/53497/regular-expression-that-matches-valid-inet6-addresses
+_program_commandLine_validate()
+{
+	local categoryProxyKind
+	local nameProxyKind
+	if [ $_program_configurationSet_bishbosh_proxyKind -eq 1 ]; then
+		categoryProxyKind='configuration setting'
+		nameProxyKind='bishbosh_proxyKind'
+	else
+		categoryProxyKind='option'
+		nameProxyKind='--proxy-kind'
+	fi
+	
+	local codeTransport
+	local categoryTransport
+	local nameTransport
+	if [ $_program_configurationSet_bishbosh_transport -eq 1 ]; then
+		codeTransport=$core_commandLine_exitCode_CONFIG
+		categoryTransport='configuration setting'
+		nameTransport='bishbosh_transport'
+	else
+		codeTransport=$core_commandLine_exitCode_USAGE
+		categoryTransport='option'
+		nameTransport='--transport'
+	fi
+	
+	local codeServer
+	local categoryServer
+	local nameServer
+	if [ $_program_configurationSet_bishbosh_server -eq 1 ]; then
+		codeServer=$core_commandLine_exitCode_CONFIG
+		categoryServer='configuration setting'
+		nameServer='bishbosh_server'
+	else
+		codeServer=$core_commandLine_exitCode_USAGE
+		categoryServer='option'
+		nameServer='--server'
+	fi
+	
+	if core_variable_isUnset bishbosh_server; then
+		core_exitError $core_commandLine_exitCode_USAGE "The option '--server' must be specified"
+	fi
+	
+	if core_variable_isUnset bishbosh_transport; then
+		bishbosh_transport=ip
+	else
+		bishbosh_validate_transport $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_transport' "$bishbosh_transport"
+		if [ "$bishbosh_transport" = unix ]; then
+			if [ ! core_validate_socketPathReadableAndWritable "$bishbosh_server" ]; then
+				core_exitError $codeServer "When $categoryTransport '$nameTransport' is 'unix' the $categoryServer '$nameServer' must be a path to a readable, writable domain socket ('$bishbosh_socket' is not)"
+			fi
+		fi
+	fi
+	
+	_program_commandLine_validateTransportSetting bishbosh_sourceAddress '--source-address' 'source address' $_program_configurationSet_bishbosh_sourceAddress
+	_program_commandLine_validateTransportSetting bishbosh_sourcePort '--source-port' 'source port' $_program_configurationSet_bishbosh_sourcePort
+	_program_commandLine_validateTransportSetting bishbosh_port '-p/--port' 'destination port' $_program_configurationSet_bishbosh_port
+	
+	if core_variable_isSet bishbosh_proxyKind; then
+		bishbosh_validate_proxyKind $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_proxyKind' "$bishbosh_proxyKind"
+		
+		if [ "$bishbosh_proxyKind" = 'none' ]; then
+			_program_commandLine_validateProxySetting "'none'" bishbosh_proxyServer '--proxy-server' 'proxy server' $_program_configurationSet_bishbosh_proxyServer
+			_program_commandLine_validateProxySetting "'none'" bishbosh_proxyPort '--proxy-port' 'proxy port' $_program_configurationSet_bishbosh_proxyPort
+			_program_commandLine_validateProxySetting "'none'" bishbosh_proxyUsername '--proxy-username' 'proxy username' $_program_configurationSet_bishbosh_proxyUsername
+			_program_commandLine_validateProxySetting "'none'" bishbosh_proxyPassword '--proxy-password' 'proxy password' $_program_configurationSet_bishbosh_proxyPassword
+		else
+			_program_commandLine_validateTransportSetting bishbosh_proxyKind '--proxy-kind' 'proxy kind' $_program_configurationSet_bishbosh_proxyKind
+			if core_variable_isUnset bishbosh_proxyServer; then
+				core_commandLine_exitBadCommandLine "The proxy kind ($categoryProxyKind '$nameProxyKind') is '$bishbosh_proxyKind' but the option '--proxy-server' is unspecified"
+			fi
+			if core_variable_isUnset bishbosh_proxyPort; then
+				case "$bishbosh_proxyKind" in
+					SOCKS4|SOCKS5)
+						bishbosh_proxyPort=1080
+					;;
+					
+					HTTP)
+						bishbosh_proxyPort=3128
+					;;
+				esac
+			else
+				core_validate_nonDynamicPort $core_commandLine_exitCode_USAGE 'configuration setting' 'bishbosh_proxyPort' "$bishbosh_proxyPort"
+			fi
+		fi
+	else
+		_program_commandLine_validateProxySetting 'unspecified' bishbosh_proxyServer '--proxy-server' 'proxy server' $_program_configurationSet_bishbosh_proxyServer
+		_program_commandLine_validateProxySetting 'unspecified' bishbosh_proxyPort '--proxy-port' 'proxy port' $_program_configurationSet_bishbosh_proxyPort
+		_program_commandLine_validateProxySetting 'unspecified' bishbosh_proxyUsername '--proxy-username' 'proxy username' $_program_configurationSet_bishbosh_proxyUsername
+		_program_commandLine_validateProxySetting 'unspecified' bishbosh_proxyPassword '--proxy-password' 'proxy password' $_program_configurationSet_bishbosh_proxyPassword
+		bishbosh_proxyKind='none'
+	fi
+}
+
+# Assumes pwd, and so requires this code to be running from this folder
+. "$_program_libPath"/shellfire/core/init.functions "$@"

@@ -1,0 +1,11 @@
+# An empty value allows the overriding of a value set using configuration
+bishbosh_client_addOptionWithEmptyMeaningNo()
+{
+	local optionName="$1"
+	local variableValue="$2"
+	
+	if [ -z "$variableValue" ]; then
+		return 0
+	fi
+	core_variable_array_appendAsOptionArg options "$optionName" "$variableValue"
+}

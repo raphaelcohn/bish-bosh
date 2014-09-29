@@ -1,0 +1,67 @@
+bishbosh_write_controlpacket_SUBSCRIBE()
+{
+	local packetIdentifier=$1
+	shift 1
+
+	local -i remainingLength=2
+	
+	if [ $# -lt 2 ]; then
+		connection_messageFAIL SUBSCRIBE "control packets must have at least one topic filter - qos pair"
+	fi
+
+	declare -ai topic_filters_size=()
+	declare -a topic_filters=()
+	declare -ai topic_filters_qos=()
+	
+	local topic_filter
+	local -i topic_filter_fieldLength
+	local qos
+	while $# -gt 0
+	do
+		if [ $# -lt 2 ]; then
+			connection_messageFAIL SUBSCRIBE "control packets must have balanced topic_fiter - qos pairs"
+		fi
+		topic_filter="$1"
+		if [ "${#topic_filter}" -eq 0 ]; then
+			connection_messageFAIL SUBSCRIBE "topic_filter can not be empty"
+		fi
+		qos="$2"
+		case $qos in
+			0|1|2)
+			
+			;;
+			
+			3)
+				connection_messageFAIL SUBSCRIBE "qos 3 is reserved"
+			;;
+			
+			*)
+				connection_messageFAIL SUBSCRIBE "qos must be 0-2, not '$qos'"
+			;;
+		esac
+		
+		# 3 is from 2 for length and 1 for QoS byte
+		topic_filter_fieldLength=${#topic_filter}
+		_bishbosh_write_controlpacket_guardUtf8StringOrBinaryFieldLength SUBSCRIBE topic_filter $topic_filter_fieldLength
+		_bishbosh_write_controlpacket_guardUtf8StringOrBinaryFieldLength 
+		remainingLength=$(( remainingLength + 3 + topic_filter_fieldLength ))
+		topic_filters_size+=($topic_fiter_fieldLength)
+		topic_filters+=(topic_filter)
+		topic_filters_qos+=($qos)
+		shift 2
+	done
+	
+	# 8 << 4 + 1 << 1 in octal
+	printf '\202' >&10 2>&11
+	bishbosh_write_remainingLength $remainingLength >&10 2>&11
+	
+	bishbosh_write_twoByteLength $packetIdentifier >&10 2>&11
+	
+	local -i index
+	for index in ${!topic_filters[@]}
+	do
+		bishbosh_write_twoByteLength ${topic_filters_size[$index]} >&10 2>&11
+		echo -nE "${topic_filters[$index]}" >&10 2>&11
+		bishbosh_write_byte "${topic_filters_qos[$index]}" >&10 2>&11
+	done
+}

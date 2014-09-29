@@ -1,0 +1,45 @@
+bishbosh_write_controlpacket_UNSUBSCRIBE()
+{
+	local packetIdentifier=$1
+	shift 1
+
+	local remainingLength=2
+	
+	if [ $# -eq 0 ]; then
+		connection_messageFAIL UNSUBSCRIBE "control packets must have at least one topic filter"
+	fi
+
+	declare -ai topic_filters_size=()
+	declare -a topic_filters=()
+	
+	local topic_filter
+	local -i topic_filter_fieldLength
+	local qos
+	while $# -gt 0
+	do
+		topic_filter="$1"
+		if [ "${#topic_filter}" -eq 0 ]; then
+			connection_messageFAIL UNSUBSCRIBE "topic_filter can not be empty"
+		fi
+		
+		topic_filter_fieldLength=${#topic_filter}
+		_bishbosh_write_controlpacket_guardUtf8StringOrBinaryFieldLength UNSUBSCRIBE topic_filter $topic_filter_fieldLength
+		remainingLength=$(( remainingLength + 2 + topic_filter_fieldLength ))
+		topic_filters_size+=($topic_fiter_fieldLength)
+		topic_filters+=(topic_filter)
+		shift 2
+	done
+	
+	# 10 << 4 + 1 << 1 in octal
+	printf '\242' >&10 2>&11
+	bishbosh_write_remainingLength $remainingLength >&10 2>&11
+	
+	bishbosh_write_twoByteLength $packetIdentifier >&10 2>&11
+	
+	local -i index
+	for index in ${!topic_filters[@]}
+	do
+		bishbosh_write_twoByteLength ${topic_filters_size[$index]} >&10 2>&11
+		echo -nE "${topic_filters[$index]}" >&10 2>&11
+	done
+}

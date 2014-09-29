@@ -1,0 +1,207 @@
+_bishbosh_write_controlpacket_CONNECT_validateArguments()
+{
+	# TODO: May be change from exit to return in core_exitError?
+	if core_variable_isUnset bishbosh_write_controlpacket_CONNECT_cleanSession; then
+		cleanSession=0
+	else
+		core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'argument' bishbosh_write_controlpacket_CONNECT_cleanSession "$bishbosh_write_controlpacket_CONNECT_cleanSession"
+		if core_variable_isTrue "$bishbosh_write_controlpacket_CONNECT_cleanSession"; then
+			cleanSession=1
+			connectFlags=$(( connectFlags + 1 << 1 ))
+		else
+			cleanSession=0
+		fi
+	fi
+		
+	if core_variable_isUnset bishbosh_write_controlpacket_CONNECT_willTopic; then
+		if core_variable_isSet bishbosh_write_controlpacket_CONNECT_willMessage; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_CONNECT_willMessage' can not be set when 'bishbosh_write_controlpacket_CONNECT_willTopic' is unset"
+		fi
+		if core_variable_isSet bishbosh_write_controlpacket_CONNECT_willQos; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_CONNECT_willQos' can not be set when 'bishbosh_write_controlpacket_CONNECT_willTopic' is unset"
+		fi
+		if core_variable_isSet bishbosh_write_controlpacket_CONNECT_willRetain; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_CONNECT_willRetain' can not be set when 'bishbosh_write_controlpacket_CONNECT_willTopic' is unset"
+		fi
+		willTopic=''
+		willTopic_fieldLength=-1
+		bishbosh_write_controlpacket_fieldLengthCheck CONNECT 0 password
+		willMessage=''
+		willMessage_fieldLength=-1
+	else
+		# Will Flag
+		connectFlags=$(( connectFlags + 1 << 2 ))
+		
+		# Will Topic
+		willTopic="$bishbosh_write_controlpacket_CONNECT_willTopic"
+		bishbosh_write_controlpacket_fieldLengthCheck CONNECT 1 willTopic
+		willTopic_fieldLength=${#willTopic}
+		remainingLength=$(( remainingLength + 2 + willTopic_fieldLength ))
+		
+		# Will Message
+		if core_variable_isUnset bishbosh_write_controlpacket_CONNECT_willMessage; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_CONNECT_willMessage' must be set when 'bishbosh_write_controlpacket_CONNECT_willTopic' is set"
+		fi
+		willMessage="$bishbosh_write_controlpacket_CONNECT_willMessage"
+		bishbosh_write_controlpacket_fieldLengthCheck CONNECT 0 willMessage
+		willTopic_fieldLength=${#willMessage}
+		remainingLength=$(( remainingLength + 2 + willMessage_fieldLength ))
+		
+		# Will QoS
+		if core_variable_isUnset bishbosh_write_controlpacket_CONNECT_willQoS; then
+			willQoS=0
+		else
+			core_validate_isUnsignedInteger $core_commandLine_exitCode_CONFIG 'argument' bishbosh_write_controlpacket_CONNECT_willQoS "$bishbosh_write_controlpacket_CONNECT_willQoS"
+			if [ $bishbosh_write_controlpacket_CONNECT_willQoS -gt 2 ]; then
+				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_CONNECT_willQoS' must be between 0 and 2 inclusive"
+			fi
+			willQoS=$bishbosh_write_controlpacket_CONNECT_willQoS
+		fi
+		connectFlags=$(( connectFlags + will_qos << 3 ))
+		
+		# Will Retain
+		if core_variable_isSet bishbosh_write_controlpacket_CONNECT_willRetain; then
+			core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'argument' bishbosh_write_controlpacket_CONNECT_cleanSession "$bishbosh_write_controlpacket_CONNECT_cleanSession"
+			if core_variable_isTrue "$bishbosh_write_controlpacket_CONNECT_cleanSession"; then
+				connectFlags=$(( connectFlags + 1 << 5 ))
+			fi
+		fi
+	fi
+	
+	if core_variable_isUnset bishbosh_write_controlpacket_CONNECT_keepAlive; then
+		keepAlive=0
+	else
+		core_validate_isUnsignedInteger "$bishbosh_write_controlpacket_CONNECT_keepAlive"
+		if [ $bishbosh_write_controlpacket_CONNECT_keepAlive -gt 65535 ]; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_CONNECT_keepAlive' should be between 0 and 65535, not '$bishbosh_write_controlpacket_CONNECT_keepAlive'"
+		fi
+		keepAlive=$bishbosh_write_controlpacket_CONNECT_keepAlive
+	fi
+	
+	if core_variable_isUnset bishbosh_write_controlpacket_CONNECT_clientId; then
+		# generate a random client-id
+		if [ $cleanSession -eq 0 ]; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_CONNECT_clientId' must be set if the argument 'bishbosh_write_controlpacket_CONNECT_cleanSession' is true (yes)"
+		fi
+		clientId="$(core_random_characterForEncodingLettersAndNumbers)$(core_random_characterForEncodingLettersAndNumbers)$(core_random_characterForEncodingLettersAndNumbers)$(core_random_characterForEncodingLettersAndNumbers)$(core_random_characterForEncodingLettersAndNumbers)"
+	elif [ -z "$bishbosh_write_controlpacket_CONNECT_clientId" ]; then
+		if [ $cleanSession -eq 0 ]; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_CONNECT_clientId' can not be empty (blank) if the argument 'bishbosh_write_controlpacket_CONNECT_cleanSession' is true (yes)"
+		fi
+		clientId=''
+	else
+		clientId="$bishbosh_write_controlpacket_CONNECT_clientId"
+	fi
+	clientId_fieldLength=${#clientId}
+	bishbosh_write_controlpacket_fieldLengthCheck CONNECT 0 clientId
+	remainingLength=$(( remainingLength + 2 + clientId_fieldLength ))
+
+	if core_variable_isUnset bishbosh_write_controlpacket_CONNECT_username; then
+		username=''
+		username_fieldLength=-1
+	else
+		username="$bishbosh_write_controlpacket_CONNECT_username"
+		bishbosh_write_controlpacket_fieldLengthCheck CONNECT 0 username
+		username_fieldLength=${#username}
+		remainingLength=$(( remainingLength + 2 + username_fieldLength ))
+		connectFlags=$(( connectFlags + 1 << 7 ))
+	fi
+	
+	if core_variable_isUnset bishbosh_write_controlpacket_CONNECT_password; then
+		password=''
+		password_fieldLength=-1
+	else
+		password="$bishbosh_write_controlpacket_CONNECT_password"
+		bishbosh_write_controlpacket_fieldLengthCheck CONNECT 0 password
+		password_fieldLength=${#password}
+		remainingLength=$(( remainingLength + 2 + password_fieldLength ))
+		connectFlags=$(( connectFlags + 1 << 6 ))
+	fi
+}
+
+bishbosh_write_controlpacket_fieldLengthCheck()
+{
+	local packetName="$1"
+	local minimumLength=$2
+	local variableName="$3"
+	
+	local length=$(core_variable_length "$variableName")
+	if [ $length -lt $minimumLength ]; then
+		if [ $minimumLength -eq 1 ]; then
+			local plural=''
+		else
+			local plural='s'
+		fi
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_${packetName}_${variableName}' can not be less than $minimumLength byte${plural}"
+	fi
+	if [ $length -gt 65535 ]; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_${packetName}_${variableName}' can not be longer than 65,535 bytes"
+	fi
+}
+
+bishbosh_write_controlpacket_CONNECT()
+{
+	# 8 byte preamble and 2 byte keep-alive
+	local remainingLength=10
+	local connectFlags=0
+	
+	local cleanSession
+	local willTopic
+	local willTopic_fieldLength
+	local willMessage
+	local willMessage_fieldLength
+	local willQoS
+	local keepAlive
+	local clientId
+	local clientId_fieldLength
+	local username
+	local username_fieldLength
+	local password
+	local password_fieldLength
+	_bishbosh_write_controlpacket_CONNECT_validateArguments
+	
+	core_TODO 'password, will payload can contain embedded ASCII NULL!'
+	core_TODO 'consider loading username, password, will details based on client-id...'
+	core_TODO 'keep-alive is based on server connection details - it is a broker specific thing - goes with broker configurations'
+	core_TODO 'Support a binary password (embedded NULs)'
+	core_TODO 'Use .netrc for password! (or a password file; required if we are going to use embedded NULs for SASL)'
+	
+	# CONNECT 1 << 4 in Octal (1 byte)
+	printf '\020'
+
+	# Remaining Length (1 - 3 bytes; 4 bytes would never be required)
+	bishbosh_write_remainingLength $remainingLength
+
+	# protocol name (MSB, LSB, MQTT), protocol level (7 bytes)
+	printf '\000\004MQTT\004'
+
+	# connect flag (1 byte)
+	bishbosh_write_byte $connectFlags
+
+	# two-byte size of Keep Alive (2 bytes)
+	bishbosh_write_twoByteLength $keepAlive
+
+	# client id
+	bishbosh_write_twoByteLength $clientId_fieldLength
+	printf '%s' "$clientId"
+
+	# will topic & will message
+	if [ $willTopic_fieldLength -ne -1 ]; then
+		bishbosh_write_twoByteLength $willTopic_fieldLength
+		printf '%s' "$willTopic"
+		bishbosh_write_twoByteLength $willMessage_fieldLength
+		printf '%s' "$willMessage"
+	fi
+
+	# username
+	if [ $username_fieldLength -ne -1 ]; then
+		bishbosh_write_twoByteLength $username_fieldLength
+		printf '%s' "$username"
+	fi
+
+	# password
+	if [ $password_fieldLength -ne -1 ]; then
+		bishbosh_write_twoByteLength $password_fieldLength
+		printf '%s' "$password"
+	fi
+}

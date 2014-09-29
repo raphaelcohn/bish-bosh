@@ -1,1 +1,1 @@
-ucspi-tcp-ipv6 tcpclient /usr/bin/tcpclient
+ucspi-tcp-inet6 tcpclient /usr/bin/tcpclient

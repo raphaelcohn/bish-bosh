@@ -3,7 +3,7 @@ function _connection_message()
 	local -r code="$1"
 	local -r controlPacket="$2"
 	local -r message="$3"
-	echo -e "$1:Connection:$connectionId:ControlPacket:$controlPacket:Message:$message" 1>&2
+	core_message INFO "$1:Connection:$connectionId:ControlPacket:$controlPacket:Message:$message" 1>&2
 }
 
 function connection_messageFAIL()
