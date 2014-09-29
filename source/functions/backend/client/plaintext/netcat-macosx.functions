@@ -20,6 +20,20 @@ function backend_client_plaintext_netcat-macosx_start()
 	
 	backend_client_get_tunelling
 	
+	LOGIC HERE IS PROBABLY WRONG!
+	should be:
+	need to fix all other code
+	
+	if [ "${backend_client_options_localInterface+unset}" != 'unset' ]; then
+		# backend_client_options_localInterface is unset
+		options_add '-b' "$backend_client_options_localInterface"
+	else
+		if [ -z "$backend_client_options_localInterface" ]; then
+			bishbosh_exitError 'backend_client_options_localInterface '$backend_client_options_localInterface' (empty) is invalid'
+		fi
+	fi
+	
+	
 	if [ ${backend_client_options_localInterface+unset} != 'unset' ]; then
 		if [ -z "$backend_client_options_localInterface" ]; then
 			bishbosh_exitError 'backend_client_options_localInterface '$backend_client_options_localInterface' (empty) is invalid'
