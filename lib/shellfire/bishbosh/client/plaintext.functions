@@ -1,3 +1,5 @@
+core_usesIn bishbosh/client/plaintext 
+
 core_dependency_requires '*' uname
 core_dependency_requires '*' grep
 core_dependency_requires '*' head

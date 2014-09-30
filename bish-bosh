@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env dash
 
 _program()
 {
@@ -6,6 +6,8 @@ _program()
 	
 	bishbosh()
 	{
+		bishbosh_client_plaintext_find
+		
 		echo hello
 	}
 }
@@ -196,7 +198,7 @@ _program_commandLine_processOptionWithArgument()
 		;;
 		
 		s|server)
-			bishbosh_validate_server $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_validate_address $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_server="$optionValue"
 		;;
 		
@@ -212,7 +214,7 @@ _program_commandLine_processOptionWithArgument()
 		;;
 		
 		proxy-server)
-			bishbosh_validate_server $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_validate_address $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_proxyServer="$optionValue"
 			_program_configurationSet_bishbosh_proxyServer=0
 		;;

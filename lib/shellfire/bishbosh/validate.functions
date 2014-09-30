@@ -4,6 +4,22 @@ bishbosh_validate_backend()
 	local category="$2"
 	local name="$3"
 	local value="$4"
+	
+	case "$value" in
+		
+		bash)
+		
+		;;
+		
+		nc6)
+		
+		;;
+		
+		ncat)
+		
+		;;
+		
+	esac
 }
 
 bishbosh_validate_address()
@@ -21,7 +37,8 @@ bishbosh_validate_transport()
 	local name="$3"
 	local value="$4"
 	
-	case "$value" in)
+	case "$value" in
+		
 		inet4)
 			:
 		;;
@@ -52,7 +69,7 @@ bishbosh_validate_proxyKind()
 	local name="$3"
 	local value="$4"
 	
-	case "$value" in)
+	case "$value" in
 		
 		SOCKS4|SOCKS5|HTTP)
 			:
