@@ -1,4 +1,4 @@
-core_usesIn bishbosh connection
+core_usesIn bishbosh/write/controlpacket CONNACK CONNECT DISCONNECT PINGREQ PINGRESP PUBACK PUBCOMP PUBLISH PUBREC PUBREL SUBACK SUBSCRIBE UNSUBACK UNSUBSCRIBE
 
 bishbosh_write_controlpacket_fieldLengthCheck()
 {

@@ -2,7 +2,7 @@
 
 _program()
 {
-	core_usesIn bishbosh validate client/plaintext
+	core_usesIn bishbosh validate client/plaintext write/controlpacket read/controlpacket
 	
 	bishbosh()
 	{

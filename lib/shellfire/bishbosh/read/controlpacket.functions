@@ -1,3 +1,5 @@
+core_usesIn bishbosh/read/controlpacket CONNACK CONNECT DISCONNECT invalid PINGREQ PINGRESP
+
 bishbosh_read_controlpacket_initialise()
 {
 	local isServer="$1"

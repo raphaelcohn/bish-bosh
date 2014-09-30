@@ -1,13 +1,5 @@
 bishbosh_read_controlpacket_CONNACK()
 {
-	# Remaining Length of 2
-	#printf '\040\002'
-	#bishbosh_write_byte $sessionPresent
-	#bishbosh_write_byte $connectReturnCode
-}
-
-bishbosh_read_controlpacket_CONNACK()
-{
 	if [ $byte1 -ne 2 ]; then
 		bishbosh_read_invalid "CONNACK" "Invalid remaining length (was $byte1, not 2)"
 	fi

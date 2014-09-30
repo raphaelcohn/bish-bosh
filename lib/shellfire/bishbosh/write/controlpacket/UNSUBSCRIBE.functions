@@ -5,7 +5,7 @@ _bishbosh_write_controlpacket_UNSUBSCRIBE_validateArguments()
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_UNSUBSCRIBE_topics' must contain at least one topic"
 	fi
 	
-	while [ $# -gt 0 ]; then
+	while [ $# -gt 0 ]
 	do
 		topicFilter="$1"
 		bishbosh_write_controlpacket_fieldLengthCheck SUBSCRIBE 1 topicFilter
@@ -32,7 +32,7 @@ bishbosh_write_controlpacket_UNSUBSCRIBE()
 	bishbosh_write_remainingLength $remainingLength
 	bishbosh_write_twoByteLength $packetIdentifier
 	
-	while [ $# -gt 0 ]; then
+	while [ $# -gt 0 ]
 	do
 		topicFilter="$1"
 

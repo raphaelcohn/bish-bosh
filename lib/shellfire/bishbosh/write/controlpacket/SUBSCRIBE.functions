@@ -5,7 +5,7 @@ _bishbosh_write_controlpacket_SUBSCRIBE_validateArguments()
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_SUBSCRIBE_topicQoSPairs' must contain at least one pair"
 	fi
 	
-	while [ $# -gt 1 ]; then
+	while [ $# -gt 1 ]
 	do
 		topicFilter="$1"
 		bishbosh_write_controlpacket_fieldLengthCheck SUBSCRIBE 1 topicFilter
