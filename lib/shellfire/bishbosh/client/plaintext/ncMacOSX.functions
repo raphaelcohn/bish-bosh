@@ -95,7 +95,7 @@ backend_client_plaintext_ncMacOSX_start()
 	
 	# https://stackoverflow.com/questions/6702474/bash-best-architecture-for-reading-from-two-input-streams
 	
-	local -r connectionId=100
+	local connectionId=100
 	
 	# Useless logic without named pipes
 	# There is an order to named pipes

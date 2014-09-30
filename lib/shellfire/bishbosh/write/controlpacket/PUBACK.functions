@@ -7,5 +7,5 @@ bishbosh_write_controlpacket_PUBACK()
 	# 4 << 4 in octal, followed by 2 (remaining length)
 	printf '\100\002' >&10 2>&11
 	
-	bishbosh_write_twoByteLength $packetIdentifier >&10 2>&11
+	bishbosh_write_twoByteLength packetIdentifier >&10 2>&11
 }

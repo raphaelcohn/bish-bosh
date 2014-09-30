@@ -1,8 +1,9 @@
+core_usesIn bishbosh write
 bishbosh_write_controlpacket_PUBCOMP()
 {
 	local packetIdentifier=$1
 	
 	# 7 << 4 in octal, followed by 2 (remaining length)
-	printf '\160\002' >&10 2>&11
-	bishbosh_write_twoByteLength $packetIdentifier >&10 2>&11
+	printf '\160\002'
+	bishbosh_write_twoByteLength $packetIdentifier
 }

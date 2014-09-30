@@ -10,7 +10,7 @@ function _dependency_check_determineDistributionName()
 	done
 
 	if which lsb_release 1>/dev/null 2>/dev/null; then
-		local -r lsbDistributor="$(lsb_release --id --short)"
+		local lsbDistributor="$(lsb_release --id --short)"
 		if [ -n "$lsbDistributor" ]; then
 			readonly distributionName="$lsbDistributor"
 			return 0

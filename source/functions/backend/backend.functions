@@ -1,8 +1,8 @@
 function backend_determineIfAuto()
 {
-	local -r backend="$1"
-	local -r kind="$2"
-	local -r pathsFile="$bishbosh_configPath"/backends/"$backend"/"$kind"/*."$distributionName".path
+	local backend="$1"
+	local kind="$2"
+	local pathsFile="$bishbosh_configPath"/backends/"$backend"/"$kind"/*."$distributionName".path
 	:
 }
 

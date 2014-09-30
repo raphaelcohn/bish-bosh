@@ -1,5 +1,5 @@
 bishbosh_write_controlpacket_PINGRESP()
 {
 	# 13 << 4 in octal, followed by 0 (remaining length)
-	printf '\320\000' >&10 2>&11
+	printf '\320\000'
 }

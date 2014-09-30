@@ -11,9 +11,9 @@ dependency_check_register dependency_check_CentOS_checkFunction
 function dependency_check_CentOS_packageManager()
 {
 	if [ "$bishbosh_beVerbose" = no ]; then
-		local -r yumVerbosity=" --quiet"
+		local yumVerbosity=" --quiet"
 	else
-		local -r yumVerbosity=""
+		local yumVerbosity=""
 	fi
 	
 	sudo -p "Please enter your password for sudo to update yum: " yum makecache

@@ -127,7 +127,7 @@ function backend_client_plaintext_netcat-macosx_start()
 	# kill -9 $outboundPipeCat will stop the cat, which causes EOF to netcat, which stops netcat
 	# unfortunately this design does not allow errors from netcat to be caught
 	cat >"$backend_client_outboundPipe" &
-	local -ir outboundPipeCat=$!
+	local outboundPipeCat=$!
 	backend_client_processIdsToKill+=($outboundPipeCat)
 	
 	local -i options_instanceId

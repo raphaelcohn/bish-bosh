@@ -54,7 +54,7 @@ function trap_executeOnTrapEXIT()
 
 function trap_addOnTrapEXIT()
 {
-	local -r handler="$1"
+	local handler="$1"
 	trap_handlersEXIT+=("$handler")
 }
 
@@ -69,7 +69,7 @@ function trap_executeOnTrapDEBUG()
 
 function trap_addOnTrapDEBUG()
 {
-	local -r handler="$1"
+	local handler="$1"
 	trap_handlersDEBUG+=("$handler")
 }
 
@@ -84,7 +84,7 @@ function trap_executeOnTrapHUP()
 
 function trap_addOnTrapHUP()
 {
-	local -r handler="$1"
+	local handler="$1"
 	trap_handlersHUP+=("$handler")
 }
 
@@ -100,7 +100,7 @@ function trap_executeOnTrapINT()
 
 function trap_addOnTrapINT()
 {
-	local -r handler="$1"
+	local handler="$1"
 	trap_handlersINT+=("$handler")
 }
 
@@ -116,7 +116,7 @@ function trap_executeOnTrapQUIT()
 
 function trap_addOnTrapQUIT()
 {
-	local -r handler="$1"
+	local handler="$1"
 	trap_handlersQUIT+=("$handler")
 }
 
@@ -133,7 +133,7 @@ function trap_executeOnTrapABRT()
 
 function trap_addOnTrapABRT()
 {
-	local -r handler="$1"
+	local handler="$1"
 	trap_handlersABRT+=("$handler")
 }
 
@@ -150,7 +150,7 @@ function trap_executeOnTrapPIPE()
 
 function trap_addOnTrapPIPE()
 {
-	local -r handler="$1"
+	local handler="$1"
 	trap_handlersPIPE+=("$handler")
 }
 
@@ -167,7 +167,7 @@ function trap_executeOnTrapTERM()
 
 function trap_addOnTrapTERM()
 {
-	local -r handler="$1"
+	local handler="$1"
 	trap_handlersTERM+=("$handler")
 }
 
@@ -185,7 +185,7 @@ function trap_executeOnTrapTSTP()
 
 function trap_addOnTrapTSTP()
 {
-	local -r handler="$1"
+	local handler="$1"
 	trap_handlersTSTP+=("$handler")
 }
 
@@ -203,7 +203,7 @@ function trap_executeOnTrapINFO()
 
 function trap_addOnTrapINFO()
 {
-	local -r handler="$1"
+	local handler="$1"
 	trap_handlersINFO+=("$handler")
 }
 
@@ -218,7 +218,7 @@ function trap_executeOnTrapUSR1()
 
 function trap_addOnTrapUSR1()
 {
-	local -r handler="$1"
+	local handler="$1"
 	trap_handlersUSR1+=("$handler")
 }
 
@@ -233,7 +233,7 @@ function trap_executeOnTrapUSR2()
 
 function trap_addOnTrapUSR2()
 {
-	local -r handler="$1"
+	local handler="$1"
 	trap_handlersUSR2+=("$handler")
 }
 

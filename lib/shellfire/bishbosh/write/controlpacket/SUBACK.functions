@@ -1,29 +1,41 @@
-bishbosh_write_controlpacket_SUBACK()
+# We do not validate as we write, so avoiding a loop; better to write all or none at all
+_bishbosh_write_controlpacket_SUBACK_validateArguments()
 {
-	local -ir packetIdentifier=$1
-	shift 1
-	
-	local -ir remainingLength=$(( 2 + ${#} ))
-	
-	# 9 << 4 in octal
-	printf '\220' >&10 2>&11
-	
-	bishbosh_write_remainingLength $remainingLength >&10 2>&11
-	
-	bishbosh_write_twoByteLength $packetIdentifier >&10 2>&11
-	local -i resultCode
 	for resultCode in "$@"
 	do
-		case $resultCode in
+		case "$resultCode" in
 			
 			0|1|2|128)
 				:
 			;;
 			
 			*)
-				connection_messageFAIL SUBACK "resultCodes must be 0, 1, 2 or 128, not '$resultCode'"
+				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_SUBACK_resultCodes' must only contain values 0, 1, 2, and 128, not '$resultCode'"
 			;;
 			
 		esac
+	done
+}
+
+core_usesIn bishbosh write
+bishbosh_write_controlpacket_SUBACK()
+{
+	local packetIdentifier=$1
+	shift 1
+	
+	local resultCode
+	local remainingLength=$(( 2 + ${#} ))
+	_bishbosh_write_controlpacket_SUBACK_validateArguments
+	
+	# 9 << 4 in octal
+	printf '\220'
+	
+	bishbosh_write_remainingLength $remainingLength
+	
+	bishbosh_write_twoByteLength $packetIdentifier
+	
+	for resultCode in "$@"
+	do
+		bishbosh_write_byte $resultCode
 	done
 }

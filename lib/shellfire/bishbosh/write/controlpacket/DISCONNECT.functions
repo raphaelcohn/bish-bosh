@@ -1,5 +1,5 @@
 bishbosh_write_controlpacket_DISCONNECT()
 {
 	# 14 << 4 in octal, followed by 0 (remaining length)
-	printf '\340\000' >&10 2>&11
+	printf '\340\000'
 }

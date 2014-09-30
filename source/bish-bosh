@@ -78,7 +78,7 @@ function bishbosh_message()
 # Such a critical piece is code executed before and during command line arg parsing
 function bishbosh_dirname()
 {
-	local -r converted="${1%/*}"
+	local converted="${1%/*}"
 	if [ "$converted" = "$1" ]; then
 		echo "."
 	else
@@ -221,17 +221,17 @@ function bishbosh_loadAnyConfiguration()
 		readonly -a bishbosh_machines
 	}
 	
-	local -r etcSwitchConfiguration="${bishbosh_configPath}"/switch-configuration
+	local etcSwitchConfiguration="${bishbosh_configPath}"/switch-configuration
 	if [ -f "$etcSwitchConfiguration" ]; then
 		source "$etcSwitchConfiguration"
 	fi
 	
-	local -r userSwitchConfiguration=~/."$ourName"
+	local userSwitchConfiguration=~/."$ourName"
 	if [ -r "$userSwitchConfiguration" ]; then
 		source "$userSwitchConfiguration"
 	fi
 	
-	local -r environmentVariableSwitchConfiguration="$BISHBOSH_CONFIGURATION"
+	local environmentVariableSwitchConfiguration="$BISHBOSH_CONFIGURATION"
 	if [ -n "$environmentVariableSwitchConfiguration" ]; then
 		if [ -r "$environmentVariableSwitchConfiguration" ]; then
 			source "$environmentVariableSwitchConfiguration"

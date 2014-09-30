@@ -1,6 +1,6 @@
 bishbosh_write_controlpacket_UNSUBACK()
 {
-	local -ir packetIdentifier=$1
+	local packetIdentifier=$1
 	
 	# 11 << 4 in octal, followed by 2 (remaining length)
 	printf '\260\002' >&10 2>&11

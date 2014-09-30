@@ -1,5 +1,29 @@
 core_usesIn bishbosh connection
 
+
+
+
+bishbosh_write_controlpacket_fieldLengthCheck()
+{
+	local packetName="$1"
+	local minimumLength=$2
+	local variableName="$3"
+	
+	local length=$(core_variable_length "$variableName")
+	if [ $length -lt $minimumLength ]; then
+		if [ $minimumLength -eq 1 ]; then
+			local plural=''
+		else
+			local plural='s'
+		fi
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_${packetName}_${variableName}' can not be less than $minimumLength byte${plural}"
+	fi
+	if [ $length -gt 65535 ]; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_${packetName}_${variableName}' can not be longer than 65,535 bytes"
+	fi
+}
+
+
 function _bishbosh_write_controlpacket_CONNECT_verifyFieldPresent()
 {
 	local expectedFieldName="$1"

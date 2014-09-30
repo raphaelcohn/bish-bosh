@@ -19,7 +19,7 @@ function dependency_determineDistributionName()
 	done
 	
 	if which lsb_release 1>/dev/null 2>/dev/null; then
-		local -r lsbDistributor="$(lsb_release --id --short)"
+		local lsbDistributor="$(lsb_release --id --short)"
 		if [ -n "$lsbDistributor" ]; then
 			readonly distributionName="$lsbDistributor"
 			return 0
@@ -32,7 +32,7 @@ dependency_functions+=(dependency_determineDistributionName)
 
 function dependency_setUpAliases()
 {
-	local -r pathsFile="$bishbosh_configPath"/paths.d/"$distributionName".path
+	local pathsFile="$bishbosh_configPath"/paths.d/"$distributionName".path
 	if [ ! -f "$pathsFile" ]; then
 		return 0
 	fi

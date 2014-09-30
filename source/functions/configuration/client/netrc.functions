@@ -1,7 +1,7 @@
 function configuration_client_netrc()
 {
-	local -r serverName="$1"
-	local -r netrcFilePath="$2"
+	local serverName="$1"
+	local netrcFilePath="$2"
 
 	if [ ! -f "$netrcFilePath" ]; then
 		return 0

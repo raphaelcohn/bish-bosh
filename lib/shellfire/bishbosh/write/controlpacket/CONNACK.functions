@@ -22,6 +22,7 @@ _bishbosh_write_controlpacket_CONNACK_validateArguments()
 	fi
 }
 
+core_usesIn bishbosh write
 bishbosh_write_controlpacket_CONNACK()
 {
 	local remainingLength=10

@@ -322,7 +322,7 @@ function backend_client_normaliseOptions()
 		fi
 	fi
 	
-	local -r remoteAddress="$backend_client_options_remoteAddress"
+	local remoteAddress="$backend_client_options_remoteAddress"
 	if [ -z "$remoteAddress" ]; then
 		bishbosh_exitError "Backend client 'remoteAddress' is not set"
 	else
@@ -369,7 +369,7 @@ function backend_client_loop()
 		# nc has exited - how do we detect this? just try to write and TRAP the error?
 		# also need to trap clean up
 	
-		local -r connectionId=100
+		local connectionId=100
 	
 		write_controlpacket_CONNECT_arguments_clean_session=yes
 		#write_controlpacket_CONNECT_arguments_will_topic=
