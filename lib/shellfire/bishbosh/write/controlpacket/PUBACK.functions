@@ -2,10 +2,11 @@ core_usesIn bishbosh write
 
 bishbosh_write_controlpacket_PUBACK()
 {
-	local packetIdentifier=$1
+	local packetIdentifier
+	bishbosh_write_controlpacket_packetIdentifierCheck bishbosh_write_controlpacket_PUBACK_packetIdentifier "$bishbosh_write_controlpacket_PUBACK_packetIdentifier"
 	
 	# 4 << 4 in octal, followed by 2 (remaining length)
-	printf '\100\002' >&10 2>&11
+	printf '\100\002'
 	
-	bishbosh_write_twoByteLength packetIdentifier >&10 2>&11
+	bishbosh_write_twoByteLength packetIdentifier
 }

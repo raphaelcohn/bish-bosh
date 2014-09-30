@@ -1,102 +1,90 @@
 core_usesIn bishbosh write
 
-# TODO: more optimised versions of this function are possible, eg with pre-set flags, flags as ints, etc
-function bishbosh_write_controlpacket_PUBLISH()
+_bishbosh_write_controlpacket_PUBLISH_validateArguments()
 {
-	local -i remainingLength=0
-	
-	# 3 << 4
-	local -i controlPacketTypeAndFlags=48
-	local dup=${bishbosh_write_controlpacket_PUBLISH_arguments['dup']}
-	case "$dup" in
-		
-		yes)
+	if core_variable_isSet bishbosh_write_controlpacket_PUBLISH_dup; then
+		if core_variable_isTrue bishbosh_write_controlpacket_PUBLISH_dup; then
 			controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + 1 << 3 ))
-		;;
-		
-		no)
-			:
-		;;
-		
-		*)
-			connection_messageFAIL PUBLISH "dup must be yes or no, not '$dup'"
-		;;
-		
-	esac
-
-	if ! _bishbosh_write_controlpacket_PUBLISH_verifyFieldPresent 'qos'; then
-		local packet_identifier=-1
+		fi
+	fi
+	
+	if core_variable_isUnset bishbosh_write_controlpacket_PUBLISH_qos; then
+		packetIdentifier=-1
 	else
-		case "$qos" in 
-		
+		qos="$bishbosh_write_controlpacket_PUBLISH_qos"
+		case "$qos" in
+			
 			0)
-				local packet_identifier=-1
+				packetIdentifier=-1	
 			;;
-		
+			
 			1|2)
-				controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + qos << 2 ))
-				if ! _bishbosh_write_controlpacket_PUBLISH_verifyFieldPresent 'packet_identifier'; then
-					connection_messageFAIL PUBLISH "messages published at QoS 1 or 2 must have a packet_identifier"
+				if core_variable_isUnset bishbosh_write_controlpacket_PUBLISH_packetIdentifier; then
+					core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_CONNECT_packetIdentifer' must be set when 'bishbosh_write_controlpacket_CONNECT_qos' is '$qos'"
 				fi
-				local packet_identifier=${bishbosh_write_controlpacket_PUBLISH_arguments['packet_identifier']}
+				bishbosh_write_controlpacket_packetIdentifierCheck bishbosh_write_controlpacket_PUBLISH_packetIdentifier "$bishbosh_write_controlpacket_PUBLISH_packetIdentifer"
+				
+				controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + qos << 2 ))
 				remainingLength=$(( remainingLength + 2 ))
 			;;
-		
-			3)
-				connection_messageFAIL PUBLISH "qos 3 is reserved"
-			;;
-		
+			
 			*)
-				connection_messageFAIL PUBLISH "qos must be 0-2, not '$qos'"
+				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_CONNECT_qos' can not be '$qos', but a value between 0 to 2 inclusive"
 			;;
+			
 		esac
 	fi
-	
-	local retain="${bishbosh_write_controlpacket_PUBLISH_arguments['retain']}"
-	case "$retain" in
-		
-		yes)
+
+	if core_variable_isSet bishbosh_write_controlpacket_PUBLISH_retain; then
+		if core_variable_isTrue bishbosh_write_controlpacket_PUBLISH_retain; then
 			controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + 1 ))
-		;;
-		
-		no)
-			:
-		;;
-		
-		*)
-			connection_messageFAIL PUBLISH "retain must be yes or no, not '$retain'"
-		;;
-		
-	esac
-	
-	# BUG: We don't check for wildcards, ASCII NULL, or empty topic names
-	if ! _bishbosh_write_controlpacket_PUBLISH_verifyFieldPresent 'topic_name'; then
-		connection_messageFAIL PUBLISH "topic_name is not present"
+		fi
 	fi
-	local topic_name="${bishbosh_write_controlpacket_PUBLISH_arguments['topic_name']}"
-	local topic_name_fieldLength=${#topic_name}
-	_bishbosh_write_controlpacket_guardUtf8StringOrBinaryFieldLength PUBLISH topic_name $topic_name_fieldLength
 	
-	remainingLength=$(( remainingLength + 2 + topic_name_fieldLength ))
+	if core_variable_isUnset bishbosh_write_controlpacket_PUBLISH_topicName; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_PUBLISH_topicName' must be specified"
+	fi
+	topicName="$bishbosh_write_controlpacket_PUBLISH_topicName"
+	bishbosh_write_controlpacket_fieldLengthCheck PUBLISH 0 topicName
+	topicName_fieldLength=${#topicName}
+	remainingLength=$(( remainingLength + 2 + topicName_fieldLength ))
 	
+	if core_variable_isUnset bishbosh_write_controlpacket_PUBLISH_message; then
+		message=''
+	else
+		message="$bishbosh_write_controlpacket_PUBLISH_message"
+		bishbosh_write_controlpacket_fieldLengthCheck PUBLISH 0 message
+	fi
+	message_fieldLength=${#message}
+	remainingLength=$(( remainingLength + 2 + message_fieldLength ))
+}
+
+bishbosh_write_controlpacket_PUBLISH()
+{
+	local remainingLength=0
+	
+	# 3 << 4
+	local controlPacketTypeAndFlags=48
+	local packetIdentifier
+	local qos
+	local topicName
+	local topicName_fieldLength
+	local message
+	local message_fieldLength
+	_bishbosh_write_controlpacket_PUBLISH_validateArguments
+	
+	core_TODO: "We don't check for wildcards, ASCII NULL, or empty topic names"
 	core_TODO "We don't handle binary payloads containing ASCII NULL, and we really ought to also allow the use of files (with offsets, sizes, too, for firmware transmissions) and base64 encoded data"
 	
-	if _bishbosh_write_controlpacket_PUBLISH_verifyFieldPresent 'payload'; then
-		local payload="${bishbosh_write_controlpacket_PUBLISH_arguments['payload']}"
-		remainingLength=$(( remainingLength + 2 + ${#payload} ))
-	else
-		local payload=""
+	bishbosh_write_byte "$controlPacketTypeAndFlags"
+	bishbosh_write_remainingLength $remainingLength
+	
+	bishbosh_write_twoByteLength $topicName_fieldLength
+	printf '%s' "$topicName"
+	
+	if [ $packetIdentifier -ne -1 ]; then
+		bishbosh_write_twoByteLength $packetIdentifier
 	fi
 	
-	echo -ne "${bishbosh_write_byteCache[$controlPacketTypeAndFlags]}"
-	bishbosh_write_remainingLength $remainingLength >&10 2>&11
-	
-	bishbosh_write_twoByteLength $topic_name_fieldLength >&10 2>&11
-	echo -nE "$topic_name" >&10 2>&11
-	
-	if [ $packet_identifier -ne -1 ]; then
-		bishbosh_write_twoByteLength $packet_identifier >&10 2>&11
-	fi
-	
-	echo -nE "$payload" >&10 2>&11
+	printf '%s' "$message"
 }

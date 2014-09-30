@@ -36,8 +36,8 @@ _bishbosh_write_controlpacket_SUBSCRIBE_validateArguments()
 core_usesIn bishbosh write
 bishbosh_write_controlpacket_SUBSCRIBE()
 {
-	local packetIdentifier=$1
-	shift 1
+	local packetIdentifier
+	bishbosh_write_controlpacket_packetIdentifierCheck bishbosh_write_controlpacket_SUBSCRIBE_packetIdentifier "$bishbosh_write_controlpacket_SUBSCRIBE_packetIdentifier"
 
 	local remainingLength=2
 	local topicFilter

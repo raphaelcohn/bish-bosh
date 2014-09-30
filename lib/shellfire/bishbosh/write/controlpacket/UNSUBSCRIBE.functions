@@ -19,8 +19,8 @@ _bishbosh_write_controlpacket_UNSUBSCRIBE_validateArguments()
 core_usesIn bishbosh write
 bishbosh_write_controlpacket_UNSUBSCRIBE()
 {
-	local packetIdentifier=$1
-	shift 1
+	local packetIdentifier
+	bishbosh_write_controlpacket_packetIdentifierCheck bishbosh_write_controlpacket_UNSUBSCRIBE_packetIdentifier "$bishbosh_write_controlpacket_UNSUBSCRIBE_packetIdentifier"
 
 	local remainingLength=2
 	local topicFilter

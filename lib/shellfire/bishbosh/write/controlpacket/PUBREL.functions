@@ -1,7 +1,8 @@
 core_usesIn bishbosh write
 bishbosh_write_controlpacket_PUBREL()
 {
-	local packetIdentifier=$1
+	local packetIdentifier
+	bishbosh_write_controlpacket_packetIdentifierCheck bishbosh_write_controlpacket_PUBREL_packetIdentifier "$bishbosh_write_controlpacket_PUBREL_packetIdentifier"
 	
 	# 6 << 4 in octal + 1 << 1, followed by 2 (remaining length)
 	printf '\142\002'

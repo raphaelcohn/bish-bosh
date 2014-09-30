@@ -20,8 +20,8 @@ _bishbosh_write_controlpacket_SUBACK_validateArguments()
 core_usesIn bishbosh write
 bishbosh_write_controlpacket_SUBACK()
 {
-	local packetIdentifier=$1
-	shift 1
+	local packetIdentifier
+	bishbosh_write_controlpacket_packetIdentifierCheck bishbosh_write_controlpacket_SUBACK_packetIdentifier "$bishbosh_write_controlpacket_SUBACK_packetIdentifier"
 	
 	local resultCode
 	local remainingLength=$(( 2 + ${#} ))

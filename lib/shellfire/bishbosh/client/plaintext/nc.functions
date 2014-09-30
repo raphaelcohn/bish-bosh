@@ -13,7 +13,6 @@ bishbosh_client_plaintext_nc_check()
 	local ncVariantCheckFunction
 	for ncVariantCheckFunction in ncDebianTraditional ncDebianOpenBSD ncMacOSX ncGNU ncToybox ncBusyBox
 	do
-		echo $ncVariantCheckFunction
 		if bishbosh_client_plaintext_${ncVariantCheckFunction}_checkIfNetcatVariant; then
 			return 0
 		fi
