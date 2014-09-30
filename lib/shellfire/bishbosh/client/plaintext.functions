@@ -6,13 +6,19 @@ core_dependency_requires '*' head
 core_dependency_requires '*' tail
 bishbosh_client_plaintext_find()
 {
+	local originalIFS="$IFS"
+	local IFS=','
+	set -- $bishbosh_backends
+	local IFS="$originalIFS"
+	
 	local checkFunction
-	for checkFunction in bash ncToybox ncBusyBox nc6 ncDebianOpenBSD ncDebianTraditional ncat nc socat tcpclient
+	for checkFunction in $@
 	do
 		if bishbosh_client_plaintext_${checkFunction}_check; then
+			core_message INFO "Using plaintext backend '$bishbosh_client_plaintext' on path '$bishbosh_client_plaintextPath'"
 			return 0
 		fi
 	done
 	
-	core_exitError $core_commandLine_exitCode_OSFILE "Could not find an external program (such as nc, nc6, ncat, socat or tcpclient) on the PATH ('$PATH') to make socket connections."
+	core_exitError $core_commandLine_exitCode_OSFILE "Could not find a backend to make socket connections."
 }

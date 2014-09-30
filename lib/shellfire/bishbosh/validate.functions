@@ -1,14 +1,23 @@
-bishbosh_validate_backend()
+bishbosh_validate_backends()
 {
 	local code=$1
 	local category="$2"
 	local name="$3"
 	local value="$4"
-	
-	if core_variable_array_contains _bishbosh_client_plaintext_registration "$value"; then
-		return 0
+
+	if [ ${#value} -eq 0 ]; then
+		core_validate_exit "The $category '$name' must specify at least one backend. Valid backends are '$(core_variable_array_string _bishbosh_client_plaintext_registration ',')'."
 	fi
-	core_validate_exit "The $category '$name' specifies a backend '$value' which is not known. Valid backends are '$(core_variable_array_string _bishbosh_client_plaintext_registration ',')'."
+	
+	local IFS=','
+	local backend
+	for backend in $value
+	do
+		if ! core_variable_array_contains _bishbosh_client_plaintext_registration "$backend"; then
+			core_validate_exit "The $category '$name' specifies a backend '$backend' which is not known. Valid backends are '$(core_variable_array_string _bishbosh_client_plaintext_registration ',')'."
+			return 0
+		fi
+	done
 }
 
 bishbosh_validate_address()

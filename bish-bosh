@@ -25,9 +25,13 @@ readonly _program_entrypoint='bishbosh'
 
 _program_commandLine_parseInitialise()
 {
-	_program_default_backend=AUTO
-	_program_default_server=127.0.0.1
-	_program_default_port=AUTO
+	_program_default_backends="bash,ncToybox,ncBusyBox,nc6,ncDebianOpenBSD,ncDebianTraditional,ncat,nc,socat,tcpclient"
+	
+	if core_variable_isSet bishbosh_backends; then
+		_program_configurationSet_bishbosh_backends=0
+	else
+		_program_configurationSet_bishbosh_backends=1
+	fi
 	
 	if core_variable_isSet bishbosh_transport; then
 		_program_configurationSet_bishbosh_transport=0
@@ -121,7 +125,7 @@ _program_commandLine_optionExists()
 {
 	case "$optionName" in
 		
-		b|backend)
+		b|backends)
 			echo 'yes-argumented'
 		;;
 		
@@ -177,9 +181,9 @@ _program_commandLine_processOptionWithArgument()
 {
 	case "$optionName" in
 		
-		b|backend)
-			bishbosh_validate_backend $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
-			bishbosh_backend="$optionValue"
+		b|backends)
+			bishbosh_validate_backends $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_backends="$optionValue"
 		;;
 		
 		transport)
@@ -363,6 +367,12 @@ _program_commandLine_validate()
 		codeServer=$core_commandLine_exitCode_USAGE
 		categoryServer='option'
 		nameServer='--server'
+	fi
+	
+	if core_variable_isUnset bishbosh_backends; then
+		bishbosh_backends="$_program_default_backends"
+	else
+		bishbosh_validate_backends $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_backends' "$bishbosh_backends"
 	fi
 	
 	if core_variable_isUnset bishbosh_server; then
