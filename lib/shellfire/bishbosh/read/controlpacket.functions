@@ -1,5 +1,27 @@
 core_usesIn bishbosh/read/controlpacket CONNACK CONNECT DISCONNECT invalid PINGREQ PINGRESP
 
+bishbosh_read_controlpacket_protocolError()
+{
+	local controlPacket="$1"
+	local message="$2"
+	core_message WARN "Connection:$bishbosh_connection_id:read:$controlPacket:$message"
+	return $core_commandLine_exitCode_PROTOCOL
+}
+
+bishbosh_read_controlpacket_protocolErrorIfRemainingLengthNot()
+{
+	local controlPacket="$1"
+	local expectedLength=$2
+	if [ $firstRemainingLengthByte -ne $expectedLength ]; then
+		bishbosh_read_controlpacket_protocolError "$controlPacket" "Remaining length '$firstRemainingLengthByte' should be $expectedLength"
+	fi
+}
+
+bishbosh_read_controlpacket_protocolErrorIfRemainingLengthNotZero()
+{
+	bishbosh_read_controlpacket_protocolErrorIfRemainingLengthNot "$1" 0
+}
+
 bishbosh_read_controlpacket_initialise()
 {
 	local isServer="$1"
