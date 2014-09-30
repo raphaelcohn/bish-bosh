@@ -30,9 +30,9 @@ bishbosh_connection_write_SUBACK()
 	# 9 << 4 in octal
 	printf '\220'
 	
-	bishbosh_write_remainingLength $remainingLength
+	bishbosh_connection_write_remainingLength $remainingLength
 	
-	bishbosh_write_twoByteLength $packetIdentifier
+	bishbosh_connection_write_twoByteLength $packetIdentifier
 	
 	for resultCode in "$@"
 	do

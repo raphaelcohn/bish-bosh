@@ -1,33 +1,68 @@
-bishbosh_write_byte()
+bishbosh_connection_write_byte()
 {
 	printf "\\$(printf '%o' $1)"
 }
 
-bishbosh_write_remainingLength()
+bishbosh_connection_write_remainingLength()
 {
 	if [ $1 -lt 128 ]; then
-		bishbosh_write_byte $1
+		bishbosh_connection_write_byte $1
 	elif [ $1 -lt 16384 ]; then
 		local length=$1
-		bishbosh_write_byte $(( length % 128 + 128 ))
-		bishbosh_write_byte $(( length / 128))
+		bishbosh_connection_write_byte $(( length % 128 + 128 ))
+		bishbosh_connection_write_byte $(( length / 128))
 	elif [ $1 -lt 2097152 ]; then
 		local length=$1
-		bishbosh_write_byte $(( (length & 127) + 128 ))
-		bishbosh_write_byte $(( (length >> 7 & 127) + 128 ))
-		bishbosh_write_byte $((  length >> 14 & 127 ))
+		bishbosh_connection_write_byte $(( (length & 127) + 128 ))
+		bishbosh_connection_write_byte $(( (length >> 7 & 127) + 128 ))
+		bishbosh_connection_write_byte $((  length >> 14 & 127 ))
 	else
 		local length=$1
-		bishbosh_write_byte $(( (length & 127) + 128 ))
-		bishbosh_write_byte $(( (length >> 7 & 127) + 128 ))
-		bishbosh_write_byte $(( (length >> 14 & 127) + 128 ))
-		bishbosh_write_byte $((  length >> 21 & 127 ))
+		bishbosh_connection_write_byte $(( (length & 127) + 128 ))
+		bishbosh_connection_write_byte $(( (length >> 7 & 127) + 128 ))
+		bishbosh_connection_write_byte $(( (length >> 14 & 127) + 128 ))
+		bishbosh_connection_write_byte $((  length >> 21 & 127 ))
 	fi
 }
 
-bishbosh_write_twoByteLength()
+bishbosh_connection_write_twoByteLength()
 {
 	local length=$1
-	bishbosh_write_byte $(( length >> 8 ))
-	bishbosh_write_byte $(( length & 255 ))
+	bishbosh_connection_write_byte $(( length >> 8 ))
+	bishbosh_connection_write_byte $(( length & 255 ))
+}
+
+core_usesIn bishbosh/write/controlpacket CONNACK CONNECT DISCONNECT PINGREQ PINGRESP PUBACK PUBCOMP PUBLISH PUBREC PUBREL SUBACK SUBSCRIBE UNSUBACK UNSUBSCRIBE
+
+bishbosh_connection_write_fieldLengthCheck()
+{
+	local packetName="$1"
+	local minimumLength=$2
+	local variableName="$3"
+	
+	local length=$(core_variable_length "$variableName")
+	if [ $length -lt $minimumLength ]; then
+		if [ $minimumLength -eq 1 ]; then
+			local plural=''
+		else
+			local plural='s'
+		fi
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_${packetName}_${variableName}' can not be less than $minimumLength byte${plural}"
+	fi
+	if [ $length -gt 65535 ]; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_${packetName}_${variableName}' can not be longer than 65,535 bytes"
+	fi
+}
+
+bishbosh_connection_write_packetIdentifierCheck()
+{
+	local argument="$1"
+	packetIdentifier="$2"
+	core_validate_isUnsignedInteger $core_commandLine_exitCode_CONFIG 'argument' "$argument" "$packetIdentifier"
+	if [ $packetIdentifier -eq 0 ]; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is a packet identifier and so can not be 0"
+	fi
+	if [ $packetIdentifier -gt 65535 ]; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is a packet identifier and so can not be greater than 65,535"
+	fi
 }

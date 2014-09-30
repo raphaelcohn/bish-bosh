@@ -29,14 +29,14 @@ bishbosh_connection_write_UNSUBSCRIBE()
 	
 	# 10 << 4 + 1 << 1 in octal
 	printf '\242'
-	bishbosh_write_remainingLength $remainingLength
-	bishbosh_write_twoByteLength $packetIdentifier
+	bishbosh_connection_write_remainingLength $remainingLength
+	bishbosh_connection_write_twoByteLength $packetIdentifier
 	
 	while [ $# -gt 0 ]
 	do
 		topicFilter="$1"
 
-		bishbosh_write_twoByteLength ${#topicFilter}
+		bishbosh_connection_write_twoByteLength ${#topicFilter}
 		printf '%s' "$topicFilter"
 	done
 }

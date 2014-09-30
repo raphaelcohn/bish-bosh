@@ -6,5 +6,5 @@ bishbosh_connection_write_PUBREC()
 	
 	# 5 << 4 in octal, followed by 2 (remaining length)
 	printf '\120\002'
-	bishbosh_write_twoByteLength $packetIdentifier
+	bishbosh_connection_write_twoByteLength $packetIdentifier
 }

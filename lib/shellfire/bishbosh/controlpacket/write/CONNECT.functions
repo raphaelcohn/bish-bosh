@@ -152,7 +152,7 @@ bishbosh_connection_write_CONNECT()
 	printf '\020'
 
 	# Remaining Length (1 - 3 bytes; 4 bytes would never be required)
-	bishbosh_write_remainingLength $remainingLength
+	bishbosh_connection_write_remainingLength $remainingLength
 
 	# protocol name (MSB, LSB, MQTT), protocol level (7 bytes)
 	printf '\000\004MQTT\004'
@@ -161,29 +161,29 @@ bishbosh_connection_write_CONNECT()
 	bishbosh_write_byte $connectFlags
 
 	# two-byte size of Keep Alive (2 bytes)
-	bishbosh_write_twoByteLength $keepAlive
+	bishbosh_connection_write_twoByteLength $keepAlive
 
 	# client id
-	bishbosh_write_twoByteLength $clientId_fieldLength
+	bishbosh_connection_write_twoByteLength $clientId_fieldLength
 	printf '%s' "$clientId"
 
 	# will topic & will message
 	if [ $willTopic_fieldLength -ne -1 ]; then
-		bishbosh_write_twoByteLength $willTopic_fieldLength
+		bishbosh_connection_write_twoByteLength $willTopic_fieldLength
 		printf '%s' "$willTopic"
-		bishbosh_write_twoByteLength $willMessage_fieldLength
+		bishbosh_connection_write_twoByteLength $willMessage_fieldLength
 		printf '%s' "$willMessage"
 	fi
 
 	# username
 	if [ $username_fieldLength -ne -1 ]; then
-		bishbosh_write_twoByteLength $username_fieldLength
+		bishbosh_connection_write_twoByteLength $username_fieldLength
 		printf '%s' "$username"
 	fi
 
 	# password
 	if [ $password_fieldLength -ne -1 ]; then
-		bishbosh_write_twoByteLength $password_fieldLength
+		bishbosh_connection_write_twoByteLength $password_fieldLength
 		printf '%s' "$password"
 	fi
 }

@@ -47,8 +47,8 @@ bishbosh_connection_write_SUBSCRIBE()
 	
 	# 8 << 4 + 1 << 1 in octal
 	printf '\202'
-	bishbosh_write_remainingLength $remainingLength
-	bishbosh_write_twoByteLength $packetIdentifier
+	bishbosh_connection_write_remainingLength $remainingLength
+	bishbosh_connection_write_twoByteLength $packetIdentifier
 	
 	while $# -gt 0
 	do
@@ -56,7 +56,7 @@ bishbosh_connection_write_SUBSCRIBE()
 		topicQos=$2
 		shift 2
 		
-		bishbosh_write_twoByteLength ${#topicFilter}
+		bishbosh_connection_write_twoByteLength ${#topicFilter}
 		printf '%s' "$topicFilter"
 		bishbosh_write_byte $topicQos
 	done
