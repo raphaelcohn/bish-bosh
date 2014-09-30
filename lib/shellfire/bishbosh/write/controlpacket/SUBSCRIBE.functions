@@ -1,14 +1,14 @@
 core_usesIn bishbosh/write controlpacket
-_bishbosh_write_controlpacket_SUBSCRIBE_validateArguments()
+_bishbosh_connection_write_SUBSCRIBE_validateArguments()
 {
 	if [ $# -lt 2 ]; then
-		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_SUBSCRIBE_topicQoSPairs' must contain at least one pair"
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' must contain at least one pair"
 	fi
 	
 	while [ $# -gt 1 ]
 	do
 		topicFilter="$1"
-		bishbosh_write_controlpacket_fieldLengthCheck SUBSCRIBE 1 topicFilter
+		bishbosh_connection_write_fieldLengthCheck SUBSCRIBE 1 topicFilter
 		
 		topicQos="$2"
 		case "$topicQos" in
@@ -18,7 +18,7 @@ _bishbosh_write_controlpacket_SUBSCRIBE_validateArguments()
 			;;
 			
 			*)
-				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_SUBSCRIBE_topicQoSPairs' must contain QoS values between 0 to 2 (inclusive), not '$topicQoS'"
+				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' must contain QoS values between 0 to 2 (inclusive), not '$topicQoS'"
 			;;
 		esac
 		
@@ -29,21 +29,21 @@ _bishbosh_write_controlpacket_SUBSCRIBE_validateArguments()
 	done
 	
 	if [ $# -eq 1 ]; then
-		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_SUBSCRIBE_topicQoSPairs' must contain balanced pairs"
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' must contain balanced pairs"
 	fi
 }
 
 core_usesIn bishbosh write
-bishbosh_write_controlpacket_SUBSCRIBE()
+bishbosh_connection_write_SUBSCRIBE()
 {
 	local packetIdentifier
-	bishbosh_write_controlpacket_packetIdentifierCheck bishbosh_write_controlpacket_SUBSCRIBE_packetIdentifier "$bishbosh_write_controlpacket_SUBSCRIBE_packetIdentifier"
+	bishbosh_connection_write_packetIdentifierCheck bishbosh_connection_write_SUBSCRIBE_packetIdentifier "$bishbosh_connection_write_SUBSCRIBE_packetIdentifier"
 
 	local remainingLength=2
 	local topicFilter
 	local topicQos
 	local topicFilter_fieldLength
-	_bishbosh_write_controlpacket_SUBSCRIBE_validateArguments "$@"
+	_bishbosh_connection_write_SUBSCRIBE_validateArguments "$@"
 	
 	# 8 << 4 + 1 << 1 in octal
 	printf '\202'

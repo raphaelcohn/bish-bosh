@@ -1,4 +1,4 @@
-bishbosh_read_controlpacket_CONNECT()
+bishbosh_connection_read_CONNECT()
 {
 	:
 }

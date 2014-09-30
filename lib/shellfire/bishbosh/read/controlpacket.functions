@@ -1,6 +1,6 @@
 core_usesIn bishbosh/read/controlpacket CONNACK CONNECT DISCONNECT invalid PINGREQ PINGRESP
 
-bishbosh_read_controlpacket_protocolError()
+bishbosh_connection_read_protocolError()
 {
 	local controlPacket="$1"
 	local message="$2"
@@ -8,65 +8,65 @@ bishbosh_read_controlpacket_protocolError()
 	return $core_commandLine_exitCode_PROTOCOL
 }
 
-bishbosh_read_controlpacket_protocolErrorIfRemainingLengthNot()
+bishbosh_connection_read_protocolErrorIfRemainingLengthNot()
 {
 	local controlPacket="$1"
 	local expectedLength=$2
 	if [ $firstRemainingLengthByte -ne $expectedLength ]; then
-		bishbosh_read_controlpacket_protocolError "$controlPacket" "Remaining length '$firstRemainingLengthByte' should be $expectedLength"
+		bishbosh_connection_read_protocolError "$controlPacket" "Remaining length '$firstRemainingLengthByte' should be $expectedLength"
 	fi
 }
 
-bishbosh_read_controlpacket_protocolErrorIfRemainingLengthNotZero()
+bishbosh_connection_read_protocolErrorIfRemainingLengthNotZero()
 {
-	bishbosh_read_controlpacket_protocolErrorIfRemainingLengthNot "$1" 0
+	bishbosh_connection_read_protocolErrorIfRemainingLengthNot "$1" 0
 }
 
-bishbosh_read_controlpacket_initialise()
+bishbosh_connection_read_initialise()
 {
 	local isServer="$1"
 	if core_variable_isTrue "$isServer"; then
-		bishbosh_read_controlpacket_CONNACK()
+		bishbosh_connection_read_CONNACK()
 		{
-			bishbosh_read_controlpacket_invalid
+			bishbosh_connection_read_invalid
 		}
-		bishbosh_read_controlpacket_SUBACK()
+		bishbosh_connection_read_SUBACK()
 		{
-			bishbosh_read_controlpacket_invalid
+			bishbosh_connection_read_invalid
 		}
-		bishbosh_read_controlpacket_UNSUBACK()
+		bishbosh_connection_read_UNSUBACK()
 		{
-			bishbosh_read_controlpacket_invalid
+			bishbosh_connection_read_invalid
 		}
-		bishbosh_read_controlpacket_PINGRESP()
+		bishbosh_connection_read_PINGRESP()
 		{
-			bishbosh_read_controlpacket_invalid
+			bishbosh_connection_read_invalid
 		}
 	else
-		bishbosh_read_controlpacket_CONNECT()
+		bishbosh_connection_read_CONNECT()
 		{
-			bishbosh_read_controlpacket_invalid
+			bishbosh_connection_read_invalid
 		}
-		bishbosh_read_controlpacket_SUBSCRIBE()
+		bishbosh_connection_read_SUBSCRIBE()
 		{
-			bishbosh_read_controlpacket_invalid
+			bishbosh_connection_read_invalid
 		}
-		bishbosh_read_controlpacket_UNSUBSCRIBE()
+		bishbosh_connection_read_UNSUBSCRIBE()
 		{
-			bishbosh_read_controlpacket_invalid
+			bishbosh_connection_read_invalid
 		}
-		bishbosh_read_controlpacket_PINGREQ()
+		bishbosh_connection_read_PINGREQ()
 		{
-			bishbosh_read_controlpacket_invalid
+			bishbosh_connection_read_invalid
 		}
-		bishbosh_read_controlpacket_DISCONNECT()
+		bishbosh_connection_read_DISCONNECT()
 		{
-			bishbosh_read_controlpacket_invalid
+			bishbosh_connection_read_invalid
 		}
 	fi
 }
 
-bishbosh_read_controlpacket_next()
+bishbosh_connection_read_next()
 {
 	local controlPacketByte
 	local firstRemainingLengthByte
@@ -79,131 +79,131 @@ bishbosh_read_controlpacket_next()
 		
 		16)
 			# Only valid for servers
-			bishbosh_read_controlpacket_CONNECT
+			bishbosh_connection_read_CONNECT
 		;;
 		
 		32)
 			# Only valid for clients
-			bishbosh_read_controlpacket_CONNACK
+			bishbosh_connection_read_CONNACK
 		;;
 		
 		48)
-			bishbosh_read_controlpacket_PUBLISH_0
+			bishbosh_connection_read_PUBLISH_0
 		;;
 		
 		49)
-			bishbosh_read_controlpacket_PUBLISH_1
+			bishbosh_connection_read_PUBLISH_1
 		;;
 		
 		50)
-			bishbosh_read_controlpacket_PUBLISH_2
+			bishbosh_connection_read_PUBLISH_2
 		;;
 		
 		51)
-			bishbosh_read_controlpacket_PUBLISH_3
+			bishbosh_connection_read_PUBLISH_3
 		;;
 		
 		52)
-			bishbosh_read_controlpacket_PUBLISH_4
+			bishbosh_connection_read_PUBLISH_4
 		;;
 		
 		53)
-			bishbosh_read_controlpacket_PUBLISH_5
+			bishbosh_connection_read_PUBLISH_5
 		;;
 		
 		54)
-			bishbosh_read_controlpacket_PUBLISH_6
+			bishbosh_connection_read_PUBLISH_6
 		;;
 		
 		55)
-			bishbosh_read_controlpacket_PUBLISH_7
+			bishbosh_connection_read_PUBLISH_7
 		;;
 		
 		56)
-			bishbosh_read_controlpacket_PUBLISH_8
+			bishbosh_connection_read_PUBLISH_8
 		;;
 		
 		57)
-			bishbosh_read_controlpacket_PUBLISH_9
+			bishbosh_connection_read_PUBLISH_9
 		;;
 		
 		58)
-			bishbosh_read_controlpacket_PUBLISH_10
+			bishbosh_connection_read_PUBLISH_10
 		;;
 		
 		59)
-			bishbosh_read_controlpacket_PUBLISH_11
+			bishbosh_connection_read_PUBLISH_11
 		;;
 		
 		60)
-			bishbosh_read_controlpacket_PUBLISH_12
+			bishbosh_connection_read_PUBLISH_12
 		;;
 		
 		61)
-			bishbosh_read_controlpacket_PUBLISH_13
+			bishbosh_connection_read_PUBLISH_13
 		;;
 		
 		62)
-			bishbosh_read_controlpacket_PUBLISH_14
+			bishbosh_connection_read_PUBLISH_14
 		;;
 		
 		63)
-			bishbosh_read_controlpacket_PUBLISH_15
+			bishbosh_connection_read_PUBLISH_15
 		;;
 		
 		64)
-			bishbosh_read_controlpacket_PUBACK
+			bishbosh_connection_read_PUBACK
 		;;
 		
 		80)
-			bishbosh_read_controlpacket_PUBREC
+			bishbosh_connection_read_PUBREC
 		;;
 		
 		98)
-			bishbosh_read_controlpacket_PUBREL
+			bishbosh_connection_read_PUBREL
 		;;
 		
 		112)
-			bishbosh_read_controlpacket_PUBCOMP
+			bishbosh_connection_read_PUBCOMP
 		;;
 		
 		130)
 			# Only valid for servers
-			bishbosh_read_controlpacket_SUBSCRIBE
+			bishbosh_connection_read_SUBSCRIBE
 		;;
 		
 		144)
 			# Only valid for clients
-			bishbosh_read_controlpacket_SUBACK
+			bishbosh_connection_read_SUBACK
 		;;
 		
 		162)
 			# Only valid for servers
-			bishbosh_read_controlpacket_UNSUBSCRIBE
+			bishbosh_connection_read_UNSUBSCRIBE
 		;;
 		
 		176)
 			# Only valid for clients
-			bishbosh_read_controlpacket_UNSUBACK
+			bishbosh_connection_read_UNSUBACK
 		;;
 		
 		192)
 			# Only valid for servers
-			bishbosh_read_controlpacket_PINGREQ
+			bishbosh_connection_read_PINGREQ
 		;;
 		
 		208)
 			# Only valid for clients
-			bishbosh_read_controlpacket_PINGRESP
+			bishbosh_connection_read_PINGRESP
 		;;
 		
 		224)
 			# Only valid for servers
-			bishbosh_read_controlpacket_DISCONNECT
+			bishbosh_connection_read_DISCONNECT
 		;;
 		
 		*)
-			bishbosh_read_controlpacket_invalid
+			bishbosh_connection_read_invalid
 		;;
 	esac
 }

@@ -1,5 +1,5 @@
 # We do not validate as we write, so avoiding a loop; better to write all or none at all
-_bishbosh_write_controlpacket_SUBACK_validateArguments()
+_bishbosh_connection_write_SUBACK_validateArguments()
 {
 	for resultCode in "$@"
 	do
@@ -10,7 +10,7 @@ _bishbosh_write_controlpacket_SUBACK_validateArguments()
 			;;
 			
 			*)
-				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_SUBACK_resultCodes' must only contain values 0, 1, 2, and 128, not '$resultCode'"
+				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBACK_resultCodes' must only contain values 0, 1, 2, and 128, not '$resultCode'"
 			;;
 			
 		esac
@@ -18,14 +18,14 @@ _bishbosh_write_controlpacket_SUBACK_validateArguments()
 }
 
 core_usesIn bishbosh write
-bishbosh_write_controlpacket_SUBACK()
+bishbosh_connection_write_SUBACK()
 {
 	local packetIdentifier
-	bishbosh_write_controlpacket_packetIdentifierCheck bishbosh_write_controlpacket_SUBACK_packetIdentifier "$bishbosh_write_controlpacket_SUBACK_packetIdentifier"
+	bishbosh_connection_write_packetIdentifierCheck bishbosh_connection_write_SUBACK_packetIdentifier "$bishbosh_connection_write_SUBACK_packetIdentifier"
 	
 	local resultCode
 	local remainingLength=$(( 2 + ${#} ))
-	_bishbosh_write_controlpacket_SUBACK_validateArguments
+	_bishbosh_connection_write_SUBACK_validateArguments
 	
 	# 9 << 4 in octal
 	printf '\220'

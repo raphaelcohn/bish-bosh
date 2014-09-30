@@ -1,6 +1,6 @@
 core_usesIn bishbosh/write/controlpacket CONNACK CONNECT DISCONNECT PINGREQ PINGRESP PUBACK PUBCOMP PUBLISH PUBREC PUBREL SUBACK SUBSCRIBE UNSUBACK UNSUBSCRIBE
 
-bishbosh_write_controlpacket_fieldLengthCheck()
+bishbosh_connection_write_fieldLengthCheck()
 {
 	local packetName="$1"
 	local minimumLength=$2
@@ -13,14 +13,14 @@ bishbosh_write_controlpacket_fieldLengthCheck()
 		else
 			local plural='s'
 		fi
-		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_${packetName}_${variableName}' can not be less than $minimumLength byte${plural}"
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_${packetName}_${variableName}' can not be less than $minimumLength byte${plural}"
 	fi
 	if [ $length -gt 65535 ]; then
-		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_${packetName}_${variableName}' can not be longer than 65,535 bytes"
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_${packetName}_${variableName}' can not be longer than 65,535 bytes"
 	fi
 }
 
-bishbosh_write_controlpacket_packetIdentifierCheck()
+bishbosh_connection_write_packetIdentifierCheck()
 {
 	local argument="$1"
 	packetIdentifier="$2"

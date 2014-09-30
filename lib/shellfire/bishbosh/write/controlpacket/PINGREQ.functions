@@ -1,4 +1,4 @@
-bishbosh_write_controlpacket_PINGREQ()
+bishbosh_connection_write_PINGREQ()
 {
 	# 12 << 4 in octal, followed by 0 (remaining length)
 	printf '\300\000'

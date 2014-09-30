@@ -1,6 +1,6 @@
-bishbosh_read_controlpacket_PINGRESP()
+bishbosh_connection_read_PINGRESP()
 {
-	bishbosh_read_controlpacket_protocolErrorIfRemainingLengthNotZero PINGRESP
+	bishbosh_connection_read_protocolErrorIfRemainingLengthNotZero PINGRESP
 	
 	core_TODO "Now reset the timeout handler"
 }

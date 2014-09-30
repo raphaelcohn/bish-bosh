@@ -1,35 +1,35 @@
-_bishbosh_write_controlpacket_CONNACK_validateArguments()
+_bishbosh_connection_write_CONNACK_validateArguments()
 {
-	if core_variable_isUnset bishbosh_write_controlpacket_CONNACK_sessionPresent; then
+	if core_variable_isUnset bishbosh_connection_write_CONNACK_sessionPresent; then
 		sessionPresent=0
 	else
-		core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'argument' bishbosh_write_controlpacket_CONNACK_sessionPresent "$bishbosh_write_controlpacket_CONNACK_sessionPresent"
-		if core_variable_isTrue "$bishbosh_write_controlpacket_CONNACK_sessionPresent"; then
+		core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNACK_sessionPresent "$bishbosh_connection_write_CONNACK_sessionPresent"
+		if core_variable_isTrue "$bishbosh_connection_write_CONNACK_sessionPresent"; then
 			sessionPresent=1
 		else
 			sessionPresent=0
 		fi
 	fi
 	
-	if core_variable_isUnset bishbosh_write_controlpacket_CONNACK_connectReturnCode; then
+	if core_variable_isUnset bishbosh_connection_write_CONNACK_connectReturnCode; then
 		connectReturnCode=0
 	else
-		core_validate_isUnsignedInteger "$bishbosh_write_controlpacket_CONNACK_connectReturnCode"
-		if [ $bishbosh_write_controlpacket_CONNECT_keepAlive -gt 5 ]; then
-			core_exitError $core_commandLine_exitCode_CONFIG "The argument '$bishbosh_write_controlpacket_CONNACK_connectReturnCode' should be between 0 and 5, not '$bishbosh_write_controlpacket_CONNACK_connectReturnCode'"
+		core_validate_isUnsignedInteger "$bishbosh_connection_write_CONNACK_connectReturnCode"
+		if [ $bishbosh_connection_write_CONNECT_keepAlive -gt 5 ]; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The argument '$bishbosh_connection_write_CONNACK_connectReturnCode' should be between 0 and 5, not '$bishbosh_connection_write_CONNACK_connectReturnCode'"
 		fi
-		connectReturnCode=$bishbosh_write_controlpacket_CONNACK_connectReturnCode
+		connectReturnCode=$bishbosh_connection_write_CONNACK_connectReturnCode
 	fi
 }
 
 core_usesIn bishbosh write
-bishbosh_write_controlpacket_CONNACK()
+bishbosh_connection_write_CONNACK()
 {
 	local remainingLength=10
 	
 	local sessionPresent
 	local connectReturnCode
-	_bishbosh_write_controlpacket_CONNACK_validateArguments
+	_bishbosh_connection_write_CONNACK_validateArguments
 	
 	# CONNECT 2 << 4 in Octal (1 byte)
 	# Remaining Length of 2

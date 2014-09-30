@@ -133,24 +133,24 @@ backend_client_plaintext_ncMacOSX_start()
 	# We can not detect errors from the connection this way; this is quite a limitation
 	core_variable_array_passToFunctionAsArguments options nc | od --width=1 --address-radix=n --output-duplicates --format=u1 | while true
 	do
-		bishbosh_write_controlpacket_CONNECT_arguments_clean_session=yes
-		#bishbosh_write_controlpacket_CONNECT_arguments_willTopic=
-		#bishbosh_write_controlpacket_CONNECT_arguments_willMessage=
-		#bishbosh_write_controlpacket_CONNECT_arguments_willQos=0
-		#bishbosh_write_controlpacket_CONNECT_arguments_willRetain=no
-		bishbosh_write_controlpacket_CONNECT_arguments_keepAlive=0
-		bishbosh_write_controlpacket_CONNECT_arguments_clientId=MY-CLIENT-ID
-		bishbosh_write_controlpacket_CONNECT_arguments_username=user
-		bishbosh_write_controlpacket_CONNECT_arguments_password=password
-		bishbosh_write_controlpacket_CONNECT
+		bishbosh_connection_write_CONNECT_arguments_clean_session=yes
+		#bishbosh_connection_write_CONNECT_arguments_willTopic=
+		#bishbosh_connection_write_CONNECT_arguments_willMessage=
+		#bishbosh_connection_write_CONNECT_arguments_willQos=0
+		#bishbosh_connection_write_CONNECT_arguments_willRetain=no
+		bishbosh_connection_write_CONNECT_arguments_keepAlive=0
+		bishbosh_connection_write_CONNECT_arguments_clientId=MY-CLIENT-ID
+		bishbosh_connection_write_CONNECT_arguments_username=user
+		bishbosh_connection_write_CONNECT_arguments_password=password
+		bishbosh_connection_write_CONNECT
 
 		# We should have a connection object we update
-		read_controlpacket_next
+		connection_read_next
 
-		write_controlpacket_PINGREQ
+		connection_write_PINGREQ
 
-		read_controlpacket_next
+		connection_read_next
 
-		write_controlpacket_DISCONNECT
+		connection_write_DISCONNECT
 	done
 }

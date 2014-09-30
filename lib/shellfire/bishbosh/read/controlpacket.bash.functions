@@ -2,71 +2,71 @@ core_usesIn bishbosh read
 
 bishbosh_read_controlpacket=()
 
-bishbosh_read_controlpacket_initialise()
+bishbosh_connection_read_initialise()
 {
 	local isServer="$1"
 	
 	local -i index
 	for((index=0;index<256;index++))
 	do
-		bishbosh_read_controlpacket[$index]=bishbosh_read_controlpacket_invalid
+		bishbosh_read_controlpacket[$index]=bishbosh_connection_read_invalid
 	done
 	
 	if core_variable_isTrue "$isServer"; then
-		bishbosh_read_controlpacket[16]=bishbosh_read_controlpacket_CONNECT
+		bishbosh_read_controlpacket[16]=bishbosh_connection_read_CONNECT
 	else
-		bishbosh_read_controlpacket[32]=bishbosh_read_controlpacket_CONNACK
+		bishbosh_read_controlpacket[32]=bishbosh_connection_read_CONNACK
 	fi
 	
-	bishbosh_read_controlpacket[48]=bishbosh_read_controlpacket_PUBLISH_0
-	bishbosh_read_controlpacket[49]=bishbosh_read_controlpacket_PUBLISH_1
-	bishbosh_read_controlpacket[50]=bishbosh_read_controlpacket_PUBLISH_2
-	bishbosh_read_controlpacket[51]=bishbosh_read_controlpacket_PUBLISH_3
-	bishbosh_read_controlpacket[52]=bishbosh_read_controlpacket_PUBLISH_4
-	bishbosh_read_controlpacket[53]=bishbosh_read_controlpacket_PUBLISH_5
-	bishbosh_read_controlpacket[54]=bishbosh_read_controlpacket_PUBLISH_6
-	bishbosh_read_controlpacket[55]=bishbosh_read_controlpacket_PUBLISH_7
-	bishbosh_read_controlpacket[56]=bishbosh_read_controlpacket_PUBLISH_8
-	bishbosh_read_controlpacket[57]=bishbosh_read_controlpacket_PUBLISH_9
-	bishbosh_read_controlpacket[58]=bishbosh_read_controlpacket_PUBLISH_10
-	bishbosh_read_controlpacket[59]=bishbosh_read_controlpacket_PUBLISH_11
-	bishbosh_read_controlpacket[60]=bishbosh_read_controlpacket_PUBLISH_12
-	bishbosh_read_controlpacket[61]=bishbosh_read_controlpacket_PUBLISH_13
-	bishbosh_read_controlpacket[62]=bishbosh_read_controlpacket_PUBLISH_14
-	bishbosh_read_controlpacket[63]=bishbosh_read_controlpacket_PUBLISH_15
+	bishbosh_read_controlpacket[48]=bishbosh_connection_read_PUBLISH_0
+	bishbosh_read_controlpacket[49]=bishbosh_connection_read_PUBLISH_1
+	bishbosh_read_controlpacket[50]=bishbosh_connection_read_PUBLISH_2
+	bishbosh_read_controlpacket[51]=bishbosh_connection_read_PUBLISH_3
+	bishbosh_read_controlpacket[52]=bishbosh_connection_read_PUBLISH_4
+	bishbosh_read_controlpacket[53]=bishbosh_connection_read_PUBLISH_5
+	bishbosh_read_controlpacket[54]=bishbosh_connection_read_PUBLISH_6
+	bishbosh_read_controlpacket[55]=bishbosh_connection_read_PUBLISH_7
+	bishbosh_read_controlpacket[56]=bishbosh_connection_read_PUBLISH_8
+	bishbosh_read_controlpacket[57]=bishbosh_connection_read_PUBLISH_9
+	bishbosh_read_controlpacket[58]=bishbosh_connection_read_PUBLISH_10
+	bishbosh_read_controlpacket[59]=bishbosh_connection_read_PUBLISH_11
+	bishbosh_read_controlpacket[60]=bishbosh_connection_read_PUBLISH_12
+	bishbosh_read_controlpacket[61]=bishbosh_connection_read_PUBLISH_13
+	bishbosh_read_controlpacket[62]=bishbosh_connection_read_PUBLISH_14
+	bishbosh_read_controlpacket[63]=bishbosh_connection_read_PUBLISH_15
 	
-	bishbosh_read_controlpacket[64]=bishbosh_read_controlpacket_PUBACK
+	bishbosh_read_controlpacket[64]=bishbosh_connection_read_PUBACK
 	
-	bishbosh_read_controlpacket[80]=bishbosh_read_controlpacket_PUBREC
+	bishbosh_read_controlpacket[80]=bishbosh_connection_read_PUBREC
 	
-	bishbosh_read_controlpacket[98]=bishbosh_read_controlpacket_PUBREL
+	bishbosh_read_controlpacket[98]=bishbosh_connection_read_PUBREL
 	
-	bishbosh_read_controlpacket[112]=bishbosh_read_controlpacket_PUBCOMP
-	
-	if core_variable_isTrue "$isServer"; then
-		bishbosh_read_controlpacket[130]=bishbosh_read_controlpacket_SUBSCRIBE
-	else
-		bishbosh_read_controlpacket[144]=bishbosh_read_controlpacket_SUBACK
-	fi
+	bishbosh_read_controlpacket[112]=bishbosh_connection_read_PUBCOMP
 	
 	if core_variable_isTrue "$isServer"; then
-		bishbosh_read_controlpacket[162]=bishbosh_read_controlpacket_UNSUBSCRIBE
+		bishbosh_read_controlpacket[130]=bishbosh_connection_read_SUBSCRIBE
 	else
-		bishbosh_read_controlpacket[176]=bishbosh_read_controlpacket_UNSUBACK
+		bishbosh_read_controlpacket[144]=bishbosh_connection_read_SUBACK
 	fi
 	
 	if core_variable_isTrue "$isServer"; then
-		bishbosh_read_controlpacket[192]=bishbosh_read_controlpacket_PINGREQ
+		bishbosh_read_controlpacket[162]=bishbosh_connection_read_UNSUBSCRIBE
 	else
-		bishbosh_read_controlpacket[208]=bishbosh_read_controlpacket_PINGRESP
+		bishbosh_read_controlpacket[176]=bishbosh_connection_read_UNSUBACK
 	fi
 	
 	if core_variable_isTrue "$isServer"; then
-		bishbosh_read_controlpacket[224]=bishbosh_read_controlpacket_DISCONNECT
+		bishbosh_read_controlpacket[192]=bishbosh_connection_read_PINGREQ
+	else
+		bishbosh_read_controlpacket[208]=bishbosh_connection_read_PINGRESP
+	fi
+	
+	if core_variable_isTrue "$isServer"; then
+		bishbosh_read_controlpacket[224]=bishbosh_connection_read_DISCONNECT
 	fi
 }
 
-bishbosh_read_controlpacket_next()
+bishbosh_connection_read_next()
 {
 	local packetByte
 	local firstRemainingLengthByte

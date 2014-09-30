@@ -1,8 +1,8 @@
 core_usesIn bishbosh write
-bishbosh_write_controlpacket_PUBCOMP()
+bishbosh_connection_write_PUBCOMP()
 {
 	local packetIdentifier
-	bishbosh_write_controlpacket_packetIdentifierCheck bishbosh_write_controlpacket_PUBCOMP_packetIdentifier "$bishbosh_write_controlpacket_PUBCOMP_packetIdentifier"
+	bishbosh_connection_write_packetIdentifierCheck bishbosh_connection_write_PUBCOMP_packetIdentifier "$bishbosh_connection_write_PUBCOMP_packetIdentifier"
 	
 	# 7 << 4 in octal, followed by 2 (remaining length)
 	printf '\160\002'

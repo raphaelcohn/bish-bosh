@@ -448,28 +448,28 @@ function backend_client_loop()
 	
 		local connectionId=100
 	
-		write_controlpacket_CONNECT_arguments_clean_session=yes
-		#write_controlpacket_CONNECT_arguments_will_topic=
-		#write_controlpacket_CONNECT_arguments_will_message=
-		#write_controlpacket_CONNECT_arguments_will_qos=0
-		#write_controlpacket_CONNECT_arguments_will_retain=no
-		write_controlpacket_CONNECT_arguments_keep_alive=0
-		write_controlpacket_CONNECT_arguments_client_id=MY-CLIENT-ID
-		write_controlpacket_CONNECT_arguments_username=user
-		write_controlpacket_CONNECT_arguments_password=password
+		connection_write_CONNECT_arguments_clean_session=yes
+		#connection_write_CONNECT_arguments_will_topic=
+		#connection_write_CONNECT_arguments_will_message=
+		#connection_write_CONNECT_arguments_will_qos=0
+		#connection_write_CONNECT_arguments_will_retain=no
+		connection_write_CONNECT_arguments_keep_alive=0
+		connection_write_CONNECT_arguments_client_id=MY-CLIENT-ID
+		connection_write_CONNECT_arguments_username=user
+		connection_write_CONNECT_arguments_password=password
 	
-		write_controlpacket_CONNECT
+		connection_write_CONNECT
 	
 		while true
 		do
 			# We should have a connection object we update
-			read_controlpacket_next
+			connection_read_next
 	
-			write_controlpacket_PINGREQ
+			connection_write_PINGREQ
 	
-			read_controlpacket_next
+			connection_read_next
 	
-			write_controlpacket_DISCONNECT
+			connection_write_DISCONNECT
 		
 			done < <(${backend_client_prefix}_read)
 
@@ -484,7 +484,7 @@ function backend_client_loop()
 	# could be a find with a sort, followed by a pause (for a read cycle). Or the read cycle could be size-based, eg after writing 4Kb or 1 second?
 	
 	# we call a callback (or callbacks) on message recipt. This can be either a built-in or a function or an external program. Slight problem in sending array variables to a program
-	# consider not using arrays for write_controlpacket_*
+	# consider not using arrays for connection_write_*
 	
 	# message records call callbacks. These can be either built in functions or real programs; we pass a QoS, Topic and Path to content (or named pipe) (or an array of functions/programs)
 	
