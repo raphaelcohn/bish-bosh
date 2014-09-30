@@ -1,4 +1,4 @@
-core_usesIn bishbosh/client/plaintext 
+core_usesIn bishbosh/client/plaintext bash nc6 ncat ncBusyBox ncDebianOpenBSD ncDebianTraditional ncGNU ncMacOSX ncToybox socat tcpclient
 
 core_dependency_requires '*' uname
 core_dependency_requires '*' grep
@@ -30,7 +30,7 @@ bishbosh_client_plaintext_find()
 	if core_compatibility_whichNoOutput busybox; then
 		binary="$(core_compatibility_which busybox)"
 		if busybox --list 2>/dev/null | grep -q '^nc$'; then
-			bishbosh_client_plaintext=netcatBusyBox
+			bishbosh_client_plaintext=ncBusyBox
 			bishbosh_client_plaintextPath="$binary"
 			return 0
 		fi

@@ -1,3 +1,6 @@
+core_usesIn core functions
+core_functions_register _bishbosh_client_plaintext_registration ncMacOSX
+
 #bishbosh_client_features_ncMacOSX_sourceInterface=yes   BSD nc only
 bishbosh_client_features_ncMacOSX_sourcePort=yes
 bishbosh_client_features_ncMacOSX_sourceAddress=yes

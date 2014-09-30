@@ -5,21 +5,10 @@ bishbosh_validate_backend()
 	local name="$3"
 	local value="$4"
 	
-	case "$value" in
-		
-		bash)
-		
-		;;
-		
-		nc6)
-		
-		;;
-		
-		ncat)
-		
-		;;
-		
-	esac
+	if core_variable_array_contains _bishbosh_client_plaintext_registration "$value"; then
+		return 0
+	fi
+	core_validate_exit "The $category '$name' specifies a backend '$value' which is not known. Valid backends are '$(core_variable_array_string _bishbosh_client_plaintext_registration ',')'."
 }
 
 bishbosh_validate_address()
