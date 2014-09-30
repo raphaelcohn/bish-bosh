@@ -1,4 +1,11 @@
 
+	
+	core_TODO 'password, will payload can contain embedded ASCII NULL!'
+	core_TODO 'consider loading username, password, will details based on client-id...'
+	core_TODO 'keep-alive is based on server connection details - it is a broker specific thing - goes with broker configurations'
+	core_TODO 'Support a binary password (embedded NULs)'
+	core_TODO 'Use .netrc for password! (or a password file; required if we are going to use embedded NULs for SASL)'
+	
 # using netcat with a FIFO (need mkfifo): https://unix.stackexchange.com/questions/39362/using-in-out-named-pipes-for-a-tcp-connection
 # reverse bash shell http://www.gnucitizen.org/blog/reverse-shell-with-bash/
 # reverse nc if nc is broken (lacks -e) http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet

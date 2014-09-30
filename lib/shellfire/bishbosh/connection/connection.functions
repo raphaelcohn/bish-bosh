@@ -4,7 +4,7 @@ core_usesIn core children
 core_dependency_requires '*' mkfifo od
 bishbosh_connection_makeClientConnection()
 {
-	local bishbosh_connection_id
+	# bishbosh_connection_id can't be local, otherwise not found in the signal handler...
 	if core_variable_isUnset bishbosh_connection_nextId; then
 		bishbosh_connection_id=0
 		bishbosh_connection_nextId=0
@@ -12,71 +12,108 @@ bishbosh_connection_makeClientConnection()
 		bishbosh_connection_id=$bishbosh_connection_nextId
 		bishbosh_connection_nextId=$((bishbosh_connection_nextId + 1))
 	fi
-
-	bishbosh_connection_write_CONNECT_cleanSession=0
-	#bishbosh_connection_write_CONNECT_willTopic='/some/topic'
-	#bishbosh_connection_write_CONNECT_willMessage='goodbye'
-	#bishbosh_connection_write_CONNECT_willQos=0
-	#bishbosh_connection_write_CONNECT_willRetain=0
-	bishbosh_connection_write_CONNECT_keepAlive=0
-	bishbosh_connection_write_CONNECT_clientId=MY-CLIENT-ID
-	bishbosh_connection_write_CONNECT_username=user
-	bishbosh_connection_write_CONNECT_password=password
 	
-	local bishbosh_connection_toServerFifo="$bishbosh_temporaryFolderPath"/to-server.fifo
+	local bishbosh_connection_temporaryFolder="$bishbosh_temporaryFolderPath"/"$bishbosh_connection_id"
+	mkdir -m 0700 -p "$bishbosh_connection_temporaryFolder"
+	
+	local bishbosh_connection_write_CONNECT_cleanSession=1
+	#local bishbosh_connection_write_CONNECT_willTopic='/some/topic'
+	#local bishbosh_connection_write_CONNECT_willMessage='goodbye'
+	#local bishbosh_connection_write_CONNECT_willQos=0
+	#local bishbosh_connection_write_CONNECT_willRetain=0
+	local bishbosh_connection_write_CONNECT_keepAlive=0
+	local bishbosh_connection_write_CONNECT_clientId=clientid
+	#bishbosh_connection_write_CONNECT_username=user
+	#bishbosh_connection_write_CONNECT_password=password
+	
+	local bishbosh_connection_fifoFolder="$bishbosh_connection_temporaryFolder"/fifo
+	mkdir -m 0700 -p "$bishbosh_connection_fifoFolder"
+	
+	local bishbosh_connection_toServerFifo="$bishbosh_connection_fifoFolder"/to-server.fifo
 	mkfifo -m 0600 "$bishbosh_connection_toServerFifo"
 	
-	local bishbosh_connection_fromServerFifo="$bishbosh_temporaryFolderPath"/from-server.fifo
+	local bishbosh_connection_fromServerFifo="$bishbosh_connection_fifoFolder"/from-server.fifo
 	mkfifo -m 0600 "$bishbosh_connection_fromServerFifo"
 	
-	local bishbosh_connection_fromOdFifo="$bishbosh_temporaryFolderPath"/from-od.fifo
+	local bishbosh_connection_fromOdFifo="$bishbosh_connection_fifoFolder"/from-od.fifo
 	mkfifo -m 0600 "$bishbosh_connection_fromOdFifo"
+
+	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_connection_temporaryFolder'"
 	
+	# Can't be local, otherwise not found in the signal handler...
 	bishbosh_connection_stateMessage='before CONNECT'
 	_bishbosh_connection_SIGPIPE()
 	{
-		core_message FAIL "Connection to server $bishbosh_server failed $bishbosh_connection_stateMessage"
+		core_message FAIL "Connection '$bishbosh_connection_id' to server '$bishbosh_server' failed $bishbosh_connection_stateMessage"
 	}
-	core_trap_addHandler _bishbosh_connection_SIGPIPE PIPE
+	#core_trap_addHandler _bishbosh_connection_SIGPIPE PIPE
 	
-	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start &
+	# (Goes into background internally)
+	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
 	bishbosh_connection_childPidClient=$!
 	core_children_killOnExit $bishbosh_connection_childPidClient
-	
-	od -A n -t u1 -v -w1 <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromOdFifo" &
-	bishbosh_connection_childPidOd=$!
-	core_children_killOnExit $bishbosh_connection_childPidOd
 	
 	# https://stackoverflow.com/questions/9536388/capture-pid-of-terminated-background-process-using-trap-in-bash?rq=1
 	# http://mywiki.wooledge.org/ProcessManagement#I_want_to_process_a_bunch_of_files_in_parallel.2C_and_when_one_finishes.2C_I_want_to_start_the_next._And_I_want_to_make_sure_there_are_exactly_5_jobs_running_at_a_time
 	# kill -0 "$clientInBackgroundPid"  will check if a process is 'signallable', ie alive
+	# Alternative is to just do   od -A n -t u1 -v -w 1 -N 1 <"$bishbosh_connection_fromServerFifo"  every time we want to read, which is slow (except perhaps in BusyBox dash) as it forks-and-execs
+	# That said, it may be more efficient for large message handling, etc, as not every byte is a null byte (eg strings)
+	# Trying to do
+	#	od -A n -t u1 -v -w1 >"$bishbosh_connection_fromOdFifo" <"$bishbosh_connection_fromServerFifo" &
+	#	bishbosh_connection_childPidOd=$!
+	#	core_children_killOnExit $bishbosh_connection_childPidOd
+	#   exec 5<"$bishbosh_connection_fromOdFifo"
+	# just doesn't work. Something to do with FIFO read/write ordering. Additionally, the exec blocks (hangs) if the od process isn't running
+	
+	#_bishbosh_connection_info CONNECT bishbosh_connection_write_CONNECT >"$bishbosh_connection_toServerFifo"
+	#od -A n -t u1 -v -w1 <"$bishbosh_connection_fromServerFifo"
+	#exit 50
 	
 	local controlPacketByte
 	local firstRemainingLengthByte
+	 
+	# Doesn't work:      od -A n -t u1 -v -w1 "$bishbosh_connection_fromServerFifo" | while true
+	# Does work-ish:     od -A n -t u1 -v -w1 -N1 "$bishbosh_connection_fromServerFifo" | while true
+	# Doesn't work:      od -A n -t u1 -v -w1 -N50 >"$bishbosh_connection_fromOdFifo" <"$bishbosh_connection_fromServerFifo" &
+	# Looks like od might be doing some internal buffering. Setting -N to larger values doesn't work, either
+	# possible:  hexdump -v -e '/1 "%d\n"' (MacOSX, Ubuntu by default; part of bsdmainutils)
+	#
 	
-	exec 4>"$bishbosh_connection_toServerFifo"
-	# This hangs if no one is writing
-	exec 5<"$bishbosh_connection_fromOdFifo"
+	{
+		_bishbosh_connection_info bishbosh_connection_write_CONNECT >&4
+		{
+			echo "WHOOPS1"
+			hexdump -v -e '/1 "%d\n"' <"$bishbosh_connection_fromServerFifo"
+			#hexdump -v -e '/1 "%d\n"' <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromOdFifo"
+			echo "WHOOPS"
+		} &
+		echo $!
+		wait $!
+		echo "OH DEAR"
+		
+		while true
+		do
+			set -x
+			IFS=' ' read -r controlPacketByte
+			echo $controlPacketByte
+			exit 50
+			
+			#_bishbosh_connection_info bishbosh_connection_read_next
+		
+		done
+	} 4>"$bishbosh_connection_toServerFifo"
 	
-	while true
-	do
-		# Quite coarse-grained - all fails or none at all, making it impossible to differentiate connection errors from write errors
-		# Solution is to >&4 INSIDE the method. Yucky and less efficient.
-		bishbosh_connection_stateMessage='in CONNECT'
-		bishbosh_connection_write_CONNECT >&4
-		bishbosh_connection_stateMessage='after CONNECT'
-		
-		# -w1 is not mentioned in Mac OS X's od manpage, but it does work...
-		#od -A n -t u1 -v -w1 <"$bishbosh_connection_fromServerFifo"
+	rm "$bishbosh_connection_toServerFifo"
+	rm "$bishbosh_connection_fromServerFifo"
+	rm "$bishbosh_connection_fromOdFifo"
+}
 
-		local controlPacketByte
-		local firstRemainingLengthByte
-		bishbosh_connection_read_next
-
-		#connection_write_PINGREQ
-		
-		#connection_read_next
-
-		#connection_write_DISCONNECT
-	done
+_bishbosh_connection_info()
+{
+	local function=$1
+	bishbosh_connection_stateMessage="before $function"
+	core_message INFO "Connection '$bishbosh_connection_id' $bishbosh_connection_stateMessage"
+	$function
+	bishbosh_connection_stateMessage="after $function"
+	core_message INFO "Connection '$bishbosh_connection_id' $bishbosh_connection_stateMessage"	
 }

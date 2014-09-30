@@ -68,13 +68,21 @@ bishbosh_connection_read_initialise()
 
 bishbosh_connection_read_byte()
 {
-	IFS=' ' read -r $1 <&5
+	IFS=' ' read -r $1
+}
+
+bishbosh_connection_read_bytes()
+{
+	IFS=' ' read -r $@
 }
 
 bishbosh_connection_read_next()
 {
+	set -x
 	bishbosh_connection_read_byte controlPacketByte
+	echo $controlPacketByte
 	bishbosh_connection_read_byte firstRemainingLengthByte
+	echo $firstRemainingLengthByte
 	
 	case $controlPacketByte in
 		

@@ -140,12 +140,6 @@ bishbosh_connection_write_CONNECT()
 	local password_fieldLength
 	_bishbosh_connection_write_CONNECT_validateArguments
 	
-	core_TODO 'password, will payload can contain embedded ASCII NULL!'
-	core_TODO 'consider loading username, password, will details based on client-id...'
-	core_TODO 'keep-alive is based on server connection details - it is a broker specific thing - goes with broker configurations'
-	core_TODO 'Support a binary password (embedded NULs)'
-	core_TODO 'Use .netrc for password! (or a password file; required if we are going to use embedded NULs for SASL)'
-	
 	# CONNECT 1 << 4 in Octal (1 byte)
 	printf '\020'
 	

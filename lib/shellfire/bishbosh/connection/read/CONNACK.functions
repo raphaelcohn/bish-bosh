@@ -16,6 +16,11 @@ bishbosh_connection_read_CONNACK()
 	
 	case $connectReturnCode in
 		
+		0)
+			# OK
+			:
+		;;
+		
 		1)
 			bishbosh_connection_read_protocolError CONNACK "Field 'connectReturnCode' was '$connectReturnCode' ('Connection Refused, unacceptable protocol version')"
 		;;
@@ -37,7 +42,7 @@ bishbosh_connection_read_CONNACK()
 		;;
 		
 		*)
-			bishbosh_read_invalid "CONNACK" "Received reserved connectReturnCode code of $connectReturnCode"
+			bishbosh_connection_read_protocolError CONNACK "Received reserved connectReturnCode code of $connectReturnCode"
 		;;
 		
 	esac
