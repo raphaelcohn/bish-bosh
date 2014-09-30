@@ -1,22 +1,6 @@
 core_usesIn core functions
 core_functions_register _bishbosh_client_plaintext_registration ncMacOSX
 
-#bishbosh_client_features_ncMacOSX_sourceInterface=yes   BSD nc only
-bishbosh_client_features_ncMacOSX_sourcePort=yes
-bishbosh_client_features_ncMacOSX_sourceAddress=yes
-bishbosh_client_features_ncMacOSX_ipV4Only=yes
-bishbosh_client_features_ncMacOSX_ipV6Only=yes
-bishbosh_client_features_ncMacOSX_unixDomainSocketOnly=yes
-bishbosh_client_features_ncMacOSX_proxySocks4=yes
-bishbosh_client_features_ncMacOSX_proxySocks4UserPassword=no
-bishbosh_client_features_ncMacOSX_proxySocks5=yes
-bishbosh_client_features_ncMacOSX_proxySocks5UserPassword=no
-bishbosh_client_features_ncMacOSX_proxyHttp=yes
-bishbosh_client_features_ncMacOSX_proxyHttpUsernamePassword=no
-#bishbosh_client_features_ncMacOSX_timeout=yes  - nc, this is send/receive; tcpclient, this is connection timeout
-# tcpclient
-bishbosh_client_features_ncMacOSX_tcpNoDelayToggling=no
-
 bishbosh_client_plaintext_ncMacOSX_check()
 {
 	local binary
@@ -42,7 +26,7 @@ bishbosh_client_plaintext_ncMacOSX_checkIfNetcatVariant()
 	return 1
 }
 
-_backend_client_plaintext_ncMacOSX_start_addProxy()
+_bishbosh_client_plaintext_ncMacOSX_start_addProxy()
 {
 	local proxyValue="$1"
 	bishbosh_client_addOptionWithEmptyMeaningNo '-X' "$proxyValue"
@@ -65,10 +49,9 @@ _backend_client_plaintext_ncMacOSX_start_addProxy()
 
 # Also -K tclass and -F options are in the commandline help (but not the man page)!
 core_usesIn core variable variable/array
-backend_client_plaintext_ncMacOSX_start()
+bishbosh_client_plaintext_ncMacOSX_start()
 {
 	local options
-	core_variable_array_initialise options
 	
 	local isUnixDomainSocket
 	if core_variable_isSet bishbosh_transport; then
@@ -91,66 +74,44 @@ backend_client_plaintext_ncMacOSX_start()
 			;;
 			
 			*)
-				core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport"
+				core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
 			;;
 			
 		esac
 	fi
 	
-	bishbosh_client_addOptionWithEmptyMeaningNo '-s' "$bishbosh_sourceAddress"
-	bishbosh_client_addOptionWithEmptyMeaningNo '-p' "$bishbosh_sourcePort"
+	if core_variable_isSet bishbosh_sourceAddress; then
+		bishbosh_client_addOptionWithEmptyMeaningNo '-s' "$bishbosh_sourceAddress"
+	fi
+	
+	if core_variable_isSet bishbosh_sourcePort; then
+		bishbosh_client_addOptionWithEmptyMeaningNo '-p' "$bishbosh_sourcePort"
+	fi
 	
 	case "$bishbosh_proxyKind" in
 		
 		'SOCKS4')
-			_backend_client_plaintext_ncMacOSX_start_addProxy '4'
+			_bishbosh_client_plaintext_ncMacOSX_start_addProxy '4'
 		;;
 		
 		'SOCKS5')
-			_backend_client_plaintext_ncMacOSX_start_addProxy '5'
+			_bishbosh_client_plaintext_ncMacOSX_start_addProxy '5'
 		;;
 		
 		'HTTP')
-			_backend_client_plaintext_ncMacOSX_start_addProxy 'connect'
+			_bishbosh_client_plaintext_ncMacOSX_start_addProxy 'connect'
 		;;
 		
 	esac
 
-	# Occurs because of a bad connection (connection refused)
-	# /Users/raph/Documents/bish-bosh/source/functions/write/controlpacket.functions: line 209: printf: write error: Bad file descriptor
-	# nc has exited - how do we detect this? just try to write and TRAP the error? Use SIGCHLD?
-	# also need to trap clean up
+	core_variable_array_append options $bishbosh_server
 	
-	# https://stackoverflow.com/questions/6702474/bash-best-architecture-for-reading-from-two-input-streams
+	if core_variable_isSet bishbosh_port; then
+		local port=$bishbosh_port
+	else
+		local port=1883
+	fi
+	core_variable_array_append options $port
 	
-	local connectionId=100
-	
-	# Useless logic without named pipes
-	# There is an order to named pipes
-	mkfifo output
-	mkfifo 
-	
-	# We can not detect errors from the connection this way; this is quite a limitation
-	core_variable_array_passToFunctionAsArguments options nc | od --width=1 --address-radix=n --output-duplicates --format=u1 | while true
-	do
-		bishbosh_connection_write_CONNECT_arguments_clean_session=yes
-		#bishbosh_connection_write_CONNECT_arguments_willTopic=
-		#bishbosh_connection_write_CONNECT_arguments_willMessage=
-		#bishbosh_connection_write_CONNECT_arguments_willQos=0
-		#bishbosh_connection_write_CONNECT_arguments_willRetain=no
-		bishbosh_connection_write_CONNECT_arguments_keepAlive=0
-		bishbosh_connection_write_CONNECT_arguments_clientId=MY-CLIENT-ID
-		bishbosh_connection_write_CONNECT_arguments_username=user
-		bishbosh_connection_write_CONNECT_arguments_password=password
-		bishbosh_connection_write_CONNECT
-
-		# We should have a connection object we update
-		connection_read_next
-
-		connection_write_PINGREQ
-
-		connection_read_next
-
-		connection_write_DISCONNECT
-	done
+	core_variable_array_passToFunctionAsArguments options nc <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo"
 }

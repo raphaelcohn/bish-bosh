@@ -34,6 +34,6 @@ bishbosh_connection_write_CONNACK()
 	# CONNECT 2 << 4 in Octal (1 byte)
 	# Remaining Length of 2
 	printf '\040\002'
-	bishbosh_write_byte $sessionPresent
-	bishbosh_write_byte $connectReturnCode
+	bishbosh_connection_write_byte $sessionPresent
+	bishbosh_connection_write_byte $connectReturnCode
 }

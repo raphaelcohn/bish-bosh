@@ -36,6 +36,6 @@ bishbosh_connection_write_SUBACK()
 	
 	for resultCode in "$@"
 	do
-		bishbosh_write_byte $resultCode
+		bishbosh_connection_write_byte $resultCode
 	done
 }

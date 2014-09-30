@@ -2,11 +2,18 @@
 
 _program()
 {
+	core_usesIn core temporaryFiles
 	core_usesIn bishbosh validate client
 	
 	bishbosh()
 	{
 		bishbosh_client_plaintext_find
+		
+		local TMP_FOLDER
+		core_temporaryFiles_newFolderToRemoveOnExit
+		local bishbosh_temporaryFolderPath="$TMP_FOLDER"
+		
+		bishbosh_connection_makeClientConnection
 		
 		echo hello
 	}
@@ -380,7 +387,7 @@ _program_commandLine_validate()
 	fi
 	
 	if core_variable_isUnset bishbosh_transport; then
-		bishbosh_transport=ip
+		bishbosh_transport=inet
 	else
 		bishbosh_validate_transport $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_transport' "$bishbosh_transport"
 		if [ "$bishbosh_transport" = unix ]; then

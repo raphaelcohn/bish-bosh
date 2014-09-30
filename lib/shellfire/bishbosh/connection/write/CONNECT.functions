@@ -25,7 +25,6 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		fi
 		willTopic=''
 		willTopic_fieldLength=-1
-		bishbosh_connection_write_fieldLengthCheck CONNECT 0 password
 		willMessage=''
 		willMessage_fieldLength=-1
 	else
@@ -71,7 +70,7 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 	if core_variable_isUnset bishbosh_connection_write_CONNECT_keepAlive; then
 		keepAlive=0
 	else
-		core_validate_isUnsignedInteger "$bishbosh_connection_write_CONNECT_keepAlive"
+		core_validate_isUnsignedInteger $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_keepAlive "$bishbosh_connection_write_CONNECT_keepAlive"
 		if [ $bishbosh_connection_write_CONNECT_keepAlive -gt 65535 ]; then
 			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_keepAlive' should be between 0 and 65535, not '$bishbosh_connection_write_CONNECT_keepAlive'"
 		fi
@@ -149,7 +148,7 @@ bishbosh_connection_write_CONNECT()
 	
 	# CONNECT 1 << 4 in Octal (1 byte)
 	printf '\020'
-
+	
 	# Remaining Length (1 - 3 bytes; 4 bytes would never be required)
 	bishbosh_connection_write_remainingLength $remainingLength
 
@@ -157,7 +156,7 @@ bishbosh_connection_write_CONNECT()
 	printf '\000\004MQTT\004'
 
 	# connect flag (1 byte)
-	bishbosh_write_byte $connectFlags
+	bishbosh_connection_write_byte $connectFlags
 
 	# two-byte size of Keep Alive (2 bytes)
 	bishbosh_connection_write_twoByteLength $keepAlive

@@ -67,14 +67,7 @@ bishbosh_connection_read_initialise()
 }
 
 bishbosh_connection_read_next()
-{
-	local controlPacketByte
-	local firstRemainingLengthByte
-	
-	read -r 
-	
-	bishbosh_read_od_nextTwoBytes
-	
+{	
 	case $controlPacketByte in
 		
 		16)

@@ -6,7 +6,7 @@ byte_bit()
    echo -n $(( value & bitMask ? 1 : 0 ))
 }
 
-byte_isBitSet
+byte_isBitSet()
 {
    return $(( 1 - $(byte_bit "$@") ))
 }

@@ -1,1 +1,87 @@
 core_usesIn bishbosh/connection read write
+core_usesIn core children
+
+core_dependency_requires '*' mkfifo od
+bishbosh_connection_makeClientConnection()
+{
+	local bishbosh_connection_id
+	if core_variable_isUnset bishbosh_connection_nextId; then
+		bishbosh_connection_id=0
+		bishbosh_connection_nextId=0
+	else
+		bishbosh_connection_id=$bishbosh_connection_nextId
+		bishbosh_connection_nextId=$((bishbosh_connection_nextId + 1))
+	fi
+
+	bishbosh_connection_write_CONNECT_cleanSession=0
+	#bishbosh_connection_write_CONNECT_willTopic='/some/topic'
+	#bishbosh_connection_write_CONNECT_willMessage='goodbye'
+	#bishbosh_connection_write_CONNECT_willQos=0
+	#bishbosh_connection_write_CONNECT_willRetain=0
+	bishbosh_connection_write_CONNECT_keepAlive=0
+	bishbosh_connection_write_CONNECT_clientId=MY-CLIENT-ID
+	bishbosh_connection_write_CONNECT_username=user
+	bishbosh_connection_write_CONNECT_password=password
+	
+	local bishbosh_connection_toServerFifo="$bishbosh_temporaryFolderPath"/to-server.fifo
+	mkfifo -m 0600 "$bishbosh_connection_toServerFifo"
+	
+	local bishbosh_connection_fromServerFifo="$bishbosh_temporaryFolderPath"/from-server.fifo
+	mkfifo -m 0600 "$bishbosh_connection_fromServerFifo"
+	
+	local bishbosh_connection_fromOdFifo="$bishbosh_temporaryFolderPath"/from-od.fifo
+	mkfifo -m 0600 "$bishbosh_connection_fromOdFifo"
+	
+	od -A n -t u1 -v <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromOdFifo" &
+	bishbosh_connection_childPidOd=$!
+	
+	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start &
+	bishbosh_connection_childPidClient=$!
+	
+	core_children_killOnExit $bishbosh_connection_childPidOd
+	core_children_killOnExit $bishbosh_connection_childPidClient
+	
+	# https://stackoverflow.com/questions/9536388/capture-pid-of-terminated-background-process-using-trap-in-bash?rq=1
+	# http://mywiki.wooledge.org/ProcessManagement#I_want_to_process_a_bunch_of_files_in_parallel.2C_and_when_one_finishes.2C_I_want_to_start_the_next._And_I_want_to_make_sure_there_are_exactly_5_jobs_running_at_a_time
+	# kill -0 "$clientInBackgroundPid"  will check if a process is 'signallable', ie alive
+	core_TODO 'check for SIGCHLD to detect if connection dies. What about SIGPIPE?'
+	core_TODO 'exec FIFO so we can use <&45 FDs'
+
+	local controlPacketByte
+	local firstRemainingLengthByte
+	
+	# https://stackoverflow.com/questions/4874993/bash-script-with-non-blocking-read
+	# What about nc exiting due to not being able to make a connection? (or the start function, due to an error?)
+	# nc has exited - how do we detect this? just try to write and TRAP the error? Use SIGCHLD?
+	
+	# SIGPIPE on writing first byte on connect, means no-one is listening on $bishbosh_connection_toServerFifo, ie nc has exited
+	# set -m turns on job control, required for SIGCHLD to be sent
+	
+	exec 4>"$bishbosh_connection_toServerFifo"
+	exec 5<"$bishbosh_connection_fromOdFifo"
+	
+	bishbosh_connection_stateMessage='in CONNECT'
+	_bishbosh_connection_SIGPIPE()
+	{
+		core_message FAIL "Connection to server $bishbosh_server failed $bishbosh_connection_stateMessage"
+	}
+	core_trap_addHandler _bishbosh_connection_SIGPIPE PIPE
+	
+	while true
+	do
+		# Quite coarse-grained - all fails or none at all, making it impossible to differentiate connection errors from write errors
+		# Solution is to >&4 INSIDE the method. Yucky and less efficient.
+		bishbosh_connection_write_CONNECT >&4
+		bishbosh_connection_stateMessage='after CONNECT'
+		
+		IFS=' ' read -r controlPacketByte <&5
+		IFS=' ' read -r firstRemainingLengthByte <&5
+		connection_read_next
+
+		#connection_write_PINGREQ
+		
+		#connection_read_next
+
+		#connection_write_DISCONNECT
+	done
+}

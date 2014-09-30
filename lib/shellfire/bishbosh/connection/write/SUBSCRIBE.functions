@@ -57,6 +57,6 @@ bishbosh_connection_write_SUBSCRIBE()
 		
 		bishbosh_connection_write_twoByteLength ${#topicFilter}
 		printf '%s' "$topicFilter"
-		bishbosh_write_byte $topicQos
+		bishbosh_connection_write_byte $topicQos
 	done
 }
