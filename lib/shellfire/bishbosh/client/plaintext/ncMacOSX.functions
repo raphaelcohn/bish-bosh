@@ -19,6 +19,15 @@ bishbosh_client_features_ncMacOSX_tcpNoDelayToggling=no
 
 bishbosh_client_plaintext_ncMacOSX_check()
 {
+	local binary
+	for binary in /usr/bin/nc "$(core_compatibility_which nc)"
+	do
+		if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^usage: nc \[-'; then
+			bishbosh_client_plaintext=ncMacOSX
+			bishbosh_client_plaintextPath="$binary"
+			return 0
+		fi
+	done
 	return 1
 }
 

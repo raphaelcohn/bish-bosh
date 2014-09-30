@@ -3,7 +3,8 @@ core_functions_register _bishbosh_client_plaintext_registration ncGNU
 
 bishbosh_client_plaintext_ncGNU_check()
 {
-	return 1
+	local binary="$(core_compatibility_whichNoOutput nc)"
+	bishbosh_client_plaintext_ncGNU_checkIfNetcatVariant
 }
 
 bishbosh_client_plaintext_ncGNU_checkIfNetcatVariant()
