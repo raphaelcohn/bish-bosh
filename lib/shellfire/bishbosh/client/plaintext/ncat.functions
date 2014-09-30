@@ -1,2 +1,13 @@
 core_usesIn core functions
 core_functions_register _bishbosh_client_plaintext_registration ncat
+
+bishbosh_client_plaintext_ncat_check()
+{
+	# ncat, part of nmap; provides built-in ssl support; offered as separate RPM (but debian and homebrew bundle it with nmap)
+	if core_compatibility_whichNoOutput ncat; then
+		bishbosh_client_plaintext=ncat
+		bishbosh_client_plaintextPath="$(core_compatibility_which ncat)"
+		return 0
+	fi
+	return 1
+}

@@ -1,2 +1,24 @@
 core_usesIn core functions
 core_functions_register _bishbosh_client_plaintext_registration ncDebianTraditional
+
+# Default on Debian, lacks -e and -c (execute program / script)
+bishbosh_client_plaintext_ncDebianTraditional_check()
+{
+	if core_compatibility_whichNoOutput nc.openbsd; then
+		bishbosh_client_plaintext=ncDebianOpenBSD
+		bishbosh_client_plaintextPath="$(core_compatibility_which nc.openbsd)"
+		return 0
+	fi
+	return 1
+}
+
+bishbosh_client_plaintext_ncDebianTraditional_checkIfNetcatVariant()
+{
+	# eg [v1.10-40] \n connect to somewhere:   nc [-options] hostname port[s] [ports] ...
+	if "$binary" -h 2>&1 | head -n 2 | tail -n 1 | grep -q -E '^connect to somewhere:	nc \[-'; then
+		bishbosh_client_plaintext=ncDebianTraditional
+		bishbosh_client_plaintextPath="$binary"
+		return 0
+	fi
+	return 1
+}

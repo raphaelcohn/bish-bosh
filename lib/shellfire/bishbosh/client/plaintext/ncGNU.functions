@@ -1,2 +1,18 @@
 core_usesIn core functions
 core_functions_register _bishbosh_client_plaintext_registration ncGNU
+
+bishbosh_client_plaintext_ncGNU_check()
+{
+	return 1
+}
+
+bishbosh_client_plaintext_ncGNU_checkIfNetcatVariant()
+{
+	# eg  'GNU netcat 0.7.1, a rewrite of the famous networking tool.'
+	if "$binary" -h | head -n 1 | grep -q -E '^GNU netcat '; then
+		bishbosh_client_plaintext=ncGNU
+		bishbosh_client_plaintextPath="$binary"
+		return 0
+	fi
+	return 1
+}

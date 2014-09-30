@@ -1,2 +1,13 @@
 core_usesIn core functions
 core_functions_register _bishbosh_client_plaintext_registration nc6
+
+# nc6 is widely available but abandoned in favour of Nmap's ncat
+bishbosh_client_plaintext_nc6_check()
+{
+	if core_compatibility_whichNoOutput nc6; then
+		bishbosh_client_plaintext=nc6
+		bishbosh_client_plaintextPath="$(core_compatibility_which nc6)"
+		return 0
+	fi
+	return 1
+}

@@ -1,0 +1,22 @@
+core_usesIn core functions
+core_functions_register _bishbosh_client_plaintext_registration nc
+core_usesIn bishbosh/client/plaintext ncGNU ncDebianOpenBSD ncDebianTraditional ncMacOSX
+
+bishbosh_client_plaintext_nc_check()
+{
+	if ! core_compatibility_whichNoOutput nc; then
+		return 1
+	fi
+	
+	local binary="$(core_compatibility_which nc)"
+	
+	local ncVariantCheckFunction
+	for ncVariantCheckFunction in ncDebianTraditional ncDebianOpenBSD ncMacOSX ncGNU ncToybox ncBusyBox
+	do
+		if bishbosh_client_plaintext_${ncVariantCheckFunction}_checkIfNetcatVariant; then
+			return 0
+		fi
+	done
+	core_message WARN "Could not determine which netcat (nc, at path '$binary') you have installed."
+	return 1
+}

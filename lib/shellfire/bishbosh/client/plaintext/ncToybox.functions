@@ -1,2 +1,31 @@
 core_usesIn core functions
 core_functions_register _bishbosh_client_plaintext_registration ncToybox
+
+bishbosh_client_plaintext_ncToybox_check()
+{
+	local binary
+	local toyboxName
+	for toyboxName in toybox toybox-"$(uname -m)"
+	do
+		if core_compatibility_whichNoOutput "$toyboxName"; then
+			binary="$(core_compatibility_which "$toyboxName")"
+			if "$binary" 2>/dev/null | grep -q -E '^nc$| nc | nc$'; then
+				bishbosh_client_plaintext=ncToyBox
+				bishbosh_client_plaintextPath="$binary"
+				return 0
+			fi
+		fi
+	done
+	return 1
+}
+
+bishbosh_client_plaintext_ncToybox_checkIfNetcatVariant()
+{
+	# eg  'usage: netcat [-tu] [-lL COMMAND...] [-wpq #] [-s addr] {IPADDR PORTNUM|-f FILENAME}'
+	if "$binary" 2>&1 | head -n 1 | grep -q -E '^usage: netcat \[-tu\] '; then
+		bishbosh_client_plaintext=ncBusyBox
+		bishbosh_client_plaintextPath="$binary"
+		return 0
+	fi
+	return 1
+}

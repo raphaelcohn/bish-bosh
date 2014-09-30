@@ -17,6 +17,22 @@ bishbosh_client_features_ncMacOSX_proxyHttpUsernamePassword=no
 # tcpclient
 bishbosh_client_features_ncMacOSX_tcpNoDelayToggling=no
 
+bishbosh_client_plaintext_ncMacOSX_check()
+{
+	return 1
+}
+
+bishbosh_client_plaintext_ncMacOSX_checkIfNetcatVariant()
+{
+	# eg  'usage: nc [-46AcCDdFhklnrtUuvz] [-K tc] [-b boundif] [-i interval] [-p source_port]'
+	if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^usage: nc \[-'; then
+		bishbosh_client_plaintext=ncMacOSX
+		bishbosh_client_plaintextPath="$binary"
+		return 0
+	fi
+	return 1
+}
+
 _backend_client_plaintext_ncMacOSX_start_addProxy()
 {
 	local proxyValue="$1"
