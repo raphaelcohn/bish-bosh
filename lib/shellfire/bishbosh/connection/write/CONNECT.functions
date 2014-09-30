@@ -1,4 +1,3 @@
-core_usesIn bishbosh/write controlpacket
 _bishbosh_connection_write_CONNECT_validateArguments()
 {
 	# TODO: May be change from exit to return in core_exitError?
@@ -120,7 +119,7 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 	fi
 }
 
-core_usesIn bishbosh write
+core_usesIn bishbosh/connection write
 bishbosh_connection_write_CONNECT()
 {
 	# 8 byte preamble and 2 byte keep-alive

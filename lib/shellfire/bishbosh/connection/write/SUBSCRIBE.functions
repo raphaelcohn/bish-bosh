@@ -1,4 +1,3 @@
-core_usesIn bishbosh/write controlpacket
 _bishbosh_connection_write_SUBSCRIBE_validateArguments()
 {
 	if [ $# -lt 2 ]; then
@@ -33,7 +32,7 @@ _bishbosh_connection_write_SUBSCRIBE_validateArguments()
 	fi
 }
 
-core_usesIn bishbosh write
+core_usesIn bishbosh/connection write
 bishbosh_connection_write_SUBSCRIBE()
 {
 	local packetIdentifier

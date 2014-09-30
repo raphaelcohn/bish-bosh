@@ -1,4 +1,4 @@
-core_usesIn bishbosh write
+core_usesIn bishbosh/connection write
 
 _bishbosh_connection_write_PUBLISH_validateArguments()
 {

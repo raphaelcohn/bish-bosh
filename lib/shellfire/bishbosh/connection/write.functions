@@ -32,7 +32,7 @@ bishbosh_connection_write_twoByteLength()
 	bishbosh_connection_write_byte $(( length & 255 ))
 }
 
-core_usesIn bishbosh/write/controlpacket CONNACK CONNECT DISCONNECT PINGREQ PINGRESP PUBACK PUBCOMP PUBLISH PUBREC PUBREL SUBACK SUBSCRIBE UNSUBACK UNSUBSCRIBE
+core_usesIn bishbosh/connection/write CONNACK CONNECT DISCONNECT PINGREQ PINGRESP PUBACK PUBCOMP PUBLISH PUBREC PUBREL SUBACK SUBSCRIBE UNSUBACK UNSUBSCRIBE
 
 bishbosh_connection_write_fieldLengthCheck()
 {

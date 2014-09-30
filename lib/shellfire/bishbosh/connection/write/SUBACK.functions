@@ -17,7 +17,7 @@ _bishbosh_connection_write_SUBACK_validateArguments()
 	done
 }
 
-core_usesIn bishbosh write
+core_usesIn bishbosh/connection write
 bishbosh_connection_write_SUBACK()
 {
 	local packetIdentifier

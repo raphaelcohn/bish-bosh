@@ -1,5 +1,3 @@
-core_usesIn bishbosh read
-
 bishbosh_connection_read=()
 
 bishbosh_connection_read_initialise()

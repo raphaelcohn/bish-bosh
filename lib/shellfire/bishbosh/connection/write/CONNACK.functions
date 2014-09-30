@@ -22,7 +22,7 @@ _bishbosh_connection_write_CONNACK_validateArguments()
 	fi
 }
 
-core_usesIn bishbosh write
+core_usesIn bishbosh/connection write
 bishbosh_connection_write_CONNACK()
 {
 	local remainingLength=10
