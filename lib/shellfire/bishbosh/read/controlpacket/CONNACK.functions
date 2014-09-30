@@ -1,0 +1,54 @@
+bishbosh_read_controlpacket_CONNACK()
+{
+	# Remaining Length of 2
+	#printf '\040\002'
+	#bishbosh_write_byte $sessionPresent
+	#bishbosh_write_byte $connectReturnCode
+}
+
+bishbosh_read_controlpacket_CONNACK()
+{
+	if [ $byte1 -ne 2 ]; then
+		bishbosh_read_invalid "CONNACK" "Invalid remaining length (was $byte1, not 2)"
+	fi
+	
+	local -i connectAcknowledgeFlags connectReturnCode
+	od --width=1 --address-radix=n --output-duplicates --format=u1 --read-bytes 2 <&3 >&4
+	IFS= read -u 4 -r connectAcknowledgeFlags connectReturnCode
+	
+	if [ $connectAcknowledgeFlags -gt 1 ]; then
+		bishbosh_read_invalid "CONNACK" "Invalid connectAcknowledgeFlags (was $connectAcknowledgeFlags, not 0-1)"
+	fi
+	local -i sessionPresent=$connectAcknowledgeFlags
+	
+	if [ $connectReturnCode -ne 0 ]; then
+		case $connectReturnCode in
+			
+			1)
+				bishbosh_read_disconnected "CONNACK" "Connection Refused, unacceptable protocol version"
+			;;
+			
+			2)
+				bishbosh_read_disconnected "CONNACK" "Connection Refused, identifier rejected"
+			;;
+			
+			3)
+				bishbosh_read_disconnected "CONNACK" "Connection Refused, Server unavailable"
+			;;
+			
+			4)
+				bishbosh_read_disconnected "CONNACK" "Connection Refused, bad user name or password"
+			;;
+			
+			5)
+				bishbosh_read_disconnected "CONNACK" "Connection Refused, not authorized"
+			;;
+			
+			*)
+				bishbosh_read_invalid "CONNACK" "Received reserved connectReturnCode code of $connectReturnCode"
+			;;
+		esac
+	fi
+	
+	# that's it
+}

@@ -1,0 +1,22 @@
+core_TODO 'More gracefully terminate connections'
+
+bishbosh_read_controlpacket_invalid()
+{
+	bishbosh_read_controlpacket_protocolError invalid "Invalid control packet code '$controlPacketByte' with remaining length '$firstRemainingLengthByte'"
+}
+
+bishbosh_read_controlpacket_protocolError()
+{
+	local controlPacket="$1"
+	local message="$2"
+	core_message WARN "Connection:$bishbosh_connection_id:read:$controlPacket:$message"
+	return $core_commandLine_exitCode_PROTOCOL
+}
+
+bishbosh_read_controlpacket_protocolErrorIfRemainingLengthNotZero()
+{
+	local controlPacket="$1"
+	if [ $firstRemainingLengthByte -ne 0 ]; then
+		bishbosh_read_controlpacket_protocolError "$controlPacket" "Remaining length '$firstRemainingLengthByte' should be 0"
+	fi
+}

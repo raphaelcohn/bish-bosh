@@ -1,0 +1,4 @@
+bishbosh_read_controlpacket_DISCONNECT()
+{
+	bishbosh_read_controlpacket_protocolErrorIfRemainingLengthNotZero DISCONNECT
+}

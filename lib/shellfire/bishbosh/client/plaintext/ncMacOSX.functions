@@ -17,7 +17,7 @@ bishbosh_client_features_ncMacOSX_tcpNoDelayToggling=no
 _backend_client_plaintext_ncMacOSX_start_addProxy()
 {
 	local proxyValue="$1"
-	_bishbosh_client_addOptionWithEmptyMeaningNo '-X' "$proxyValue"
+	bishbosh_client_addOptionWithEmptyMeaningNo '-X' "$proxyValue"
 	
 	local proxyAddress="$bishbosh_proxyAddress"
 	if core_variable_isSet bishbosh_proxyPort; then
@@ -25,7 +25,7 @@ _backend_client_plaintext_ncMacOSX_start_addProxy()
 		proxyAddress="${proxyAddress}:${bishbosh_proxyPort}"
 	fi
 	
-	_bishbosh_client_addOptionWithEmptyMeaningNo '-x' "$proxyAddress"
+	bishbosh_client_addOptionWithEmptyMeaningNo '-x' "$proxyAddress"
 	
 	if core_variable_isSet bishbosh_proxyUsername; then
 		core_message WARN "The backend ncMacOSX does not support specifing the proxy username"
@@ -69,8 +69,8 @@ backend_client_plaintext_ncMacOSX_start()
 		esac
 	fi
 	
-	_bishbosh_client_addOptionWithEmptyMeaningNo '-s' "$bishbosh_sourceAddress"
-	_bishbosh_client_addOptionWithEmptyMeaningNo '-p' "$bishbosh_sourcePort"
+	bishbosh_client_addOptionWithEmptyMeaningNo '-s' "$bishbosh_sourceAddress"
+	bishbosh_client_addOptionWithEmptyMeaningNo '-p' "$bishbosh_sourcePort"
 	
 	case "$bishbosh_proxyKind" in
 		

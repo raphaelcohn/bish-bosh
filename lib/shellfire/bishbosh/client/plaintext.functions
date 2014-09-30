@@ -1,6 +1,3 @@
-bishbosh_port_mqtt=1883
-bishbosh_port_mqtts=8883
-
 core_dependency_requires '*' uname
 core_dependency_requires '*' grep
 core_dependency_requires '*' head

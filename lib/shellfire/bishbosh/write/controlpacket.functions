@@ -1,8 +1,5 @@
 core_usesIn bishbosh connection
 
-
-
-
 bishbosh_write_controlpacket_fieldLengthCheck()
 {
 	local packetName="$1"
@@ -20,55 +17,5 @@ bishbosh_write_controlpacket_fieldLengthCheck()
 	fi
 	if [ $length -gt 65535 ]; then
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_write_controlpacket_${packetName}_${variableName}' can not be longer than 65,535 bytes"
-	fi
-}
-
-
-function _bishbosh_write_controlpacket_CONNECT_verifyFieldPresent()
-{
-	local expectedFieldName="$1"
-	local presentFieldName
-	for presentFieldName in "${!bishbosh_write_controlpacket_CONNECT_arguments[@]}"
-	do
-		if [ "$presentFieldName" = "$expectedFieldName" ]; then
-			return 0
-		fi
-	done
-	return 1
-}
-
-function _bishbosh_write_controlpacket_PUBLISH_verifyFieldPresent()
-{
-	local expectedFieldName="$1"
-	local presentFieldName
-	for presentFieldName in "${!bishbosh_write_controlpacket_PUBLISH_arguments[@]}"
-	do
-		if [ "$presentFieldName" = "$expectedFieldName" ]; then
-			return 0
-		fi
-	done
-	return 1
-}
-
-function _bishbosh_write_controlpacket_SUBSCRIBE_verifyFieldPresent()
-{
-	local expectedFieldName="$1"
-	local presentFieldName
-	for presentFieldName in "${!bishbosh_write_controlpacket_SUBSCRIBE_arguments[@]}"
-	do
-		if [ "$presentFieldName" = "$expectedFieldName" ]; then
-			return 0
-		fi
-	done
-	return 1
-}
-
-function _bishbosh_write_controlpacket_guardUtf8StringOrBinaryFieldLength()
-{
-	if [ $3 -lt 0 ]; then
-		connection_messageFAIL $1 "Field $2 must not be negative (ie not $3)"
-	fi
-	if [ $3 -gt 65535 ]; then
-		connection_messageFAIL $2 "Field $2 must be less than 65,536 characters long, not $3"
 	fi
 }
