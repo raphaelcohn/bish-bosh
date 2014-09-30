@@ -1,4 +1,4 @@
-function bishbosh_byte_bit()
+byte_bit()
 {
    local -i value=${1:-0}
    local -i bit=${2-0}
@@ -6,24 +6,24 @@ function bishbosh_byte_bit()
    echo -n $(( value & bitMask ? 1 : 0 ))
 }
 
-function bishbosh_byte_isBitSet
+byte_isBitSet
 {
-   return $(( 1 - $(bishbosh_byte_bit "$@") ))
+   return $(( 1 - $(byte_bit "$@") ))
 }
 
 # could also assign to a variable using printf syntax (printf -v VAR '%s' $binaryValue)
-function bishbosh_byte_printBinary()
+byte_printBinary()
 {
 	local binaryValue
 	local -i bit
 	for ((bit=7; bit!=-1; bit--))
 	do
-		binaryValue=${binaryValue}$(bishbosh_byte_bit $1 $bit)
+		binaryValue=${binaryValue}$(byte_bit $1 $bit)
 	done
 	printf '%s' $binaryValue
 }
 
-function bishbosh_byte_setBit()
+byte_setBit()
 {
 	local -i binaryValue=$1
 	local -i bit=$2

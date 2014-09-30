@@ -2,7 +2,7 @@
 
 _program()
 {
-	core_usesIn bishbosh validate client/plaintext connection
+	core_usesIn bishbosh validate client
 	
 	bishbosh()
 	{

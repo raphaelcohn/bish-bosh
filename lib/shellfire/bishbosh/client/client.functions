@@ -1,3 +1,5 @@
+core_usesIn bishbosh client/plaintext connection
+
 # An empty value allows the overriding of a value set using configuration
 bishbosh_client_addOptionWithEmptyMeaningNo()
 {
