@@ -1,18 +1,18 @@
 bishbosh_connection_read_CONNACK()
 {
-	bishbosh_connection_read_protocolErrorIfRemainingLengthNot 2
+	bishbosh_connection_read_protocolErrorIfRemainingLengthNot CONNACK 2
 	
 	local connectAcknowledgeFlags
-	connectAcknowledgeFlags=$(readbyte)
+	bishbosh_connection_read_byte connectAcknowledgeFlags
 	
 	if [ $connectAcknowledgeFlags -gt 1 ]; then
-		bishbosh_connection_read_protocolError CONNACK "Field 'connectAcknowledgeFlags' was '$connectAcknowledgeFlags', not a valud between 0 to 1 inclusive"
+		bishbosh_connection_read_protocolError CONNACK "Field 'connectAcknowledgeFlags' was '$connectAcknowledgeFlags', not a value between 0 to 1 inclusive"
 	fi
 	
 	# if value == 1, then sessionPresent Flag is set
 	
 	local connectReturnCode
-	connectReturnCode=$(readbyte)
+	bishbosh_connection_read_byte connectReturnCode
 	
 	case $connectReturnCode in
 		

@@ -66,8 +66,16 @@ bishbosh_connection_read_initialise()
 	fi
 }
 
+bishbosh_connection_read_byte()
+{
+	IFS=' ' read -r $1 <&5
+}
+
 bishbosh_connection_read_next()
-{	
+{
+	bishbosh_connection_read_byte controlPacketByte
+	bishbosh_connection_read_byte firstRemainingLengthByte
+	
 	case $controlPacketByte in
 		
 		16)
