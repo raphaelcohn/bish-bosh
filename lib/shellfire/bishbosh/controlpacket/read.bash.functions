@@ -1,0 +1,77 @@
+core_usesIn bishbosh read
+
+bishbosh_connection_read=()
+
+bishbosh_connection_read_initialise()
+{
+	local isServer="$1"
+	
+	local -i index
+	for((index=0;index<256;index++))
+	do
+		bishbosh_connection_read[$index]=bishbosh_connection_read_invalid
+	done
+	
+	if core_variable_isTrue "$isServer"; then
+		bishbosh_connection_read[16]=bishbosh_connection_read_CONNECT
+	else
+		bishbosh_connection_read[32]=bishbosh_connection_read_CONNACK
+	fi
+	
+	bishbosh_connection_read[48]=bishbosh_connection_read_PUBLISH_0
+	bishbosh_connection_read[49]=bishbosh_connection_read_PUBLISH_1
+	bishbosh_connection_read[50]=bishbosh_connection_read_PUBLISH_2
+	bishbosh_connection_read[51]=bishbosh_connection_read_PUBLISH_3
+	bishbosh_connection_read[52]=bishbosh_connection_read_PUBLISH_4
+	bishbosh_connection_read[53]=bishbosh_connection_read_PUBLISH_5
+	bishbosh_connection_read[54]=bishbosh_connection_read_PUBLISH_6
+	bishbosh_connection_read[55]=bishbosh_connection_read_PUBLISH_7
+	bishbosh_connection_read[56]=bishbosh_connection_read_PUBLISH_8
+	bishbosh_connection_read[57]=bishbosh_connection_read_PUBLISH_9
+	bishbosh_connection_read[58]=bishbosh_connection_read_PUBLISH_10
+	bishbosh_connection_read[59]=bishbosh_connection_read_PUBLISH_11
+	bishbosh_connection_read[60]=bishbosh_connection_read_PUBLISH_12
+	bishbosh_connection_read[61]=bishbosh_connection_read_PUBLISH_13
+	bishbosh_connection_read[62]=bishbosh_connection_read_PUBLISH_14
+	bishbosh_connection_read[63]=bishbosh_connection_read_PUBLISH_15
+	
+	bishbosh_connection_read[64]=bishbosh_connection_read_PUBACK
+	
+	bishbosh_connection_read[80]=bishbosh_connection_read_PUBREC
+	
+	bishbosh_connection_read[98]=bishbosh_connection_read_PUBREL
+	
+	bishbosh_connection_read[112]=bishbosh_connection_read_PUBCOMP
+	
+	if core_variable_isTrue "$isServer"; then
+		bishbosh_connection_read[130]=bishbosh_connection_read_SUBSCRIBE
+	else
+		bishbosh_connection_read[144]=bishbosh_connection_read_SUBACK
+	fi
+	
+	if core_variable_isTrue "$isServer"; then
+		bishbosh_connection_read[162]=bishbosh_connection_read_UNSUBSCRIBE
+	else
+		bishbosh_connection_read[176]=bishbosh_connection_read_UNSUBACK
+	fi
+	
+	if core_variable_isTrue "$isServer"; then
+		bishbosh_connection_read[192]=bishbosh_connection_read_PINGREQ
+	else
+		bishbosh_connection_read[208]=bishbosh_connection_read_PINGRESP
+	fi
+	
+	if core_variable_isTrue "$isServer"; then
+		bishbosh_connection_read[224]=bishbosh_connection_read_DISCONNECT
+	fi
+}
+
+bishbosh_connection_read_next()
+{
+	local packetByte
+	local firstRemainingLengthByte
+	
+	# Do read of two bytes
+	
+	${bishbosh_connection_read[${packetByte}]}
+}
