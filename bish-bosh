@@ -269,7 +269,7 @@ _program_commandLine_processOptionWithArgument()
 		;;
 		
 		t|transmit-path)
-			core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_transmitPath="$optionValue"
 		;;
 		
@@ -458,7 +458,7 @@ _program_commandLine_validate()
 	
 	if core_variable_isUnset bishbosh_transmitPath; then
 		bishbosh_transmitPath="$_program_default_transmitPath"
-		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--transmit-path' "$bishbosh_transmitPath"
+		core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--transmit-path' "$bishbosh_transmitPath"
 	else
 		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_transmitPath' "$bishbosh_transmitPath"
 	fi
