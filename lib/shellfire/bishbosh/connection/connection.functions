@@ -1,38 +1,10 @@
 core_usesIn bishbosh/connection read write
 core_usesIn core children
 
-_bishbosh_connection_binaryToDecimal1_hexdump()
-{
-	dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | hexdump -e '"%u"'
-}
-
-_bishbosh_connection_binaryToDecimal1_od()
-{
-	dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | od -A n -t u1
-}
-
-_bishbosh_connection_binaryToDecimal_initialise()
-{
-	if core_variable_isSet _bishbosh_connection_binaryToDecimal1; then
-		return 0
-	fi
-	if core_compatibility_whichNoOutput hexdump; then
-		_bishbosh_connection_binaryToDecimal1=_bishbosh_connection_binaryToDecimal1_hexdump
-		_bishbosh_connection_binaryToDecimal2=_bishbosh_connection_binaryToDecimal2_hexdump
-	elif core_compatibility_whichNoOutput od; then
-		_bishbosh_connection_binaryToDecimal1=_bishbosh_connection_binaryToDecimal1_od
-		_bishbosh_connection_binaryToDecimal2=_bishbosh_connection_binaryToDecimal2_od
-	else
-		core_exitError "Can not find either hexdump or od on the path"
-	fi
-}
-
 core_dependency_requires '*' mkfifo
 core_dependency_oneOf '*' hexdump od
 bishbosh_connection_makeClientConnection()
 {
-	_bishbosh_connection_binaryToDecimal_initialise
-	
 	# bishbosh_connection_id can't be local, otherwise not found in the signal handler...
 	if core_variable_isUnset bishbosh_connection_nextId; then
 		bishbosh_connection_id=0
@@ -58,19 +30,16 @@ bishbosh_connection_makeClientConnection()
 	local bishbosh_connection_fifoFolder="$bishbosh_connection_temporaryFolder"/fifo
 	mkdir -m 0700 -p "$bishbosh_connection_fifoFolder"
 	
-	local bishbosh_connection_toServerFifo="$bishbosh_connection_fifoFolder"/to-server.fifo
+	local bishbosh_connection_toServerFifo="$bishbosh_connection_fifoFolder"/to-server
 	mkfifo -m 0600 "$bishbosh_connection_toServerFifo"
 	
-	local bishbosh_connection_fromServerFifo="$bishbosh_connection_fifoFolder"/from-server.fifo
+	local bishbosh_connection_fromServerFifo="$bishbosh_connection_fifoFolder"/from-server
 	mkfifo -m 0600 "$bishbosh_connection_fromServerFifo"
-	
-	local bishbosh_connection_fromOdFifo="$bishbosh_connection_fifoFolder"/from-od.fifo
-	mkfifo -m 0600 "$bishbosh_connection_fromOdFifo"
 
 	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_connection_temporaryFolder'"
 	
 	# Can't be local, otherwise not found in the signal handler...
-	bishbosh_connection_stateMessage='before CONNECT'
+	#bishbosh_connection_stateMessage='before CONNECT'
 	#_bishbosh_connection_SIGPIPE()
 	#{
 	#	core_message FAIL "Connection '$bishbosh_connection_id' to server '$bishbosh_server' failed $bishbosh_connection_stateMessage"
@@ -86,6 +55,52 @@ bishbosh_connection_makeClientConnection()
 	# http://mywiki.wooledge.org/ProcessManagement#I_want_to_process_a_bunch_of_files_in_parallel.2C_and_when_one_finishes.2C_I_want_to_start_the_next._And_I_want_to_make_sure_there_are_exactly_5_jobs_running_at_a_time
 	# kill -0 "$clientInBackgroundPid"  will check if a process is 'signallable', ie alive
 	
+	set -x
+	bishbosh_connection_read_initialiseStrategy
+	bishbosh_connection_read_initialiseControlPacketHandlers "no"
+
+	{
+		bishbosh_connection_write_CONNECT
+		
+		local controlPacketByte
+		local firstRemainingLengthByte
+		
+		$bishbosh_connection_read_loop bishbosh_connection_callback
+	} >"$bishbosh_connection_toServerFifo"
+}
+
+bishbosh_connection_callback()
+{
+	${bishbosh_connection_read_byte} controlPacketByte
+	${bishbosh_connection_read_byte} remainingLength
+	echo $controlPacketByte $remainingLength 1>&2
+	exit 50
+	bishbosh_connection_read_next
+}
+
+bishbosh_connection_typeB()
+{
+	{
+		bishbosh_connection_write_CONNECT
+		
+		local controlPacketByte
+		local firstRemainingLengthByte
+		
+		# Only works GNU coreutils stdbuf and GNU coreutils od
+		gstdbuf -i 0 -o 0 -e 0 god -A n -t u1 -w1 -v "$bishbosh_connection_fromServerFifo" | while true
+		do
+			IFS='' read -r controlPacketByte
+			IFS='' read -r remainingLength
+			
+			
+			echo $controlPacketByte $remainingLength 1>&2
+			exit 50
+		done
+	} >"$bishbosh_connection_toServerFifo"
+}
+
+bishbosh_connection_typeA()
+{
 	{
 		bishbosh_connection_write_CONNECT
 		
@@ -93,25 +108,34 @@ bishbosh_connection_makeClientConnection()
 		local firstRemainingLengthByte
 		while true
 		do
-			# The UNQUOTED $(...) capture ensures all leading whitespace and linefeeds are removed (a problem when using od, esp on Mac OS X)
-			# dd is used because
-			# - both od and hexdump buffer input and output when used in a pipeline
-			# - hexdump truncates the FIFO (eg if -n 1 to read one byte, but 4 bytes are in the FIFO, it discards the remaining 3 bytes)
-			# alternatives to this might be
-			# - use tee (turns off output buffering)
-			# - use stdbuf (GNU coreutils, from 12.04 LTS onwards so not common)
-			# - use expect unbuffer (again, not common)
-		
-			# Hangs if connection not established
+			# Hangs if connection not established (we could have a background process that checks if the nc PID is alive; if not, it kills dd; the problem, if knowing which dd - we'd need some sort of PID look-up)
 			controlPacketByte=$($_bishbosh_connection_binaryToDecimal1)
 			remainingLength=$($_bishbosh_connection_binaryToDecimal1)
+			
+			bishbosh_connection_read_next
 		
 			echo $controlPacketByte $remainingLength 1>&2
 			exit 50
 		done
 	} >"$bishbosh_connection_toServerFifo"
-	
-	rm "$bishbosh_connection_toServerFifo"
-	rm "$bishbosh_connection_fromServerFifo"
-	rm "$bishbosh_connection_fromOdFifo"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,28 +1,84 @@
 core_usesIn bishbosh/connection/read CONNACK CONNECT DISCONNECT invalid PINGREQ PINGRESP
 
-bishbosh_connection_read_protocolError()
+core_dependency_requires '*' grep
+bishbosh_connection_read_initialiseStrategy()
 {
-	local controlPacket="$1"
-	local message="$2"
-	core_message WARN "Connection:$bishbosh_connection_id:read:$controlPacket:$message"
-	return $core_commandLine_exitCode_PROTOCOL
-}
-
-bishbosh_connection_read_protocolErrorIfRemainingLengthNot()
-{
-	local controlPacket="$1"
-	local expectedLength=$2
-	if [ $firstRemainingLengthByte -ne $expectedLength ]; then
-		bishbosh_connection_read_protocolError "$controlPacket" "Remaining length '$firstRemainingLengthByte' should be $expectedLength"
+	# Homebrew
+	if core_compatibility_whichNoOutput gstdbuf; then
+		if core_compatibility_whichNoOutput god; then
+			bishbosh_connection_read_loop=bishbosh_connection_read_usingGnuCoreutilsPipeHomebrew
+			bishbosh_connection_read_byte=_bishbosh_connection_read_byte_whenUsingGnuCoreutilsPipe
+			return 0
+		fi
 	fi
+	if core_compatibility_whichNoOutput stdbuf; then
+		if core_compatibility_whichNoOutput od; then
+			if god --version 2>&1 | grep -q '^od (GNU coreutils) '; then
+				bishbosh_connection_read_loop=bishbosh_connection_read_usingGnuCoreutilsPipeGnu
+				bishbosh_connection_read_byte=_bishbosh_connection_read_byte_whenUsingGnuCoreutilsPipe
+				return 0
+			fi
+		fi
+	fi
+	bishbosh_connection_read_loop=_bishbosh_connection_read_byte_none
+	if core_compatibility_whichNoOutput hexdump; then
+		bishbosh_connection_read_byte=_bishbosh_connection_read_byte_forkHexdump
+	elif core_compatibility_whichNoOutput od; then
+		bishbosh_connection_read_byte=_bishbosh_connection_read_byte_forkOd
+	else
+		core_exitError "Can not find either hexdump or od on the path"
+	fi	
 }
 
-bishbosh_connection_read_protocolErrorIfRemainingLengthNotZero()
+bishbosh_connection_read_usingGnuCoreutilsPipeHomebrew()
 {
-	bishbosh_connection_read_protocolErrorIfRemainingLengthNot "$1" 0
+	local callback="$1"
+	gstdbuf -i 0 -o 0 -e 0 god -A n -t u1 -w1 -v | while true
+	do
+		$callback "$@"
+	done
 }
 
-bishbosh_connection_read_initialise()
+bishbosh_connection_read_usingGnuCoreutilsPipeGnu()
+{
+	local callback="$1"
+	stdbuf -i 0 -o 0 -e 0 od -A n -t u1 -w1 -v | while true
+	do
+		$callback "$@"
+	done
+}
+
+_bishbosh_connection_read_byte_none()
+{
+	local callback="$1"
+	while true
+	do
+		$callback "$@"
+	done
+}
+
+_bishbosh_connection_read_byte_whenUsingGnuCoreutilsPipe()
+{
+	IFS='' read -r $1
+}
+
+_bishbosh_connection_read_byte_forkHexdump()
+{
+	local byte=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | hexdump -e '"%u"')
+	eval "$1=$byte"
+}
+
+_bishbosh_connection_read_byte_forkOd()
+{
+	# The UNQUOTED $(...) capture ensures all leading whitespace and linefeeds are removed (a problem when using od, esp on Mac OS X)
+	# dd is used because
+	# - both od and hexdump buffer input and output when used in a pipeline
+	# - hexdump truncates the FIFO (eg if -n 1 to read one byte, but 4 bytes are in the FIFO, it discards the remaining 3 bytes)
+	local byte=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | od -A n -t u1)
+	eval "$1=$byte"
+}
+
+bishbosh_connection_read_initialiseControlPacketHandlers()
 {
 	local isServer="$1"
 	if core_variable_isTrue "$isServer"; then
@@ -66,23 +122,10 @@ bishbosh_connection_read_initialise()
 	fi
 }
 
-bishbosh_connection_read_byte()
-{
-	IFS=' ' read -r $1
-}
-
-bishbosh_connection_read_bytes()
-{
-	IFS=' ' read -r $@
-}
-
 bishbosh_connection_read_next()
 {
-	set -x
-	bishbosh_connection_read_byte controlPacketByte
-	echo $controlPacketByte
-	bishbosh_connection_read_byte firstRemainingLengthByte
-	echo $firstRemainingLengthByte
+	${bishbosh_connection_read_byte} controlPacketByte
+	${bishbosh_connection_read_byte} remainingLength
 	
 	case $controlPacketByte in
 		
@@ -215,4 +258,26 @@ bishbosh_connection_read_next()
 			bishbosh_connection_read_invalid
 		;;
 	esac
+}
+
+bishbosh_connection_read_protocolError()
+{
+	local controlPacket="$1"
+	local message="$2"
+	core_message WARN "Connection:$bishbosh_connection_id:read:$controlPacket:$message"
+	return $core_commandLine_exitCode_PROTOCOL
+}
+
+bishbosh_connection_read_protocolErrorIfRemainingLengthNot()
+{
+	local controlPacket="$1"
+	local expectedLength=$2
+	if [ $firstRemainingLengthByte -ne $expectedLength ]; then
+		bishbosh_connection_read_protocolError "$controlPacket" "Remaining length '$firstRemainingLengthByte' should be $expectedLength"
+	fi
+}
+
+bishbosh_connection_read_protocolErrorIfRemainingLengthNotZero()
+{
+	bishbosh_connection_read_protocolErrorIfRemainingLengthNot "$1" 0
 }

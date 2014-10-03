@@ -1,6 +1,6 @@
 bishbosh_connection_read=()
 
-bishbosh_connection_read_initialise()
+bishbosh_connection_read_initialiseControlPacketHandlers()
 {
 	local isServer="$1"
 	
