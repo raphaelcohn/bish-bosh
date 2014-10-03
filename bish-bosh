@@ -394,12 +394,11 @@ _program_commandLine_validate()
 			if [ ! core_validate_socketPathReadableAndWritable "$bishbosh_server" ]; then
 				core_exitError $codeServer "When $categoryTransport '$nameTransport' is 'unix' the $categoryServer '$nameServer' must be a path to a readable, writable domain socket ('$bishbosh_socket' is not)"
 			fi
+			_program_commandLine_validateTransportSetting bishbosh_sourceAddress '--source-address' 'source address' $_program_configurationSet_bishbosh_sourceAddress
+			_program_commandLine_validateTransportSetting bishbosh_sourcePort '--source-port' 'source port' $_program_configurationSet_bishbosh_sourcePort
+			_program_commandLine_validateTransportSetting bishbosh_port '-p/--port' 'destination port' $_program_configurationSet_bishbosh_port
 		fi
 	fi
-	
-	_program_commandLine_validateTransportSetting bishbosh_sourceAddress '--source-address' 'source address' $_program_configurationSet_bishbosh_sourceAddress
-	_program_commandLine_validateTransportSetting bishbosh_sourcePort '--source-port' 'source port' $_program_configurationSet_bishbosh_sourcePort
-	_program_commandLine_validateTransportSetting bishbosh_port '-p/--port' 'destination port' $_program_configurationSet_bishbosh_port
 	
 	if core_variable_isSet bishbosh_proxyKind; then
 		bishbosh_validate_proxyKind $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_proxyKind' "$bishbosh_proxyKind"

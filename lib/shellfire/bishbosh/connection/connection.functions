@@ -1,6 +1,30 @@
 core_usesIn bishbosh/connection read write
 core_usesIn core children
 
+bishbosh_compatibility_odUnlimited()
+{
+	od -A n -t u1 -v -w1 "$@"
+}
+
+bishbosh_compatibility_odLimited()
+{
+	local numberOfBytes="$1"
+	shift 1
+	bishbosh_compatibility_odUnlimited -N${numberOfBytes} "$@"
+}
+
+bishbosh_compatibility_hexdumpUnlimited()
+{
+	hexdump -v -e '/1 "%d\n"' "$@"
+}
+
+bishbosh_compatibility_hexdumpLimited()
+{
+	local numberOfBytes="$1"
+	shift 1
+	bishbosh_compatibility_hexdumpUnlimited -n "$numberOfBytes" "$@"
+}
+
 core_dependency_requires '*' mkfifo od
 bishbosh_connection_makeClientConnection()
 {
@@ -79,22 +103,18 @@ bishbosh_connection_makeClientConnection()
 	# possible:  hexdump -v -e '/1 "%d\n"' (MacOSX, Ubuntu by default; part of bsdmainutils)
 	#
 	
+	# I suspect we have a problem with buffering (http://mywiki.wooledge.org/BashFAQ/009)
+	# We can use stdbuf on Ubuntu only for 12.04 LTS onwards
+	# We can use expects' unbuffer, or coreutil's stdbuf, but these are non-standard, and don't exist in BSD, BusyBox, etc
+	# Either piping od, hexdump to while true, or running as a background process, causes read to block
+	local readHexBytesFunction=bishbosh_compatibility_odLimited
 	{
 		_bishbosh_connection_info bishbosh_connection_write_CONNECT >&4
-		{
-			echo "WHOOPS1"
-			hexdump -v -e '/1 "%d\n"' <"$bishbosh_connection_fromServerFifo"
-			#hexdump -v -e '/1 "%d\n"' <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromOdFifo"
-			echo "WHOOPS"
-		} &
-		echo $!
-		wait $!
-		echo "OH DEAR"
+		_bishbosh_connection_info bishbosh_connection_write_CONNECT >&4
 		
 		while true
 		do
-			set -x
-			IFS=' ' read -r controlPacketByte
+			controlPacketByte=$($readHexBytesFunction 1)
 			echo $controlPacketByte
 			exit 50
 			
