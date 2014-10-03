@@ -1,6 +1,16 @@
 core_usesIn bishbosh/connection read write
 core_usesIn core children
 
+_bishbosh_connection_binaryToDecimal1_hexdump()
+{
+	dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | hexdump -e '"%u"'
+}
+
+_bishbosh_connection_binaryToDecimal1_od()
+{
+	dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | od -A n -t u1
+}
+
 _bishbosh_connection_binaryToDecimal_initialise()
 {
 	if core_variable_isSet _bishbosh_connection_binaryToDecimal1; then
@@ -61,10 +71,10 @@ bishbosh_connection_makeClientConnection()
 	
 	# Can't be local, otherwise not found in the signal handler...
 	bishbosh_connection_stateMessage='before CONNECT'
-	_bishbosh_connection_SIGPIPE()
-	{
-		core_message FAIL "Connection '$bishbosh_connection_id' to server '$bishbosh_server' failed $bishbosh_connection_stateMessage"
-	}
+	#_bishbosh_connection_SIGPIPE()
+	#{
+	#	core_message FAIL "Connection '$bishbosh_connection_id' to server '$bishbosh_server' failed $bishbosh_connection_stateMessage"
+	#}
 	#core_trap_addHandler _bishbosh_connection_SIGPIPE PIPE
 	
 	# (Goes into background internally)
@@ -75,67 +85,33 @@ bishbosh_connection_makeClientConnection()
 	# https://stackoverflow.com/questions/9536388/capture-pid-of-terminated-background-process-using-trap-in-bash?rq=1
 	# http://mywiki.wooledge.org/ProcessManagement#I_want_to_process_a_bunch_of_files_in_parallel.2C_and_when_one_finishes.2C_I_want_to_start_the_next._And_I_want_to_make_sure_there_are_exactly_5_jobs_running_at_a_time
 	# kill -0 "$clientInBackgroundPid"  will check if a process is 'signallable', ie alive
-	# Alternative is to just do   od -A n -t u1 -v -w 1 -N 1 <"$bishbosh_connection_fromServerFifo"  every time we want to read, which is slow (except perhaps in BusyBox dash) as it forks-and-execs
-	# That said, it may be more efficient for large message handling, etc, as not every byte is a null byte (eg strings)
-	# Trying to do
-	#	od -A n -t u1 -v -w1 >"$bishbosh_connection_fromOdFifo" <"$bishbosh_connection_fromServerFifo" &
-	#	bishbosh_connection_childPidOd=$!
-	#	core_children_killOnExit $bishbosh_connection_childPidOd
-	#   exec 5<"$bishbosh_connection_fromOdFifo"
-	# just doesn't work. Something to do with FIFO read/write ordering. Additionally, the exec blocks (hangs) if the od process isn't running
 	
-	#_bishbosh_connection_info CONNECT bishbosh_connection_write_CONNECT >"$bishbosh_connection_toServerFifo"
-	#od -A n -t u1 -v -w1 <"$bishbosh_connection_fromServerFifo"
-	#exit 50
-	
-	local controlPacketByte
-	local firstRemainingLengthByte
-	 
-	# Doesn't work:      od -A n -t u1 -v -w1 "$bishbosh_connection_fromServerFifo" | while true
-	# Does work-ish:     od -A n -t u1 -v -w1 -N1 "$bishbosh_connection_fromServerFifo" | while true
-	# Doesn't work:      od -A n -t u1 -v -w1 -N50 >"$bishbosh_connection_fromOdFifo" <"$bishbosh_connection_fromServerFifo" &
-	# Looks like od might be doing some internal buffering. Setting -N to larger values doesn't work, either
-	# possible:  hexdump -v -e '/1 "%d\n"' (MacOSX, Ubuntu by default; part of bsdmainutils)
-	#
-	
-	# I suspect we have a problem with buffering (http://mywiki.wooledge.org/BashFAQ/009)
-	# We can use stdbuf on Ubuntu only for 12.04 LTS onwards
-	# We can use expects' unbuffer, or coreutil's stdbuf, but these are non-standard, and don't exist in BSD, BusyBox, etc
-	# Either piping od, hexdump to while true, or running as a background process, causes read to block
-	
-	_bishbosh_connection_info bishbosh_connection_write_CONNECT >"$bishbosh_connection_toServerFifo"
-	
-	while true
-	do
-		# The UNQUOTED $(...) capture ensures all leading whitespace and linefeeds are removed (a problem when using od, esp on Mac OS X)
-		# dd is used because
-		# - both od and hexdump buffer input and output when used in a pipeline
-		# - hexdump truncates the FIFO (eg if -n 1 to read one byte, but 4 bytes are in the FIFO, it discards the remaining 3 bytes)
-		# alternatives to this might be
-		# - use tee (turns off output buffering)
-		# - use stdbuf (GNU coreutils, from 12.04 LTS onwards so not common)
-		# - use expect unbuffer (again, not common)
-		#controlPacketByte=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | hexdump -v -e '/1 "%d"' -n 1)
-		controlPacketByte=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | od -A n -t u1)
-		remainingLength=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | hexdump -e '/1 "%u"')
-		if [ -z "$controlPacketByte" ]; then
-			core_exitError "WARN" "Connection has ended"
-		fi
-		echo $controlPacketByte $remainingLength
-		exit 50
-	done
+	{
+		bishbosh_connection_write_CONNECT
+		
+		local controlPacketByte
+		local firstRemainingLengthByte
+		while true
+		do
+			# The UNQUOTED $(...) capture ensures all leading whitespace and linefeeds are removed (a problem when using od, esp on Mac OS X)
+			# dd is used because
+			# - both od and hexdump buffer input and output when used in a pipeline
+			# - hexdump truncates the FIFO (eg if -n 1 to read one byte, but 4 bytes are in the FIFO, it discards the remaining 3 bytes)
+			# alternatives to this might be
+			# - use tee (turns off output buffering)
+			# - use stdbuf (GNU coreutils, from 12.04 LTS onwards so not common)
+			# - use expect unbuffer (again, not common)
+		
+			# Hangs if connection not established
+			controlPacketByte=$($_bishbosh_connection_binaryToDecimal1)
+			remainingLength=$($_bishbosh_connection_binaryToDecimal1)
+		
+			echo $controlPacketByte $remainingLength 1>&2
+			exit 50
+		done
+	} >"$bishbosh_connection_toServerFifo"
 	
 	rm "$bishbosh_connection_toServerFifo"
 	rm "$bishbosh_connection_fromServerFifo"
 	rm "$bishbosh_connection_fromOdFifo"
-}
-
-_bishbosh_connection_info()
-{
-	local function=$1
-	bishbosh_connection_stateMessage="before $function"
-	core_message INFO "Connection '$bishbosh_connection_id' $bishbosh_connection_stateMessage"
-	$function
-	bishbosh_connection_stateMessage="after $function"
-	core_message INFO "Connection '$bishbosh_connection_id' $bishbosh_connection_stateMessage"	
 }
