@@ -20,7 +20,7 @@ bishbosh_connection_read_initialiseStrategy()
 			fi
 		fi
 	fi
-	bishbosh_connection_read_loop=_bishbosh_connection_read_byte_none
+	bishbosh_connection_read_loop=bishbosh_connection_read_exec
 	if core_compatibility_whichNoOutput hexdump; then
 		bishbosh_connection_read_byte=_bishbosh_connection_read_byte_forkHexdump
 	elif core_compatibility_whichNoOutput od; then
@@ -51,7 +51,7 @@ bishbosh_connection_read_usingGnuCoreutilsPipeGnu()
 	done
 }
 
-_bishbosh_connection_read_byte_none()
+bishbosh_connection_read_exec()
 {
 	local callback="$1"
 	shift 1

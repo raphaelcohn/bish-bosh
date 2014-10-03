@@ -61,7 +61,6 @@ bishbosh_connection_makeClientConnection()
 	
 	#bishbosh_connection_typeB
 	
-	
 	{
 		bishbosh_connection_write_CONNECT
 		
@@ -77,68 +76,7 @@ bishbosh_connection_callback()
 	${bishbosh_connection_read_byte} controlPacketByte
 	${bishbosh_connection_read_byte} remainingLength
 	echo $controlPacketByte $remainingLength 1>&2
+	return 60
 	exit 50
 	bishbosh_connection_read_next
 }
-
-bishbosh_connection_typeB()
-{
-	{
-		bishbosh_connection_write_CONNECT
-		
-		local controlPacketByte
-		local firstRemainingLengthByte
-		
-		# Only works GNU coreutils stdbuf and GNU coreutils od
-		gstdbuf -i 0 -o 0 -e 0 god -A n -t u1 -w1 -v "$bishbosh_connection_fromServerFifo" | while true
-		do
-			IFS='' read -r controlPacketByte
-			IFS='' read -r remainingLength
-			
-			
-			echo $controlPacketByte $remainingLength 1>&2
-			exit 50
-		done
-	} >"$bishbosh_connection_toServerFifo"
-}
-
-bishbosh_connection_typeA()
-{
-	{
-		bishbosh_connection_write_CONNECT
-		
-		local controlPacketByte
-		local firstRemainingLengthByte
-		while true
-		do
-			# Hangs if connection not established (we could have a background process that checks if the nc PID is alive; if not, it kills dd; the problem, if knowing which dd - we'd need some sort of PID look-up)
-			controlPacketByte=$($_bishbosh_connection_binaryToDecimal1)
-			remainingLength=$($_bishbosh_connection_binaryToDecimal1)
-			
-			bishbosh_connection_read_next
-		
-			echo $controlPacketByte $remainingLength 1>&2
-			exit 50
-		done
-	} >"$bishbosh_connection_toServerFifo"
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
