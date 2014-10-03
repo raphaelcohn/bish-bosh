@@ -45,23 +45,22 @@ bishbosh_connection_makeClientConnection()
 	
 	bishbosh_connection_read_initialiseStrategy
 	bishbosh_connection_read_initialiseControlPacketHandlers "no"
+	bishbosh_connection_continue=true
 		
 	{
 		bishbosh_connection_write_CONNECT
 		
 		local controlPacketByte
 		local firstRemainingLengthByte
-		
 		$bishbosh_connection_read_loop bishbosh_connection_callback
+		
+		bishbosh_connection_write_DISCONNECT
+				
 	} >"$bishbosh_connection_toServerFifo"
 }
 
 bishbosh_connection_callback()
 {
-	${bishbosh_connection_read_byte} controlPacketByte
-	${bishbosh_connection_read_byte} remainingLength
-	echo $controlPacketByte $remainingLength 1>&2
-	return 60
-	exit 50
-	bishbosh_connection_read_next
+	bishbosh_connection_read_readControlPacket
+	bishbosh_connection_continue=false
 }

@@ -64,7 +64,7 @@ bishbosh_connection_read_initialiseControlPacketHandlers()
 	fi
 }
 
-bishbosh_connection_read_next()
+bishbosh_connection_read_readControlPacket()
 {
 	local packetByte
 	local firstRemainingLengthByte

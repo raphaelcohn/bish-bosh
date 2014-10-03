@@ -50,7 +50,7 @@ _bishbosh_connection_read_usingGnuCoreutilsPipe()
 	"$pathToStdbuf" -i 0 -o 0 -e 0 "$pathToOd" -A n -t u1 -w1 -v "$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromOdFifo" &
 	core_children_killOnExit $!
 	
-	while true
+	while $bishbosh_connection_continue
 	do
 		$callback "$@"
 	done <"$bishbosh_connection_fromOdFifo"
@@ -70,7 +70,7 @@ bishbosh_connection_read_exec()
 {
 	local callback="$1"
 	shift 1
-	while true
+	while $bishbosh_connection_continue
 	do
 		$callback "$@"
 	done
@@ -78,7 +78,7 @@ bishbosh_connection_read_exec()
 
 _bishbosh_connection_read_byte_whenUsingGnuCoreutilsPipe()
 {
-	IFS='' read -r $1
+	IFS=' ' read -r $1
 }
 
 _bishbosh_connection_read_byte_forkHexdump()
@@ -141,10 +141,10 @@ bishbosh_connection_read_initialiseControlPacketHandlers()
 	fi
 }
 
-bishbosh_connection_read_next()
+bishbosh_connection_read_readControlPacket()
 {
-	${bishbosh_connection_read_byte} controlPacketByte
-	${bishbosh_connection_read_byte} remainingLength
+	$bishbosh_connection_read_byte controlPacketByte
+	$bishbosh_connection_read_byte firstRemainingLengthByte
 	
 	case $controlPacketByte in
 		

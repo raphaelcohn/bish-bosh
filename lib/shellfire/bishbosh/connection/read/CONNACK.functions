@@ -3,16 +3,26 @@ bishbosh_connection_read_CONNACK()
 	bishbosh_connection_read_protocolErrorIfRemainingLengthNot CONNACK 2
 	
 	local connectAcknowledgeFlags
-	bishbosh_connection_read_byte connectAcknowledgeFlags
+	$bishbosh_connection_read_byte connectAcknowledgeFlags
 	
-	if [ $connectAcknowledgeFlags -gt 1 ]; then
-		bishbosh_connection_read_protocolError CONNACK "Field 'connectAcknowledgeFlags' was '$connectAcknowledgeFlags', not a value between 0 to 1 inclusive"
-	fi
-	
-	# if value == 1, then sessionPresent Flag is set
+	case $connectAcknowledgeFlags in
+		
+		0)
+			bishbosh_connection_sessionPresent=0
+		;;
+		
+		1)
+			bishbosh_connection_sessionPresent=1
+		;;
+		
+		*)
+			bishbosh_connection_read_protocolError CONNACK "Field 'connectAcknowledgeFlags' was '$connectAcknowledgeFlags', not a value between 0 to 1 inclusive"
+		;;
+		
+	esac
 	
 	local connectReturnCode
-	bishbosh_connection_read_byte connectReturnCode
+	$bishbosh_connection_read_byte connectReturnCode
 	
 	case $connectReturnCode in
 		
@@ -46,4 +56,6 @@ bishbosh_connection_read_CONNACK()
 		;;
 		
 	esac
+	
+	core_TODO "Now call a handler function, so a client can do session stuff if they want (will require fixes to the connection failure logic)"
 }
