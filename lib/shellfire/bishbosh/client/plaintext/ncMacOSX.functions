@@ -90,15 +90,15 @@ bishbosh_client_plaintext_ncMacOSX_start()
 	
 	case "$bishbosh_proxyKind" in
 		
-		'SOCKS4')
+		SOCKS4)
 			_bishbosh_client_plaintext_ncMacOSX_start_addProxy '4'
 		;;
 		
-		'SOCKS5')
+		SOCKS5)
 			_bishbosh_client_plaintext_ncMacOSX_start_addProxy '5'
 		;;
 		
-		'HTTP')
+		HTTP)
 			_bishbosh_client_plaintext_ncMacOSX_start_addProxy 'connect'
 		;;
 		

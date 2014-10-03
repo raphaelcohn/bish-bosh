@@ -106,25 +106,74 @@ _program_commandLine_helpMessage()
 	_program_commandLine_helpMessage_usage="[OPTION]..."
 	_program_commandLine_helpMessage_description="Connects to MQTT servers."
 	_program_commandLine_helpMessage_options="
-  -b, --backend TYPE     Backend type to use to talk to MQTT server.
-                         Use 'AUTO'.
-                         Defaults to '${_program_default_backend}'.
-  -s, --server HOST      Server hostname, Unix domain socket path, IPv4
-                         or IPv6 address.
-                         Unix domain socket paths must contain a '/' (ie
-                         they can not be in the present working directory).
-                         Defaults to '${_program_default_server}'.
-  -p, --port PORT        Server port. Ignored for Unix domain sockets.
-                         Use 'BACKEND' to let the backend choose.
-                         Defaults to '${_program_default_port}'."
-    _program_commandLine_helpMessage_optionsSpacing=''
+  -b, --backends A,B,...    Backend types A,B,... to talk to MQTT server.
+                            Ordered in preference order. First found used.
+                            Comma separated.
+                            Defaults to '${_program_default_backends}'.
+  -s, --server HOST         Server hostname, HOST, Unix domain socket path,
+                            IPv4 or IPv6 address.
+                            Unix domain socket paths must contain a '/' (ie
+                            they can not be in the present working directory).
+  -p, --port PORT           Server PORT. Ignored for Unix domain sockets.
+                            Use 'BACKEND' to let the backend choose.
+                            Defaults to 1883 or 8883 depending on backend
+  -t, --transmit-path PATH  PATH to folder containing messages to transmit.
+      --transport TRANSPT   TRANSPT of inet, inet4, inet6 or unix.
+	                        Defaults to 'inet'
+      --source-address S    Bind to network interface with address S.
+	                        Should not normally be needed.
+							Turn off with ''.
+							Off by default.
+                            Does not work with transport 'unix'.
+      --source-port PORT    Send packets from port PORT.
+	                        Should not normally be needed.
+							Turn off with ''.
+							Off by default.
+                            Does not work with transport 'unix'.
+      --proxy-kind KIND     Use a particular KIND of proxy.
+                            KIND is 'SOCKS4','SOCKS5','HTTP' or 'none'.
+	                        Turn off with 'none'.
+							Off by default.
+                            Does not work with transport 'unix'.
+                            Not all backends support this option.
+      --proxy-server HOST   Connect to a proxy on a given HOST.
+	                        Turn off with ''.
+							Off by default.
+                            Does not work with transport 'unix'.
+      --proxy-port PORT     Connect to a proxy on a given PORT.
+	                        Turn off with ''.
+							Off by default, but defaults to 1080
+							for SOCKS4 / SOCKS5 and 3128 for HTTP.
+                            Does not work with transport 'unix'.
+      --proxy-username UN   Connect to a proxy using username UN.
+	                        Turn off with ''.
+							Off by default.
+                            Does not work with transport 'unix'.
+                            Insecure - use configuration instead.
+                            Not all proxies support this option.
+      --proxy-password PWD  Connect to a proxy using password PWD.
+	                        Turn off with ''.
+							Off by default.
+                            Does not work with transport 'unix'.
+                            Insecure - use configuration instead.
+                            Not all proxies support this option."
+    _program_commandLine_helpMessage_optionsSpacing='   '
 	_program_commandLine_helpMessage_configurationKeys="
-  bishbosh_backend     Equivalent to --backend
-  bishbosh_server      Equivalent to --server
-  bishbosh_port        Equivalent to --port
+  bishbosh_backends       Equivalent to --backends
+  bishbosh_server         Equivalent to --server
+  bishbosh_port           Equivalent to --port
+  bishbosh_transmitPath   Equivalent to --transmit-path
+  bishbosh_transport      Equivalent to --transport
+  bishbosh_sourceAddress  Equivalent to --source-address
+  bishbosh_sourcePort     Equivalent to --source-port
+  bishbosh_proxyKind      Equivalent to --proxy-kind
+  bishbosh_proxyServer    Equivalent to --proxy-server
+  bishbosh_proxyPort      Equivalent to --proxy-port
+  bishbosh_proxyUsername  Equivalent to --proxy-username
+  bishbosh_proxyPassword  Equivalent to --proxy-password
 "
 	_program_commandLine_helpMessage_examples="
-  ${_program_name}
+  ${_program_name} --server localhost --backends ncMacOSX,bash
 "
 }
 
@@ -157,19 +206,23 @@ _program_commandLine_optionExists()
 		;;
 		
 		proxy-kind)
-			echo 'yes-argumentless'
+			echo 'yes-argumented'
+		;;
+		
+		proxy-server)
+			echo 'yes-argumented'
 		;;
 		
 		proxy-port)
-			echo 'yes-argumentless'
+			echo 'yes-argumented'
 		;;
 		
 		proxy-username)
-			echo 'yes-argumentless'
+			echo 'yes-argumented'
 		;;
 		
 		proxy-password)
-			echo 'yes-argumentless'
+			echo 'yes-argumented'
 		;;
 		
 		*)
