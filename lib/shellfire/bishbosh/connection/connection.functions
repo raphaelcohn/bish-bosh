@@ -1,33 +1,39 @@
 core_usesIn bishbosh/connection read write
 core_usesIn core children
 
-bishbosh_compatibility_odUnlimited()
+_bishbosh_connection_binaryToDecimal1_hexdump()
 {
-	od -A n -t u1 -v -w1 "$@"
+	hexdump -v -e '/1 "%d"' "$bishbosh_connection_fromServerFifo"
 }
 
-bishbosh_compatibility_odLimited()
+_bishbosh_connection_binaryToDecimal1_od()
 {
-	local numberOfBytes="$1"
-	shift 1
-	bishbosh_compatibility_odUnlimited -N${numberOfBytes} "$@"
+	# The $(...) capture ensures all trailing \n (single or multiple) are removed
+	od -A n -t u1 -v -N1 <"$bishbosh_connection_fromServerFifo"
 }
 
-bishbosh_compatibility_hexdumpUnlimited()
+_bishbosh_connection_binaryToDecimal_initialise()
 {
-	hexdump -v -e '/1 "%d\n"' "$@"
+	if core_variable_isSet _bishbosh_connection_binaryToDecimal1; then
+		return 0
+	fi
+	if core_compatibility_whichNoOutput hexdump; then
+		_bishbosh_connection_binaryToDecimal1=_bishbosh_connection_binaryToDecimal1_hexdump
+		_bishbosh_connection_binaryToDecimal2=_bishbosh_connection_binaryToDecimal2_hexdump
+	elif core_compatibility_whichNoOutput od; then
+		_bishbosh_connection_binaryToDecimal1=_bishbosh_connection_binaryToDecimal1_od
+		_bishbosh_connection_binaryToDecimal2=_bishbosh_connection_binaryToDecimal2_od
+	else
+		core_exitError "Can not find either hexdump or od on the path"
+	fi
 }
 
-bishbosh_compatibility_hexdumpLimited()
-{
-	local numberOfBytes="$1"
-	shift 1
-	bishbosh_compatibility_hexdumpUnlimited -n "$numberOfBytes" "$@"
-}
-
-core_dependency_requires '*' mkfifo od
+core_dependency_requires '*' mkfifo
+core_dependency_oneOf '*' hexdump od
 bishbosh_connection_makeClientConnection()
 {
+	_bishbosh_connection_binaryToDecimal_initialise
+	
 	# bishbosh_connection_id can't be local, otherwise not found in the signal handler...
 	if core_variable_isUnset bishbosh_connection_nextId; then
 		bishbosh_connection_id=0
@@ -107,21 +113,24 @@ bishbosh_connection_makeClientConnection()
 	# We can use stdbuf on Ubuntu only for 12.04 LTS onwards
 	# We can use expects' unbuffer, or coreutil's stdbuf, but these are non-standard, and don't exist in BSD, BusyBox, etc
 	# Either piping od, hexdump to while true, or running as a background process, causes read to block
-	local readHexBytesFunction=bishbosh_compatibility_odLimited
-	{
-		_bishbosh_connection_info bishbosh_connection_write_CONNECT >&4
-		_bishbosh_connection_info bishbosh_connection_write_CONNECT >&4
-		
-		while true
-		do
-			controlPacketByte=$($readHexBytesFunction 1)
-			echo $controlPacketByte
-			exit 50
-			
-			#_bishbosh_connection_info bishbosh_connection_read_next
-		
-		done
-	} 4>"$bishbosh_connection_toServerFifo"
+	
+	_bishbosh_connection_info bishbosh_connection_write_CONNECT >"$bishbosh_connection_toServerFifo"
+	
+	while true
+	do
+		# The UNQUOTED $(...) capture ensures all leading whitespace and linefeeds are removed (a problem when using od, esp on Mac OS X)
+		# dd is used because
+		# - both od and hexdump buffer input and output when used in a pipeline
+		# - hexdump truncates the FIFO (eg if -n 1 to read one byte, but 4 bytes are in the FIFO, it discards the remaining 3 bytes)
+		controlPacketByte=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | hexdump -v -e '/1 "%d"' -n 1)
+		# Now blocks, as FIFO cleared by line above
+		remainingLength=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | hexdump -v -e '/1 "%d"' -n 1)
+		if [ -z "$controlPacketByte" ]; then
+			core_exitError "WARN" "Connection has ended"
+		fi
+		echo $controlPacketByte $remainingLength
+		exit 50
+	done
 	
 	rm "$bishbosh_connection_toServerFifo"
 	rm "$bishbosh_connection_fromServerFifo"

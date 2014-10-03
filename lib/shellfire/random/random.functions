@@ -1,20 +1,88 @@
-core_dependency_requires '*' od head awk
-random_generateBetween0To255()
+core_dependency_oneOf '*' hexdump od openssl awk
+
+random_generateBetween0To255_openssl()
 {
+	printf '%d' 0x$(openssl rand -hex 1)
+}
+
+random_generateBetween0To255_hexdump()
+{
+	# The $(...) capture ensures a final \n is removed
+	printf '%s' "$(hexdump -v -e '/1 "%d\n"' -n 1 "$_random_generateBetween0To255_randomFile")"
+}
+
+random_generateBetween0To255_od()
+{
+	# MacOSX od has lots of leading whitespace and two \n
+	# GNU coreutils od has one to three leading whitespace and single \n
+	
+	# The UNQUOTED $(...) capture ensures all leading whitespace is removed
+	# The $(...) capture ensures all trailing \n (single or multiple) are removed
+	printf '%s' $(od -A n -t u1 -v -N1 "$_random_generateBetween0To255_randomFile")
+}
+
+random_generateBetween0To255_RANDOM()
+{
+	printf '%s' $(( RANDOM % 256 ))
+}
+
+# seed is time based and I have seen identical values output when invoked in a very tight loop.
+random_generateBetween0To255_awk()
+{
+	echo | awk ' { srand(); print int((rand()*1000000)%256)} '
+}
+
+_random_generateBetween0To255_determineImplementation()
+{
+	_random_generateBetween0To255_randomFile=''
+	local randomFilePath
+	for randomFilePath in /dev/urandom /dev/random
+	do
+		if [ -r "$randomFilePath" ]; then
+			_random_generateBetween0To255_randomFile="$randomFilePath"
+			break
+		fi
+	done
+
+	if [ -n "$_random_generateBetween0To255_randomFile" ]; then
+		if core_compatibility_whichNoOutput hexdump; then
+			_random_generateBetween0To255_implementation=random_generateBetween0To255_hexdump
+			return 0
+		fi
+		if core_compatibility_whichNoOutput od; then
+			_random_generateBetween0To255_implementation=random_generateBetween0To255_od
+			return 0
+		fi
+	fi
+
 	if core_compatibility_whichNoOutput openssl; then
-		local fromHex=0x$(openssl rand -hex 1)
-		printf '%s' $fromHex
-	elif [ -r /dev/urandom ]; then
-		# head -n 1  is required for Mac OS X's od
-		od -A n -t u1 -N 1 /dev/urandom | head -n 1 | awk  '{print $1}'
-	elif [ -r /dev/random ]; then
-		od -A n -t u1 -N 1 /dev/urandom | head -n 1 | awk  '{print $1}'
-	else
-		# Will only work on bash
-		printf '%s' $(( RANDOM % 256 ))
+		_random_generateBetween0To255_implementation=random_generateBetween0To255_openssl
+		return 0
 	fi
 	
-	# Between 0 and 1 using srand() : echo | awk ' { srand(); print rand() } '
+	# true for everything bar dash, original SVR4 sh; easily fooled if RANDOM exported, but too bad - this is a fallback
+	if core_variable_isSet RANDOM; then
+		_random_generateBetween0To255_implementation=random_generateBetween0To255_RANDOM
+		core_message WARN "Non-cryptographic randomness source selected (built-in RANDOM function)"
+		return 0
+	fi
+
+	if core_compatibility_whichNoOutput awk; then
+		_random_generateBetween0To255_implementation=random_generateBetween0To255_awk
+		core_message WARN "Non-cryptographic randomness source selected (awk's srand)"
+		return 0
+	fi
+	
+	core_exitError "No source of randomess could be used"
+}
+
+random_generateBetween0To255()
+{
+	if core_variable_isUnset _random_generateBetween0To255_implementation; then
+		_random_generateBetween0To255_determineImplementation
+	fi
+	
+	${_random_generateBetween0To255_implementation}
 }
 
 function random_generateBetweenOAndModulus()
