@@ -39,12 +39,6 @@ bishbosh_connection_makeClientConnection()
 	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_connection_temporaryFolder'"
 	
 	# Can't be local, otherwise not found in the signal handler...
-	#bishbosh_connection_stateMessage='before CONNECT'
-	#_bishbosh_connection_SIGPIPE()
-	#{
-	#	core_message FAIL "Connection '$bishbosh_connection_id' to server '$bishbosh_server' failed $bishbosh_connection_stateMessage"
-	#}
-	#core_trap_addHandler _bishbosh_connection_SIGPIPE PIPE
 	
 	# (Goes into background internally)
 	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
