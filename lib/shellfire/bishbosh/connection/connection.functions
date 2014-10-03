@@ -73,4 +73,5 @@ bishbosh_connection_write_now()
 	# publish by taking a folder, look at messages
 	# need to see QoS value
 	# messages are 'named' by Packet Identifier
+	:
 }

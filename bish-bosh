@@ -28,16 +28,35 @@ readonly _program_written_by='Raphael Cohn'
 readonly _program_path="$([ "${_program_fattening_program_path+set}" = 'set' ] && printf '%s\n' "$_program_fattening_program_path" || ([ "${0%/*}" = "${0}" ] && printf '%s\n' '.' || printf '%s\n' "${0%/*}"))"
 readonly _program_libPath="${_program_path}/lib"
 readonly _program_etcPath="${_program_path}/etc"
+readonly _program_varPath="${_program_path}/var"
 readonly _program_entrypoint='bishbosh'
 
 _program_commandLine_parseInitialise()
 {
 	_program_default_backends="bash,ncat,nc6,nc,socat,tcpclient"
-	
 	if core_variable_isSet bishbosh_backends; then
 		_program_configurationSet_bishbosh_backends=0
 	else
 		_program_configurationSet_bishbosh_backends=1
+	fi
+	
+	if core_variable_isSet bishbosh_server; then
+		_program_configurationSet_bishbosh_server=0
+	else
+		_program_configurationSet_bishbosh_server=1
+	fi
+	
+	if core_variable_isSet bishbosh_port; then
+		_program_configurationSet_bishbosh_port=0
+	else
+		_program_configurationSet_bishbosh_port=1
+	fi
+
+	_program_default_transmitPath="${_program_varPath}"/lib/"$_program_name"/transmit
+	if core_variable_isSet bishbosh_transmitPath; then
+		_program_configurationSet_bishbosh_transmitPath=0
+	else
+		_program_configurationSet_bishbosh_transmitPath=1
 	fi
 	
 	if core_variable_isSet bishbosh_transport; then
@@ -56,18 +75,6 @@ _program_commandLine_parseInitialise()
 		_program_configurationSet_bishbosh_sourcePort=0
 	else
 		_program_configurationSet_bishbosh_sourcePort=1
-	fi
-	
-	if core_variable_isSet bishbosh_server; then
-		_program_configurationSet_bishbosh_server=0
-	else
-		_program_configurationSet_bishbosh_server=1
-	fi
-	
-	if core_variable_isSet bishbosh_port; then
-		_program_configurationSet_bishbosh_port=0
-	else
-		_program_configurationSet_bishbosh_port=1
 	fi
 	
 	if core_variable_isSet bishbosh_proxyKind; then
@@ -118,6 +125,7 @@ _program_commandLine_helpMessage()
                             Use 'BACKEND' to let the backend choose.
                             Defaults to 1883 or 8883 depending on backend
   -t, --transmit-path PATH  PATH to folder containing messages to transmit.
+                            Defaults to '${_program_default_transmitPath}'.
       --transport TRANSPT   TRANSPT of inet, inet4, inet6 or unix.
 	                        Defaults to 'inet'
       --source-address S    Bind to network interface with address S.
@@ -185,6 +193,18 @@ _program_commandLine_optionExists()
 			echo 'yes-argumented'
 		;;
 		
+		s|server)
+			echo 'yes-argumented'
+		;;
+		
+		p|port)
+			echo 'yes-argumented'
+		;;
+		
+		t|transmit-path)
+			echo 'yes-argumented'
+		;;
+		
 		transport)
 			echo 'yes-argumented'
 		;;
@@ -194,14 +214,6 @@ _program_commandLine_optionExists()
 		;;
 		
 		source-port)
-			echo 'yes-argumented'
-		;;
-		
-		s|server)
-			echo 'yes-argumented'
-		;;
-		
-		p|port)
 			echo 'yes-argumented'
 		;;
 		
@@ -246,6 +258,21 @@ _program_commandLine_processOptionWithArgument()
 			bishbosh_backends="$optionValue"
 		;;
 		
+		s|server)
+			bishbosh_validate_address $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_server="$optionValue"
+		;;
+		
+		p|port)
+			core_validate_nonDynamicPort $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_port="$optionValue"
+		;;
+		
+		t|transmit-path)
+			core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_transmitPath="$optionValue"
+		;;
+		
 		transport)
 			bishbosh_validate_transport $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_transport="$optionValue"
@@ -259,16 +286,6 @@ _program_commandLine_processOptionWithArgument()
 		source-port)
 			core_validate_nonDynamicPort $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_sourcePort="$optionValue"
-		;;
-		
-		s|server)
-			bishbosh_validate_address $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
-			bishbosh_server="$optionValue"
-		;;
-		
-		p|port)
-			core_validate_nonDynamicPort $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
-			bishbosh_port="$optionValue"
 		;;
 		
 		proxy-kind)
@@ -437,6 +454,13 @@ _program_commandLine_validate()
 	
 	if core_variable_isUnset bishbosh_server; then
 		core_exitError $core_commandLine_exitCode_USAGE "The option '--server' must be specified"
+	fi
+	
+	if core_variable_isUnset bishbosh_transmitPath; then
+		bishbosh_transmitPath="$_program_default_transmitPath"
+		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--transmit-path' "$bishbosh_transmitPath"
+	else
+		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_transmitPath' "$bishbosh_transmitPath"
 	fi
 	
 	if core_variable_isUnset bishbosh_transport; then
