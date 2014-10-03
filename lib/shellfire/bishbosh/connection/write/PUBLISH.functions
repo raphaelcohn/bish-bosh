@@ -59,6 +59,18 @@ _bishbosh_connection_write_PUBLISH_validateArguments()
 	remainingLength=$(( remainingLength + 2 + message_fieldLength ))
 }
 
+bishbosh_connection_write_PUBLISH_resetArguments()
+{
+	unset bishbosh_connection_write_PUBLISH_dup
+	unset bishbosh_connection_write_PUBLISH_qos
+	unset bishbosh_connection_write_PUBLISH_packetIdentifier
+	unset bishbosh_connection_write_PUBLISH_retain
+	unset bishbosh_connection_write_PUBLISH_topicName
+	unset bishbosh_connection_write_PUBLISH_message
+	# bishbosh_connection_write_PUBLISH_messageFilePath
+	# bishbosh_connection_write_PUBLISH_messageUnlinkFile
+}
+
 bishbosh_connection_write_PUBLISH()
 {
 	local remainingLength=0

@@ -35,7 +35,10 @@ bishbosh_connection_makeClientConnection()
 	
 	local bishbosh_connection_fromServerFifo="$bishbosh_connection_fifoFolder"/from-server
 	mkfifo -m 0600 "$bishbosh_connection_fromServerFifo"
-
+	
+	bishbosh_connection_transmitPathForClientId="$bishbosh_transmitPath"/"$bishbosh_connection_write_CONNECT_clientId"
+	mkdir -m 0755 -p "$bishbosh_connection_transmitPathForClientId"
+	
 	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_connection_temporaryFolder'"
 		
 	# (Goes into background internally)
@@ -46,32 +49,69 @@ bishbosh_connection_makeClientConnection()
 	bishbosh_connection_read_initialiseStrategy
 	bishbosh_connection_read_initialiseControlPacketHandlers "no"
 	bishbosh_connection_continue=true
-		
+	
 	{
 		bishbosh_connection_write_CONNECT
 		
 		local controlPacketByte
 		local firstRemainingLengthByte
-		$bishbosh_connection_read_loop bishbosh_connection_callback
+		$bishbosh_connection_read_loop
 		
 		bishbosh_connection_write_DISCONNECT
 				
 	} >"$bishbosh_connection_toServerFifo"
 }
 
-bishbosh_connection_callback()
+bishbosh_connection_body()
 {
-	bishbosh_connection_read_readControlPacket
-	bishbosh_connection_write_now
+	bishbosh_connection_write_messages
+	
+	# Not needed if (a) not sent any subscribes [SUBACKS] / active subscriptions are known and (b) not expecting any PUBACKS and (c) not reading messages
+	# Ideally, though, we want to time-out here. That's a little tricky unless using bash with its timeout option
+	bishbosh_connection_read_firstTwoBytesOfControlPacket
+	bishbosh_connection_read_handleControlPacket
 	
 	bishbosh_connection_continue=false
 }
 
-bishbosh_connection_write_now()
+bishbosh_connection_write_messages()
 {
-	# publish messages
-	# publish by taking a folder, look at messages
-	# need to see QoS value
-	# messages are 'named' by Packet Identifier
-	:
+	local messageToTransmitMetaDataFilePath
+	bishbosh_connection_write_currentLockFolderPath=''
+	core_trap_addOnCleanUp _bishbosh_connection_write_removeCurrentLockFolder
+	pushd "$bishbosh_connection_transmitPathForClientId"
+		set +f
+		for messageToTransmitMetaDataFilePath in *.message
+		do
+			set -f
+			if ! core_path_isReadableNonEmptyFilePath "$messageToTransmitMetaDataFilePath"; then
+				if [ "$messageToTransmitMetaDataFilePath" = '*.message' ]; then
+					continue
+				fi
+				core_message WARN "$messageToTransmitMetaDataFilePath" 
+				continue
+			fi
+			
+			bishbosh_connection_write_PUBLISH_resetArguments
+			bishbosh_connection_write_currentLockFolderPath="$messageToTransmitMetaDataFilePath".lock
+			# Atomic, according to http://wiki.bash-hackers.org/howto/mutex
+			while ! mkdir "$bishbosh_connection_write_currentLockFolderPath"
+			do
+				sleep 0.01
+			done
+			
+			source "$messageToTransmitMetaDataFilePath"
+			bishbosh_connection_write_PUBLISH
+			rmdir "$lockFolder"
+			bishbosh_connection_write_currentLockFolderPath=''
+			
+			core_TODO "Need to implemented support for message file paths, unlink on send"
+		done
+		set -f
+	popd
+}
+
+_bishbosh_connection_write_removeCurrentLockFolder()
+{
+	rmdir "$bishbosh_connection_write_currentLockFolderPath" 1>/dev/null 2>/dev/null || true
 }

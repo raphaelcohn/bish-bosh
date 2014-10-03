@@ -13,7 +13,8 @@ bishbosh_connection_read_initialiseControlPacketHandlers()
 	if core_variable_isTrue "$isServer"; then
 		bishbosh_connection_read[16]=bishbosh_connection_read_CONNECT
 	else
-		bishbosh_connection_read[32]=bishbosh_connection_read_CONNACK
+		# Never expected after initial read
+		:
 	fi
 	
 	bishbosh_connection_read[48]=bishbosh_connection_read_PUBLISH_0
@@ -64,12 +65,7 @@ bishbosh_connection_read_initialiseControlPacketHandlers()
 	fi
 }
 
-bishbosh_connection_read_readControlPacket()
+bishbosh_connection_read_handleControlPacket()
 {
-	local packetByte
-	local firstRemainingLengthByte
-	
-	# Do read of two bytes
-	
-	${bishbosh_connection_read[${packetByte}]}
+	${bishbosh_connection_read[${controlPacketByte}]}
 }

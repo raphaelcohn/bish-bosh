@@ -32,10 +32,9 @@ bishbosh_connection_read_initialiseStrategy()
 
 _bishbosh_connection_read_usingGnuCoreutilsPipe()
 {
-	local callback="$1"
-	local pathToStdbuf="$2"
-	local pathToOd="$3"
-	shift 3
+	local pathToStdbuf="$1"
+	local pathToOd="$2"
+	shift 2
 
 	#bishbosh_connection_stateMessage='in CONNECT'
 	#_bishbosh_connection_SIGPIPE()
@@ -50,29 +49,34 @@ _bishbosh_connection_read_usingGnuCoreutilsPipe()
 	"$pathToStdbuf" -i 0 -o 0 -e 0 "$pathToOd" -A n -t u1 -w1 -v "$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromOdFifo" &
 	core_children_killOnExit $!
 	
-	while $bishbosh_connection_continue
-	do
-		$callback "$@"
-	done <"$bishbosh_connection_fromOdFifo"
+	{
+		bishbosh_connection_read_expectingCONNACK
+		
+		while $bishbosh_connection_continue
+		do
+			bishbosh_connection_body
+		done
+		
+	} <"$bishbosh_connection_fromOdFifo"
 }
 
 bishbosh_connection_read_usingGnuCoreutilsPipeHomebrew()
 {
-	_bishbosh_connection_read_usingGnuCoreutilsPipe "$1" gstdbuf god
+	_bishbosh_connection_read_usingGnuCoreutilsPipe gstdbuf god
 }
 
 bishbosh_connection_read_usingGnuCoreutilsPipeGnu()
 {
-	_bishbosh_connection_read_usingGnuCoreutilsPipe "$1" stdbuf od
+	_bishbosh_connection_read_usingGnuCoreutilsPipe stdbuf od
 }
 
 bishbosh_connection_read_exec()
 {
-	local callback="$1"
-	shift 1
+	bishbosh_connection_read_expectingCONNACK
+	
 	while $bishbosh_connection_continue
 	do
-		$callback "$@"
+		bishbosh_connection_body
 	done
 }
 
@@ -141,11 +145,23 @@ bishbosh_connection_read_initialiseControlPacketHandlers()
 	fi
 }
 
-bishbosh_connection_read_readControlPacket()
+bishbosh_connection_read_expectingCONNACK()
+{
+	bishbosh_connection_read_firstTwoBytesOfControlPacket
+	if [ $controlPacketByte -ne 32 ]; then
+		bishbosh_connection_read_invalid
+	fi
+	bishbosh_connection_read_CONNACK
+}
+
+bishbosh_connection_read_firstTwoBytesOfControlPacket()
 {
 	$bishbosh_connection_read_byte controlPacketByte
 	$bishbosh_connection_read_byte firstRemainingLengthByte
-	
+}
+
+bishbosh_connection_read_handleControlPacket()
+{
 	case $controlPacketByte in
 		
 		16)
@@ -154,8 +170,8 @@ bishbosh_connection_read_readControlPacket()
 		;;
 		
 		32)
-			# Only valid for clients
-			bishbosh_connection_read_CONNACK
+			# Only valid for clients; never expected after initial read
+			bishbosh_connection_read_invalid
 		;;
 		
 		48)
