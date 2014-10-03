@@ -58,7 +58,10 @@ bishbosh_connection_makeClientConnection()
 	set -x
 	bishbosh_connection_read_initialiseStrategy
 	bishbosh_connection_read_initialiseControlPacketHandlers "no"
-
+	
+	#bishbosh_connection_typeB
+	
+	
 	{
 		bishbosh_connection_write_CONNECT
 		

@@ -33,8 +33,10 @@ bishbosh_connection_read_initialiseStrategy()
 bishbosh_connection_read_usingGnuCoreutilsPipeHomebrew()
 {
 	local callback="$1"
-	gstdbuf -i 0 -o 0 -e 0 god -A n -t u1 -w1 -v | while true
+	shift 1
+	gstdbuf -i 0 -o 0 -e 0 god -A n -t u1 -w1 -v "$bishbosh_connection_fromServerFifo" | while true
 	do
+		echo XXXX $$ $! XXXX 1>&2
 		$callback "$@"
 	done
 }
@@ -42,7 +44,8 @@ bishbosh_connection_read_usingGnuCoreutilsPipeHomebrew()
 bishbosh_connection_read_usingGnuCoreutilsPipeGnu()
 {
 	local callback="$1"
-	stdbuf -i 0 -o 0 -e 0 od -A n -t u1 -w1 -v | while true
+	shift 1
+	stdbuf -i 0 -o 0 -e 0 od -A n -t u1 -w1 -v "$bishbosh_connection_fromServerFifo" | while true
 	do
 		$callback "$@"
 	done
@@ -51,6 +54,7 @@ bishbosh_connection_read_usingGnuCoreutilsPipeGnu()
 _bishbosh_connection_read_byte_none()
 {
 	local callback="$1"
+	shift 1
 	while true
 	do
 		$callback "$@"
