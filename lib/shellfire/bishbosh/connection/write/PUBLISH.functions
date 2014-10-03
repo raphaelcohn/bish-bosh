@@ -56,7 +56,7 @@ _bishbosh_connection_write_PUBLISH_validateArguments()
 		bishbosh_connection_write_fieldLengthCheck PUBLISH 0 message
 	fi
 	message_fieldLength=${#message}
-	remainingLength=$(( remainingLength + 2 + message_fieldLength ))
+	remainingLength=$(( remainingLength + message_fieldLength ))
 }
 
 bishbosh_connection_write_PUBLISH_resetArguments()
@@ -67,8 +67,8 @@ bishbosh_connection_write_PUBLISH_resetArguments()
 	unset bishbosh_connection_write_PUBLISH_retain
 	unset bishbosh_connection_write_PUBLISH_topicName
 	unset bishbosh_connection_write_PUBLISH_message
-	# bishbosh_connection_write_PUBLISH_messageFilePath
-	# bishbosh_connection_write_PUBLISH_messageUnlinkFile
+	# unset bishbosh_connection_write_PUBLISH_messageFilePath
+	# unset bishbosh_connection_write_PUBLISH_messageUnlinkFile
 }
 
 bishbosh_connection_write_PUBLISH()
@@ -85,7 +85,7 @@ bishbosh_connection_write_PUBLISH()
 	local message_fieldLength
 	_bishbosh_connection_write_PUBLISH_validateArguments
 	
-	core_TODO: "We don't check for wildcards, ASCII NULL, or empty topic names"
+	core_TODO "We don't check for wildcards, ASCII NULL, or empty topic names"
 	core_TODO "We don't handle binary payloads containing ASCII NULL, and we really ought to also allow the use of files (with offsets, sizes, too, for firmware transmissions) and base64 encoded data"
 	
 	bishbosh_connection_write_byte "$controlPacketTypeAndFlags"

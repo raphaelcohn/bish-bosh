@@ -68,6 +68,7 @@ bishbosh_connection_body()
 	
 	# Not needed if (a) not sent any subscribes [SUBACKS] / active subscriptions are known and (b) not expecting any PUBACKS and (c) not reading messages
 	# Ideally, though, we want to time-out here. That's a little tricky unless using bash with its timeout option
+	# it may be possible using signals, though: http://unix.ittoolbox.com/groups/technical-functional/shellscript-l/timeout-in-ksh-517595
 	bishbosh_connection_read_firstTwoBytesOfControlPacket
 	bishbosh_connection_read_handleControlPacket
 	
@@ -100,9 +101,9 @@ bishbosh_connection_write_messages()
 				sleep 0.01
 			done
 			
-			source "$messageToTransmitMetaDataFilePath"
+			source ./"$messageToTransmitMetaDataFilePath"
 			bishbosh_connection_write_PUBLISH
-			rmdir "$lockFolder"
+			rmdir "$bishbosh_connection_write_currentLockFolderPath"
 			bishbosh_connection_write_currentLockFolderPath=''
 			
 			core_TODO "Need to implemented support for message file paths, unlink on send"
