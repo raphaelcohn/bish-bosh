@@ -48,14 +48,12 @@ bishbosh_connection_makeClientConnection()
 	
 	# (Goes into background internally)
 	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
-	bishbosh_connection_childPidClient=$!
-	core_children_killOnExit $bishbosh_connection_childPidClient
+	core_children_killOnExit $!
 	
 	# https://stackoverflow.com/questions/9536388/capture-pid-of-terminated-background-process-using-trap-in-bash?rq=1
 	# http://mywiki.wooledge.org/ProcessManagement#I_want_to_process_a_bunch_of_files_in_parallel.2C_and_when_one_finishes.2C_I_want_to_start_the_next._And_I_want_to_make_sure_there_are_exactly_5_jobs_running_at_a_time
 	# kill -0 "$clientInBackgroundPid"  will check if a process is 'signallable', ie alive
 	
-	set -x
 	bishbosh_connection_read_initialiseStrategy
 	bishbosh_connection_read_initialiseControlPacketHandlers "no"
 	

@@ -30,25 +30,34 @@ bishbosh_connection_read_initialiseStrategy()
 	fi	
 }
 
-bishbosh_connection_read_usingGnuCoreutilsPipeHomebrew()
+_bishbosh_connection_read_usingGnuCoreutilsPipe()
 {
 	local callback="$1"
-	shift 1
-	gstdbuf -i 0 -o 0 -e 0 god -A n -t u1 -w1 -v "$bishbosh_connection_fromServerFifo" | while true
+	local pathToStdbuf="$2"
+	local pathToOd="$3"
+	shift 3
+
+	local bishbosh_connection_fromOdFifo="$bishbosh_connection_fifoFolder"/from-od
+	mkfifo -m 0600 "$bishbosh_connection_fromOdFifo"
+	
+	"$pathToStdbuf" -i 0 -o 0 -e 0 "$pathToOd" -A n -t u1 -w1 -v "$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromOdFifo" &
+	core_children_killOnExit $!
+	
+	while true
 	do
-		echo XXXX $$ $! XXXX 1>&2
 		$callback "$@"
-	done
+	done <"$bishbosh_connection_fromOdFifo"
+}
+
+# BUG: Exit does not; instead, we get a hang - but not in ksh93
+bishbosh_connection_read_usingGnuCoreutilsPipeHomebrew()
+{
+	_bishbosh_connection_read_usingGnuCoreutilsPipe "$1" gstdbuf god
 }
 
 bishbosh_connection_read_usingGnuCoreutilsPipeGnu()
 {
-	local callback="$1"
-	shift 1
-	stdbuf -i 0 -o 0 -e 0 od -A n -t u1 -w1 -v "$bishbosh_connection_fromServerFifo" | while true
-	do
-		$callback "$@"
-	done
+	_bishbosh_connection_read_usingGnuCoreutilsPipe "$1" stdbuf od
 }
 
 bishbosh_connection_read_exec()
