@@ -1,14 +1,8 @@
-core_dependency_oneOf '*' hexdump od openssl awk
-
-random_generateBetween0To255_openssl()
-{
-	printf '%d' 0x$(openssl rand -hex 1)
-}
+core_dependency_oneOf '*' hexdump od openssl gpg awk
 
 random_generateBetween0To255_hexdump()
 {
-	# The $(...) capture ensures a final \n is removed
-	printf '%s' "$(hexdump -v -e '/1 "%d\n"' -n 1 "$_random_generateBetween0To255_randomFile")"
+	printf '%s' "$(hexdump -e '/1 "%u"' -n 1 "$_random_generateBetween0To255_randomFile")"
 }
 
 random_generateBetween0To255_od()
@@ -18,7 +12,24 @@ random_generateBetween0To255_od()
 	
 	# The UNQUOTED $(...) capture ensures all leading whitespace is removed
 	# The $(...) capture ensures all trailing \n (single or multiple) are removed
-	printf '%s' $(od -A n -t u1 -v -N1 "$_random_generateBetween0To255_randomFile")
+	printf '%s' $(od -A n -t u1 -N1 "$_random_generateBetween0To255_randomFile")
+}
+
+random_generateBetween0To255_openssl()
+{
+	printf '%d' 0x$(openssl rand -hex 1)
+}
+
+random_generateBetween0To255_gpgHexdump()
+{
+	printf '%s' "$(gpg --gen-random 1 1 | hexdump -e '/1 "%u"')"
+}
+
+random_generateBetween0To255_gpgOd()
+{
+	# The UNQUOTED $(...) capture ensures all leading whitespace is removed
+	# The $(...) capture ensures all trailing \n (single or multiple) are removed
+	printf '%s' $(gpg --gen-random 1 1 | od -A n -t u1)
 }
 
 random_generateBetween0To255_RANDOM()
@@ -33,7 +44,7 @@ random_generateBetween0To255_awk()
 }
 
 _random_generateBetween0To255_determineImplementation()
-{
+{	
 	_random_generateBetween0To255_randomFile=''
 	local randomFilePath
 	for randomFilePath in /dev/urandom /dev/random
@@ -59,6 +70,17 @@ _random_generateBetween0To255_determineImplementation()
 		_random_generateBetween0To255_implementation=random_generateBetween0To255_openssl
 		return 0
 	fi
+	
+	if core_compatibility_whichNoOutput gpg; then
+		if core_compatibility_whichNoOutput hexdump; then
+			_random_generateBetween0To255_implementation=random_generateBetween0To255_gpgHexdump
+			return 0
+		fi
+		if core_compatibility_whichNoOutput od; then
+			_random_generateBetween0To255_implementation=random_generateBetween0To255_gpgOd
+			return 0
+		fi
+	fi	
 	
 	# true for everything bar dash, original SVR4 sh; easily fooled if RANDOM exported, but too bad - this is a fallback
 	if core_variable_isSet RANDOM; then

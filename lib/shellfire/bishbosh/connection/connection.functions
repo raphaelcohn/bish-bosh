@@ -1,17 +1,6 @@
 core_usesIn bishbosh/connection read write
 core_usesIn core children
 
-_bishbosh_connection_binaryToDecimal1_hexdump()
-{
-	hexdump -v -e '/1 "%d"' "$bishbosh_connection_fromServerFifo"
-}
-
-_bishbosh_connection_binaryToDecimal1_od()
-{
-	# The $(...) capture ensures all trailing \n (single or multiple) are removed
-	od -A n -t u1 -v -N1 <"$bishbosh_connection_fromServerFifo"
-}
-
 _bishbosh_connection_binaryToDecimal_initialise()
 {
 	if core_variable_isSet _bishbosh_connection_binaryToDecimal1; then
@@ -122,9 +111,13 @@ bishbosh_connection_makeClientConnection()
 		# dd is used because
 		# - both od and hexdump buffer input and output when used in a pipeline
 		# - hexdump truncates the FIFO (eg if -n 1 to read one byte, but 4 bytes are in the FIFO, it discards the remaining 3 bytes)
-		controlPacketByte=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | hexdump -v -e '/1 "%d"' -n 1)
-		# Now blocks, as FIFO cleared by line above
-		remainingLength=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | hexdump -v -e '/1 "%d"' -n 1)
+		# alternatives to this might be
+		# - use tee (turns off output buffering)
+		# - use stdbuf (GNU coreutils, from 12.04 LTS onwards so not common)
+		# - use expect unbuffer (again, not common)
+		#controlPacketByte=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | hexdump -v -e '/1 "%d"' -n 1)
+		controlPacketByte=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | od -A n -t u1)
+		remainingLength=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | hexdump -e '/1 "%u"')
 		if [ -z "$controlPacketByte" ]; then
 			core_exitError "WARN" "Connection has ended"
 		fi
