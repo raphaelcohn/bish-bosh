@@ -48,10 +48,12 @@ bishbosh_connection_makeClientConnection()
 	
 	bishbosh_connection_read_initialiseStrategy
 	bishbosh_connection_read_initialiseControlPacketHandlers "no"
+	bishbosh_connection_write_currentLockFolderPath=''
 	bishbosh_connection_continue=true
 	
 	{
 		bishbosh_connection_write_CONNECT
+		core_trap_addOnCleanUp _bishbosh_connection_write_removeCurrentLockFolder
 		
 		local controlPacketByte
 		local firstRemainingLengthByte
@@ -78,8 +80,6 @@ bishbosh_connection_body()
 bishbosh_connection_write_messages()
 {
 	local messageToTransmitMetaDataFilePath
-	bishbosh_connection_write_currentLockFolderPath=''
-	core_trap_addOnCleanUp _bishbosh_connection_write_removeCurrentLockFolder
 	pushd "$bishbosh_connection_transmitPathForClientId"
 		set +f
 		for messageToTransmitMetaDataFilePath in *.message
@@ -103,10 +103,9 @@ bishbosh_connection_write_messages()
 			
 			source ./"$messageToTransmitMetaDataFilePath"
 			bishbosh_connection_write_PUBLISH
+			rm -f "$messageToTransmitMetaDataFilePath"
 			rmdir "$bishbosh_connection_write_currentLockFolderPath"
 			bishbosh_connection_write_currentLockFolderPath=''
-			
-			core_TODO "Need to implemented support for message file paths, unlink on send"
 		done
 		set -f
 	popd

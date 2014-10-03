@@ -1,5 +1,7 @@
 core_usesIn bishbosh/connection write
 
+# GNU stat
+core_dependency_requires '*' stat
 _bishbosh_connection_write_PUBLISH_validateArguments()
 {
 	if core_variable_isSet bishbosh_connection_write_PUBLISH_dup; then
@@ -50,13 +52,39 @@ _bishbosh_connection_write_PUBLISH_validateArguments()
 	remainingLength=$(( remainingLength + 2 + topicName_fieldLength ))
 	
 	if core_variable_isUnset bishbosh_connection_write_PUBLISH_message; then
-		message=''
+		if core_variable_isUnset bishbosh_connection_write_PUBLISH_messageFilePath; then
+			message=''
+			message_fieldLength=0
+			messageFilePath=''
+		else
+			message=''
+			core_validate_filePathReadable $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_PUBLISH_messageFilePath "$bishbosh_connection_write_PUBLISH_messageFilePath"
+			messageFilePath="$bishbosh_connection_write_PUBLISH_messageFilePath"
+			message_fieldLength=$(stat -L -c '%s' "$messageFilePath")
+		fi
 	else
+		if core_variable_isSet bishbosh_connection_write_PUBLISH_messageFilePath; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The arguments 'bishbosh_connection_write_PUBLISH_message' and 'bishbosh_connection_write_PUBLISH_message' can not both be specified"
+		fi
 		message="$bishbosh_connection_write_PUBLISH_message"
+		message_fieldLength=${#message}
+		messageFilePath=''
 		bishbosh_connection_write_fieldLengthCheck PUBLISH 0 message
 	fi
-	message_fieldLength=${#message}
 	remainingLength=$(( remainingLength + message_fieldLength ))
+	
+	if core_variable_isSet bishbosh_connection_write_PUBLISH_messageUnlinkFile; then
+		if core_variable_isUnset bishbosh_connection_write_PUBLISH_messageFilePath; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_PUBLISH_messageUnlinkFile' can not be specified if 'bishbosh_connection_write_PUBLISH_messageFilePath' is not"
+		fi
+		if core_variable_isTrue bishbosh_connection_write_PUBLISH_messageUnlinkFile; then
+			messageUnlinkFile=1
+		else
+			messageUnlinkFile=0
+		fi
+	else
+		messageUnlinkFile=0
+	fi
 }
 
 bishbosh_connection_write_PUBLISH_resetArguments()
@@ -67,10 +95,11 @@ bishbosh_connection_write_PUBLISH_resetArguments()
 	unset bishbosh_connection_write_PUBLISH_retain
 	unset bishbosh_connection_write_PUBLISH_topicName
 	unset bishbosh_connection_write_PUBLISH_message
-	# unset bishbosh_connection_write_PUBLISH_messageFilePath
-	# unset bishbosh_connection_write_PUBLISH_messageUnlinkFile
+	unset bishbosh_connection_write_PUBLISH_messageFilePath
+	unset bishbosh_connection_write_PUBLISH_messageUnlinkFile
 }
 
+core_dependency_requires '*' cat
 bishbosh_connection_write_PUBLISH()
 {
 	local remainingLength=0
@@ -82,7 +111,9 @@ bishbosh_connection_write_PUBLISH()
 	local topicName
 	local topicName_fieldLength
 	local message
+	local messageFilePath
 	local message_fieldLength
+	local messageUnlinkFile
 	_bishbosh_connection_write_PUBLISH_validateArguments
 	
 	core_TODO "We don't check for wildcards, ASCII NULL, or empty topic names"
@@ -98,5 +129,14 @@ bishbosh_connection_write_PUBLISH()
 		bishbosh_connection_write_twoByteLength $packetIdentifier
 	fi
 	
-	printf '%s' "$message"
+	if [ -z "$messageFilePath" ]; then
+		printf '%s' "$message"
+	else
+		cat "$messageFilePath"
+		core_TODO 'Experiment with dd bs=$message_fieldLength count=$message_fieldLength if="$messageFilePath" as an alternative to cat'
+	fi
+	
+	if [ $messageUnlinkFile -eq 1 ]; then
+		rm -f $messageUnlinkFile || core_exitError $core_commandLine_exitCode_IOERR "Can not unlink message file '$messageUnlinkFile'."
+	fi
 }

@@ -3,6 +3,6 @@ bishbosh_connection_write_PUBLISH_qos=0
 #bishbosh_connection_write_PUBLISH_packetIdentifier=10
 #bishbosh_connection_write_PUBLISH_retain=no
 bishbosh_connection_write_PUBLISH_topicName='a/b'
-bishbosh_connection_write_PUBLISH_message='X'
-# bishbosh_connection_write_PUBLISH_messageFilePath
-# bishbosh_connection_write_PUBLISH_messageUnlinkFile
+#bishbosh_connection_write_PUBLISH_message='X'
+bishbosh_connection_write_PUBLISH_messageFilePath="example.message"
+bishbosh_connection_write_PUBLISH_messageUnlinkFile=no
