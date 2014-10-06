@@ -1,4 +1,4 @@
-core_usesIn bishbosh/connection/read CONNACK CONNECT DISCONNECT invalid PINGREQ PINGRESP
+core_usesIn bishbosh/connection/read/controlpacket CONNACK CONNECT DISCONNECT invalid PINGREQ PINGRESP
 
 core_dependency_requires '*' grep
 bishbosh_connection_read_initialiseStrategy()
