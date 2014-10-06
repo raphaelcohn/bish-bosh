@@ -52,11 +52,11 @@ _program_commandLine_parseInitialise()
 		_program_configurationSet_bishbosh_port=1
 	fi
 
-	_program_default_transmitPath="${_program_varPath}"/lib/"$_program_name"/transmit
-	if core_variable_isSet bishbosh_transmitPath; then
-		_program_configurationSet_bishbosh_transmitPath=0
+	_program_default_clientsPath="${_program_varPath}"/lib/"$_program_name"/clients
+	if core_variable_isSet bishbosh_clientsPath; then
+		_program_configurationSet_bishbosh_clientsPath=0
 	else
-		_program_configurationSet_bishbosh_transmitPath=1
+		_program_configurationSet_bishbosh_clientsPath=1
 	fi
 	
 	if core_variable_isSet bishbosh_transport; then
@@ -124,8 +124,9 @@ _program_commandLine_helpMessage()
   -p, --port PORT           Server PORT. Ignored for Unix domain sockets.
                             Use 'BACKEND' to let the backend choose.
                             Defaults to 1883 or 8883 depending on backend
-  -t, --transmit-path PATH  PATH to folder containing messages to transmit.
-                            Defaults to '${_program_default_transmitPath}'.
+  -c, --clients-path PATH   PATH to folder containing Client Ids.
+                            Contains a transmit folder, etc.
+                            Defaults to '${_program_default_clientsPath}'.
       --transport TRANSPT   TRANSPT of inet, inet4, inet6 or unix.
 	                        Defaults to 'inet'
       --source-address S    Bind to network interface with address S.
@@ -170,7 +171,7 @@ _program_commandLine_helpMessage()
   bishbosh_backends       Equivalent to --backends
   bishbosh_server         Equivalent to --server
   bishbosh_port           Equivalent to --port
-  bishbosh_transmitPath   Equivalent to --transmit-path
+  bishbosh_clientsPath   Equivalent to --clients-path
   bishbosh_transport      Equivalent to --transport
   bishbosh_sourceAddress  Equivalent to --source-address
   bishbosh_sourcePort     Equivalent to --source-port
@@ -201,7 +202,7 @@ _program_commandLine_optionExists()
 			echo 'yes-argumented'
 		;;
 		
-		t|transmit-path)
+		c|clients-path)
 			echo 'yes-argumented'
 		;;
 		
@@ -268,9 +269,9 @@ _program_commandLine_processOptionWithArgument()
 			bishbosh_port="$optionValue"
 		;;
 		
-		t|transmit-path)
+		c|clients-path)
 			core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
-			bishbosh_transmitPath="$optionValue"
+			bishbosh_clientsPath="$optionValue"
 		;;
 		
 		transport)
@@ -456,11 +457,11 @@ _program_commandLine_validate()
 		core_exitError $core_commandLine_exitCode_USAGE "The option '--server' must be specified"
 	fi
 	
-	if core_variable_isUnset bishbosh_transmitPath; then
-		bishbosh_transmitPath="$_program_default_transmitPath"
-		core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--transmit-path' "$bishbosh_transmitPath"
+	if core_variable_isUnset bishbosh_clientsPath; then
+		bishbosh_clientsPath="$_program_default_clientsPath"
+		core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--clients-path' "$bishbosh_clientsPath"
 	else
-		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_transmitPath' "$bishbosh_transmitPath"
+		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_clientsPath' "$bishbosh_clientsPath"
 	fi
 	
 	if core_variable_isUnset bishbosh_transport; then

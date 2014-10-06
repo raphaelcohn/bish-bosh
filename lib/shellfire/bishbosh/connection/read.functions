@@ -8,6 +8,7 @@ bishbosh_connection_read_initialiseStrategy()
 		if core_compatibility_whichNoOutput god; then
 			bishbosh_connection_read_loop=bishbosh_connection_read_usingGnuCoreutilsPipeHomebrew
 			bishbosh_connection_read_byte=_bishbosh_connection_read_byte_whenUsingGnuCoreutilsPipe
+			bishbosh_connection_read_byteWithTimeout=_bishbosh_connection_read_byte_whenUsingGnuCoreutilsPipeWithTimeout
 			return 0
 		fi
 	fi
@@ -16,6 +17,7 @@ bishbosh_connection_read_initialiseStrategy()
 			if god --version 2>&1 | grep -q '^od (GNU coreutils) '; then
 				bishbosh_connection_read_loop=bishbosh_connection_read_usingGnuCoreutilsPipeGnu
 				bishbosh_connection_read_byte=_bishbosh_connection_read_byte_whenUsingGnuCoreutilsPipe
+				bishbosh_connection_read_byteWithTimeout=_bishbosh_connection_read_byte_whenUsingGnuCoreutilsPipeWithTimeout
 				return 0
 			fi
 		fi
@@ -23,8 +25,10 @@ bishbosh_connection_read_initialiseStrategy()
 	bishbosh_connection_read_loop=bishbosh_connection_read_exec
 	if core_compatibility_whichNoOutput hexdump; then
 		bishbosh_connection_read_byte=_bishbosh_connection_read_byte_forkHexdump
+		bishbosh_connection_read_byteWithTimeout=_bishbosh_connection_read_byte_forkHexdumpWithTimeout
 	elif core_compatibility_whichNoOutput od; then
 		bishbosh_connection_read_byte=_bishbosh_connection_read_byte_forkOd
+		bishbosh_connection_read_byteWithTimeout=_bishbosh_connection_read_byte_forkOdWithTimeout
 	else
 		core_exitError "Can not find either hexdump or od on the path"
 	fi	
@@ -35,18 +39,8 @@ _bishbosh_connection_read_usingGnuCoreutilsPipe()
 	local pathToStdbuf="$1"
 	local pathToOd="$2"
 	shift 2
-
-	#bishbosh_connection_stateMessage='in CONNECT'
-	#_bishbosh_connection_SIGPIPE()
-	#{
-	#	core_message FAIL "Connection '$bishbosh_connection_id' to server '$bishbosh_server' failed $bishbosh_connection_stateMessage"
-	#}
-	#core_trap_addHandler _bishbosh_connection_SIGPIPE PIPE
 	
-	local bishbosh_connection_fromOdFifo="$bishbosh_connection_fifoFolder"/from-od
-	mkfifo -m 0600 "$bishbosh_connection_fromOdFifo"
-	
-	"$pathToStdbuf" -i 0 -o 0 -e 0 "$pathToOd" -A n -t u1 -w1 -v "$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromOdFifo" &
+	"$pathToStdbuf" -i 0 -o 0 -e 0 "$pathToOd" -A n -t u1 -w1 -v "$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo" &
 	core_children_killOnExit $!
 	
 	{
@@ -57,7 +51,7 @@ _bishbosh_connection_read_usingGnuCoreutilsPipe()
 			bishbosh_connection_body
 		done
 		
-	} <"$bishbosh_connection_fromOdFifo"
+	} <"$bishbosh_connection_fromHexConversionFifo"
 }
 
 bishbosh_connection_read_usingGnuCoreutilsPipeHomebrew()
@@ -91,6 +85,11 @@ _bishbosh_connection_read_byte_forkHexdump()
 	eval "$1=$byte"
 }
 
+_bishbosh_connection_read_byte_forkHexdumpWithTimeout()
+{
+	sleep 5000
+}
+
 _bishbosh_connection_read_byte_forkOd()
 {
 	# The UNQUOTED $(...) capture ensures all leading whitespace and linefeeds are removed (a problem when using od, esp on Mac OS X)
@@ -99,6 +98,11 @@ _bishbosh_connection_read_byte_forkOd()
 	# - hexdump truncates the FIFO (eg if -n 1 to read one byte, but 4 bytes are in the FIFO, it discards the remaining 3 bytes)
 	local byte=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | od -A n -t u1)
 	eval "$1=$byte"
+}
+
+_bishbosh_connection_read_byte_forkOdWithTimeout()
+{
+	sleep 5000
 }
 
 bishbosh_connection_read_initialiseControlPacketHandlers()

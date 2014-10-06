@@ -36,8 +36,11 @@ bishbosh_connection_makeClientConnection()
 	local bishbosh_connection_fromServerFifo="$bishbosh_connection_fifoFolder"/from-server
 	mkfifo -m 0600 "$bishbosh_connection_fromServerFifo"
 	
-	bishbosh_connection_transmitPathForClientId="$bishbosh_transmitPath"/"$bishbosh_connection_write_CONNECT_clientId"
-	mkdir -m 0755 -p "$bishbosh_connection_transmitPathForClientId"
+	local bishbosh_connection_fromHexConversionFifo="$bishbosh_connection_fifoFolder"/from-hex-conversion
+	mkfifo -m 0600 "$bishbosh_connection_fromHexConversionFifo"
+	
+	bishbosh_connection_clientsPathForClientId="$bishbosh_clientsPath"/"$bishbosh_connection_write_CONNECT_clientId"
+	mkdir -m 0755 -p "$bishbosh_connection_clientsPathForClientId"
 	
 	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_connection_temporaryFolder'"
 		
@@ -80,7 +83,7 @@ bishbosh_connection_body()
 bishbosh_connection_write_messages()
 {
 	local messageToTransmitMetaDataFilePath
-	pushd "$bishbosh_connection_transmitPathForClientId"
+	pushd "$bishbosh_connection_clientsPathForClientId"
 		set +f
 		for messageToTransmitMetaDataFilePath in *.message
 		do
