@@ -1,4 +1,4 @@
-bishbosh_connection_read_CONNACK()
+bishbosh_connection_read_controlpacket_CONNACK()
 {
 	bishbosh_connection_read_protocolErrorIfRemainingLengthNot CONNACK 2
 	

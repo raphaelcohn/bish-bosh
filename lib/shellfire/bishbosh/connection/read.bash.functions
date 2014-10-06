@@ -1,5 +1,6 @@
 bishbosh_connection_read=()
 
+# Also supported by BusyBox ash (along with -u and and -t)
 _bishbosh_connection_read_byte_whenUsingGnuCoreutilsPipeWithTimeout()
 {
 	# -t 0 differs between bash and zsh; with the later, it performs as a non-blocking read
@@ -13,7 +14,7 @@ bishbosh_connection_read_initialiseControlPacketHandlers()
 	local -i index
 	for((index=0;index<256;index++))
 	do
-		bishbosh_connection_read[$index]=bishbosh_connection_read_invalid
+		bishbosh_connection_read[$index]=bishbosh_connection_read_controlpacket_invalid
 	done
 	
 	if core_variable_isTrue "$isServer"; then
@@ -61,13 +62,13 @@ bishbosh_connection_read_initialiseControlPacketHandlers()
 	fi
 	
 	if core_variable_isTrue "$isServer"; then
-		bishbosh_connection_read[192]=bishbosh_connection_read_PINGREQ
+		bishbosh_connection_read[192]=bishbosh_connection_read_controlpacket_PINGREQ
 	else
-		bishbosh_connection_read[208]=bishbosh_connection_read_PINGRESP
+		bishbosh_connection_read[208]=bishbosh_connection_read_controlpacket_PINGRESP
 	fi
 	
 	if core_variable_isTrue "$isServer"; then
-		bishbosh_connection_read[224]=bishbosh_connection_read_DISCONNECT
+		bishbosh_connection_read[224]=bishbosh_connection_read_controlpacket_DISCONNECT
 	fi
 }
 

@@ -82,7 +82,7 @@ _random_generateBetween0To255_determineImplementation()
 		fi
 	fi	
 	
-	# true for everything bar dash, original SVR4 sh; easily fooled if RANDOM exported, but too bad - this is a fallback
+	# Nearly everything has this bar dash and original sh, although ash in BuysBox can be configured without it
 	if core_variable_isSet RANDOM; then
 		_random_generateBetween0To255_implementation=random_generateBetween0To255_RANDOM
 		core_message WARN "Non-cryptographic randomness source selected (built-in RANDOM function)"

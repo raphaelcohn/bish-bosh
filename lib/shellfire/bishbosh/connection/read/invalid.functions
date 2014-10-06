@@ -1,6 +1,6 @@
 core_TODO 'More gracefully terminate connections'
 
-bishbosh_connection_read_invalid()
+bishbosh_connection_read_controlpacket_invalid()
 {
 	bishbosh_connection_read_protocolError invalid "Invalid control packet code '$controlPacketByte' with remaining length '$firstRemainingLengthByte'"
 }

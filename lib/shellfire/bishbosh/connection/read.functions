@@ -109,42 +109,42 @@ bishbosh_connection_read_initialiseControlPacketHandlers()
 {
 	local isServer="$1"
 	if core_variable_isTrue "$isServer"; then
-		bishbosh_connection_read_CONNACK()
+		bishbosh_connection_read_controlpacket_CONNACK()
 		{
-			bishbosh_connection_read_invalid
+			bishbosh_connection_read_controlpacket_invalid
 		}
 		bishbosh_connection_read_SUBACK()
 		{
-			bishbosh_connection_read_invalid
+			bishbosh_connection_read_controlpacket_invalid
 		}
 		bishbosh_connection_read_UNSUBACK()
 		{
-			bishbosh_connection_read_invalid
+			bishbosh_connection_read_controlpacket_invalid
 		}
-		bishbosh_connection_read_PINGRESP()
+		bishbosh_connection_read_controlpacket_PINGRESP()
 		{
-			bishbosh_connection_read_invalid
+			bishbosh_connection_read_controlpacket_invalid
 		}
 	else
 		bishbosh_connection_read_CONNECT()
 		{
-			bishbosh_connection_read_invalid
+			bishbosh_connection_read_controlpacket_invalid
 		}
 		bishbosh_connection_read_SUBSCRIBE()
 		{
-			bishbosh_connection_read_invalid
+			bishbosh_connection_read_controlpacket_invalid
 		}
 		bishbosh_connection_read_UNSUBSCRIBE()
 		{
-			bishbosh_connection_read_invalid
+			bishbosh_connection_read_controlpacket_invalid
 		}
-		bishbosh_connection_read_PINGREQ()
+		bishbosh_connection_read_controlpacket_PINGREQ()
 		{
-			bishbosh_connection_read_invalid
+			bishbosh_connection_read_controlpacket_invalid
 		}
-		bishbosh_connection_read_DISCONNECT()
+		bishbosh_connection_read_controlpacket_DISCONNECT()
 		{
-			bishbosh_connection_read_invalid
+			bishbosh_connection_read_controlpacket_invalid
 		}
 	fi
 }
@@ -153,9 +153,9 @@ bishbosh_connection_read_expectingCONNACK()
 {
 	bishbosh_connection_read_firstTwoBytesOfControlPacket
 	if [ $controlPacketByte -ne 32 ]; then
-		bishbosh_connection_read_invalid
+		bishbosh_connection_read_controlpacket_invalid
 	fi
-	bishbosh_connection_read_CONNACK
+	bishbosh_connection_read_controlpacket_CONNACK
 }
 
 bishbosh_connection_read_firstTwoBytesOfControlPacket()
@@ -175,7 +175,7 @@ bishbosh_connection_read_handleControlPacket()
 		
 		32)
 			# Only valid for clients; never expected after initial read
-			bishbosh_connection_read_invalid
+			bishbosh_connection_read_controlpacket_invalid
 		;;
 		
 		48)
@@ -280,21 +280,21 @@ bishbosh_connection_read_handleControlPacket()
 		
 		192)
 			# Only valid for servers
-			bishbosh_connection_read_PINGREQ
+			bishbosh_connection_read_controlpacket_PINGREQ
 		;;
 		
 		208)
 			# Only valid for clients
-			bishbosh_connection_read_PINGRESP
+			bishbosh_connection_read_controlpacket_PINGRESP
 		;;
 		
 		224)
 			# Only valid for servers
-			bishbosh_connection_read_DISCONNECT
+			bishbosh_connection_read_controlpacket_DISCONNECT
 		;;
 		
 		*)
-			bishbosh_connection_read_invalid
+			bishbosh_connection_read_controlpacket_invalid
 		;;
 	esac
 }

@@ -1,4 +1,4 @@
-bishbosh_connection_read_DISCONNECT()
+bishbosh_connection_read_controlpacket_DISCONNECT()
 {
 	bishbosh_connection_read_protocolErrorIfRemainingLengthNotZero DISCONNECT
 }
