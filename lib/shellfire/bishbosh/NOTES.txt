@@ -7,7 +7,14 @@
 	core_TODO 'keep-alive is based on server connection details - it is a broker specific thing - goes with broker configurations'
 	core_TODO 'Support a binary password (embedded NULs)'
 	core_TODO 'Use .netrc for password! (or a password file; required if we are going to use embedded NULs for SASL)'
-	
+	ish and bish-bosh
+
+	newt (whiptail) vs dialog: both in Centos 6.4 default, ? only whiptail in Ubuntu minimal
+	auth backends - ldap, ?pam, local users file
+
+	byobu vs tmux vs screen for multiple viewing (or support all 3 in a complex manner [byobu requires newt])
+
+	https://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682
 # using netcat with a FIFO (need mkfifo): https://unix.stackexchange.com/questions/39362/using-in-out-named-pipes-for-a-tcp-connection
 # reverse bash shell http://www.gnucitizen.org/blog/reverse-shell-with-bash/
 # reverse nc if nc is broken (lacks -e) http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet

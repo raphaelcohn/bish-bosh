@@ -1,8 +1,0 @@
-ish and bish-bosh
-
-newt (whiptail) vs dialog: both in Centos 6.4 default, ? only whiptail in Ubuntu minimal
-auth backends - ldap, ?pam, local users file
-
-byobu vs tmux vs screen for multiple viewing (or support all 3 in a complex manner [byobu requires newt])
-
-https://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682
