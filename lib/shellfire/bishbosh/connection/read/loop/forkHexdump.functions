@@ -8,6 +8,12 @@ bishbosh_connection_read_loop_forkHexdump_initialise()
 	return 1
 }
 
+bishbosh_connection_read_loop_forkHexdump_initialise()
+{
+	bishbosh_connection_read_byte_blocking=bishbosh_connection_read_byte_forkHexdump_blocking
+	bishbosh_connection_read_byte_nonBlocking=bishbosh_connection_read_byte_forkHexdump_nonBlocking
+}
+
 bishbosh_connection_read_loop_forkHexdump()
 {
 	bishbosh_connection_read_expectingCONNACK

@@ -1,12 +1,18 @@
 core_usesIn bishbosh/connection/read/byte forkOd
 core_usesIn bishbosh/connection/read/loop forkHexdump
 
-bishbosh_connection_read_loop_forkOd_initialise()
+bishbosh_connection_read_loop_forkOd_check()
 {
 	if core_compatibility_whichNoOutput od; then
 		return 0
 	fi
 	return 1
+}
+
+bishbosh_connection_read_loop_forkOd_initialise()
+{
+	bishbosh_connection_read_byte_blocking=bishbosh_connection_read_byte_forkOd_blocking
+	bishbosh_connection_read_byte_nonBlocking=bishbosh_connection_read_byte_forkOd_nonBlocking
 }
 
 bishbosh_connection_read_loop_forkOd()

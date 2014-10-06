@@ -1,6 +1,10 @@
-core_usesIn bishbosh/connection/read/byte pipeStdbufOd
+core_usesIn bishbosh/connection/read/loop pipe
 
-bishbosh_connection_read_loop_pipeStdbufOd_initialise()
+# Also exists on FreeBSD
+# One can LD_PRELOAD libstdbuf, eg http://www.nxmnpg.com/3/libstdbuf
+# A stripped down stdbuf to work with busybox https://www.mail-archive.com/debian-bugs-dist@lists.debian.org/msg1228432.html
+# Or using gcc if present https://lists.gnu.org/archive/html/bug-coreutils/2008-11/msg00138.html
+bishbosh_connection_read_loop_pipeStdbufOd_check()
 {
 	if core_compatibility_whichNoOutput stdbuf; then
 		if core_compatibility_whichNoOutput od; then
@@ -12,27 +16,12 @@ bishbosh_connection_read_loop_pipeStdbufOd_initialise()
 	return 1
 }
 
-_bishbosh_connection_read_loop_pipeStdbufOd_internal()
+bishbosh_connection_read_loop_pipeStdbufOd_initialise()
 {
-	local pathToStdbuf="$1"
-	local pathToOd="$2"
-	shift 2
-	
-	"$pathToStdbuf" -i 0 -o 0 -e 0 "$pathToOd" -A n -t u1 -w1 -v "$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo" &
-	core_children_killOnExit $!
-	
-	{
-		bishbosh_connection_read_expectingCONNACK
-		
-		while $bishbosh_connection_continue
-		do
-			bishbosh_connection_body
-		done
-		
-	} <"$bishbosh_connection_fromHexConversionFifo"
+	_bishbosh_connection_read_loop_pipe_initialise
 }
 
 bishbosh_connection_read_loop_pipeStdbufOd()
 {
-	_bishbosh_connection_read_loop_pipeStdbufOd_internal stdbuf od
+	_bishbosh_connection_read_loop_pipe_stdbufGnuOd stdbuf od
 }

@@ -1,6 +1,6 @@
-core_usesIn bishbosh/connection/read/byte pipeStdbufOdHomebrew
+core_usesIn bishbosh/connection/read/loop pipe
 
-bishbosh_connection_read_loop_pipeStdbufOdHomebrew_initialise()
+bishbosh_connection_read_loop_pipeStdbufOdHomebrew_check()
 {
 	if core_compatibility_whichNoOutput gstdbuf; then
 		if core_compatibility_whichNoOutput god; then
@@ -10,7 +10,12 @@ bishbosh_connection_read_loop_pipeStdbufOdHomebrew_initialise()
 	return 1
 }
 
+bishbosh_connection_read_loop_pipeStdbufOdHomebrew_initialise()
+{
+	_bishbosh_connection_read_loop_pipe_initialise
+}
+
 bishbosh_connection_read_loop_pipeStdbufOdHomebrew()
 {
-	_bishbosh_connection_read_loop_pipeStdbufOd_internal gstdbuf god
+	_bishbosh_connection_read_loop_pipe_stdbufGnuOd gstdbuf god
 }
