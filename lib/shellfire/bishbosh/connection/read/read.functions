@@ -1,12 +1,47 @@
 core_usesIn bishbosh/connection/read controlpacket
 core_usesIn bishbosh/connection/read/loop pipeStdbufOd pipeStdbufOdHomebrew pipeUnbufferOd forkHexdump forkOd
 
+# https://stackoverflow.com/questions/4874993/bash-script-with-non-blocking-read !!
+bishbosh_connection_read_nonBlockingFeatureTest()
+{
+	local testFifoPath="$(bishbosh_connection_mkfifo 'non-blocking-read-feature-test')"
+	exec 5<>"$testFifoPath"
+	printf '%s\n' 'test' >&5
+	
+	local testVariable=''
+	set +e
+	read -r -u 5 -t $bishbosh_readLatency_inFractionalSeconds testVariable 2>/dev/null
+	set -e
+	exec 5>&-
+	exec 5<&-
+
+	if [ -z "$testVariable" ]; then
+		bishbosh_connection_supportsNonBlockingRead=0
+		bishbosh_connection_exitCodeForReadTimeout=-1
+		return 0
+	else
+		bishbosh_connection_supportsNonBlockingRead=1
+	fi
+
+	local timeoutExitCodeFifoPath="$(bishbosh_connection_mkfifo 'non-blocking-read-timeout-exit-code-feature-test')"
+	exec 5<>"$testFifoPath"
+	local exitCodeForTimeout
+	set +e
+	read -r -u 5 -t $bishbosh_readLatency_inFractionalSeconds testVariable 
+	bishbosh_connection_exitCodeForReadTimeout=$?
+	exec 5>&-
+	exec 5<&-
+	set -e
+}
+
 core_dependency_requires '*' grep
 bishbosh_connection_read_initialise()
 {
 	local isServer="$1"
 	
 	bishbosh_connection_read_controlpacket_initialise "$isServer"
+	
+	bishbosh_connection_read_nonBlockingFeatureTest
 	
 	local loopKind
 	local checkFunction

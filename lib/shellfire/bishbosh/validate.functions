@@ -28,6 +28,19 @@ bishbosh_validate_address()
 	local value="$4"
 }
 
+bishbosh_validate_readLatency()
+{
+	local code=$1
+	local category="$2"
+	local name="$3"
+	local value="$4"
+	
+	core_validate_isUnsignedInteger $code "$category" "$name" "$value"
+	if [ $value -gt 1000 ]; then
+		core_validate_exit "The $category '$name' must be between 0 and 1000 (inclusive)."
+	fi
+}
+
 bishbosh_validate_transport()
 {
 	local code=$1

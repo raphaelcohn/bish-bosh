@@ -1,4 +1,4 @@
-#!/usr/bin/env dash
+#!/usr/bin/env bash
 
 _program()
 {
@@ -57,6 +57,17 @@ _program_commandLine_parseInitialise()
 		_program_configurationSet_bishbosh_clientsPath=0
 	else
 		_program_configurationSet_bishbosh_clientsPath=1
+	fi
+
+	if [ "$core_init_preferredShell" = 'zsh' ]; then
+		_program_default_readLatency=0
+	else
+		_program_default_readLatency=1
+	fi
+	if core_variable_isSet bishbosh_readLatency; then
+		_program_configurationSet_bishbosh_readLatency=0
+	else
+		_program_configurationSet_bishbosh_readLatency=1
 	fi
 	
 	if core_variable_isSet bishbosh_transport; then
@@ -127,6 +138,12 @@ _program_commandLine_helpMessage()
   -c, --clients-path PATH   PATH to folder containing Client Ids.
                             Contains a transmit folder, etc.
                             Defaults to '${_program_default_clientsPath}'.
+      --read-latency MSECS  Maximum time to block for when reading in
+                            MSECS milliseconds between 0 and 1000
+							inclusive. 0 has different meaning in
+                            'zsh' as opposed to 'bash'.
+                            Defaults to '${_program_default_readLatency}'.
+                            Default varies by detected shell.
       --transport TRANSPT   TRANSPT of inet, inet4, inet6 or unix.
 	                        Defaults to 'inet'
       --source-address S    Bind to network interface with address S.
@@ -171,7 +188,8 @@ _program_commandLine_helpMessage()
   bishbosh_backends       Equivalent to --backends
   bishbosh_server         Equivalent to --server
   bishbosh_port           Equivalent to --port
-  bishbosh_clientsPath   Equivalent to --clients-path
+  bishbosh_clientsPath    Equivalent to --clients-path
+  bishbosh_readLatency    Equivalent to --read-latency
   bishbosh_transport      Equivalent to --transport
   bishbosh_sourceAddress  Equivalent to --source-address
   bishbosh_sourcePort     Equivalent to --source-port
@@ -203,6 +221,10 @@ _program_commandLine_optionExists()
 		;;
 		
 		c|clients-path)
+			echo 'yes-argumented'
+		;;
+		
+		read-latency)
 			echo 'yes-argumented'
 		;;
 		
@@ -272,6 +294,11 @@ _program_commandLine_processOptionWithArgument()
 		c|clients-path)
 			core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_clientsPath="$optionValue"
+		;;
+		
+		read-latency)
+			bishbosh_validate_readLatency $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_readLatency="$optionValue"
 		;;
 		
 		transport)
@@ -462,6 +489,23 @@ _program_commandLine_validate()
 		core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--clients-path' "$bishbosh_clientsPath"
 	else
 		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_clientsPath' "$bishbosh_clientsPath"
+	fi
+	
+	if core_variable_isUnset bishbosh_readLatency; then
+		bishbosh_readLatency="$_program_default_readLatency"
+	else
+		bishbosh_validate_readLatency $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_readLatency' "$bishbosh_readLatency"
+	fi
+	if [ $bishbosh_readLatency -lt 1 ]; then
+		bishbosh_readLatency_inFractionalSeconds=0
+	elif [ $bishbosh_readLatency -lt 10 ]; then
+		bishbosh_readLatency_inFractionalSeconds=0.00${bishbosh_readLatency}
+	elif [ $bishbosh_readLatency -lt 100 ]; then
+		bishbosh_readLatency_inFractionalSeconds=0.0${bishbosh_readLatency}
+	elif [ $bishbosh_readLatency -lt 1000 ]; then
+		bishbosh_readLatency_inFractionalSeconds=0.${bishbosh_readLatency}
+	else
+		bishbosh_readLatency_inFractionalSeconds=1
 	fi
 	
 	if core_variable_isUnset bishbosh_transport; then

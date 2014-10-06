@@ -1,6 +1,14 @@
 core_usesIn bishbosh/connection read write
 core_usesIn core children
 
+bishbosh_connection_mkfifo()
+{
+	local fifoName="$1"
+	local fifoPath="$bishbosh_connection_fifoFolder"/"$fifoName"
+	mkfifo -m 0600 "$fifoPath"
+	printf '%s' "$fifoPath"
+}
+
 # Also stdbuf, GNU od are best
 core_dependency_requires '*' mkfifo
 core_dependency_oneOf '*' hexdump od
@@ -31,14 +39,9 @@ bishbosh_connection_makeClientConnection()
 	local bishbosh_connection_fifoFolder="$bishbosh_connection_temporaryFolder"/fifo
 	mkdir -m 0700 -p "$bishbosh_connection_fifoFolder"
 	
-	local bishbosh_connection_toServerFifo="$bishbosh_connection_fifoFolder"/to-server
-	mkfifo -m 0600 "$bishbosh_connection_toServerFifo"
-	
-	local bishbosh_connection_fromServerFifo="$bishbosh_connection_fifoFolder"/from-server
-	mkfifo -m 0600 "$bishbosh_connection_fromServerFifo"
-	
-	local bishbosh_connection_fromHexConversionFifo="$bishbosh_connection_fifoFolder"/from-hex-conversion
-	mkfifo -m 0600 "$bishbosh_connection_fromHexConversionFifo"
+	local bishbosh_connection_toServerFifo="$(bishbosh_connection_mkfifo to-server)"
+	local bishbosh_connection_fromServerFifo="$(bishbosh_connection_mkfifo from-server)"
+	local bishbosh_connection_fromHexConversionFifo="$(bishbosh_connection_mkfifo from-hex-conversion)"
 	
 	bishbosh_connection_clientsPathForClientId="$bishbosh_clientsPath"/"$bishbosh_connection_write_CONNECT_clientId"
 	mkdir -m 0755 -p "$bishbosh_connection_clientsPathForClientId"

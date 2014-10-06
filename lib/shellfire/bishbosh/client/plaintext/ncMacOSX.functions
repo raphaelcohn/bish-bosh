@@ -105,12 +105,13 @@ bishbosh_client_plaintext_ncMacOSX_start()
 	esac
 
 	core_variable_array_append options $bishbosh_server
-	
+	declare -a -p
 	if core_variable_isSet bishbosh_port; then
 		local port=$bishbosh_port
 	else
 		local port=1883
 	fi
+	
 	core_variable_array_append options $port
 	
 	core_variable_array_passToFunctionAsArguments options nc <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
