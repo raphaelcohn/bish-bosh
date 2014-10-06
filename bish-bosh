@@ -1,7 +1,5 @@
 #!/usr/bin/env dash
 
-# pdksh and ksh93u to test for local variable support, etc
-
 _program()
 {
 	core_usesIn core temporaryFiles
