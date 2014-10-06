@@ -50,7 +50,7 @@ bishbosh_connection_makeClientConnection()
 	core_children_killOnExit $bishbosh_connection_clientPid
 	
 	bishbosh_connection_read_initialiseStrategy
-	bishbosh_connection_read_initialiseControlPacketHandlers "no"
+	bishbosh_connection_read_controlpacket_initialiseHandlers "no"
 	bishbosh_connection_write_currentLockFolderPath=''
 	bishbosh_connection_continue=true
 	

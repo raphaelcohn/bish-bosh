@@ -1,4 +1,4 @@
-core_usesIn bishbosh/connection/read/controlpacket CONNACK CONNECT DISCONNECT invalid PINGREQ PINGRESP
+core_usesIn bishbosh/connection/read controlpacket
 
 core_dependency_requires '*' grep
 bishbosh_connection_read_initialiseStrategy()
@@ -103,50 +103,6 @@ _bishbosh_connection_read_byte_forkOd()
 _bishbosh_connection_read_byte_forkOdWithTimeout()
 {
 	sleep 5000
-}
-
-bishbosh_connection_read_initialiseControlPacketHandlers()
-{
-	local isServer="$1"
-	if core_variable_isTrue "$isServer"; then
-		bishbosh_connection_read_controlpacket_CONNACK()
-		{
-			bishbosh_connection_read_controlpacket_invalid
-		}
-		bishbosh_connection_read_SUBACK()
-		{
-			bishbosh_connection_read_controlpacket_invalid
-		}
-		bishbosh_connection_read_UNSUBACK()
-		{
-			bishbosh_connection_read_controlpacket_invalid
-		}
-		bishbosh_connection_read_controlpacket_PINGRESP()
-		{
-			bishbosh_connection_read_controlpacket_invalid
-		}
-	else
-		bishbosh_connection_read_CONNECT()
-		{
-			bishbosh_connection_read_controlpacket_invalid
-		}
-		bishbosh_connection_read_SUBSCRIBE()
-		{
-			bishbosh_connection_read_controlpacket_invalid
-		}
-		bishbosh_connection_read_UNSUBSCRIBE()
-		{
-			bishbosh_connection_read_controlpacket_invalid
-		}
-		bishbosh_connection_read_controlpacket_PINGREQ()
-		{
-			bishbosh_connection_read_controlpacket_invalid
-		}
-		bishbosh_connection_read_controlpacket_DISCONNECT()
-		{
-			bishbosh_connection_read_controlpacket_invalid
-		}
-	fi
 }
 
 bishbosh_connection_read_expectingCONNACK()

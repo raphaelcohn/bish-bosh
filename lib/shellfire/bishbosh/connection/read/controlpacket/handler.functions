@@ -1,4 +1,48 @@
-core_TODO 'More gracefully terminate connections'
+core_usesIn bishbosh/connection/read/controlpacket CONNACK CONNECT DISCONNECT PINGREQ PINGRESP
+
+bishbosh_connection_read_controlpacket_initialiseHandlers()
+{
+	local isServer="$1"
+	if core_variable_isTrue "$isServer"; then
+		bishbosh_connection_read_controlpacket_CONNACK()
+		{
+			bishbosh_connection_read_controlpacket_invalid
+		}
+		bishbosh_connection_read_SUBACK()
+		{
+			bishbosh_connection_read_controlpacket_invalid
+		}
+		bishbosh_connection_read_UNSUBACK()
+		{
+			bishbosh_connection_read_controlpacket_invalid
+		}
+		bishbosh_connection_read_controlpacket_PINGRESP()
+		{
+			bishbosh_connection_read_controlpacket_invalid
+		}
+	else
+		bishbosh_connection_read_CONNECT()
+		{
+			bishbosh_connection_read_controlpacket_invalid
+		}
+		bishbosh_connection_read_SUBSCRIBE()
+		{
+			bishbosh_connection_read_controlpacket_invalid
+		}
+		bishbosh_connection_read_UNSUBSCRIBE()
+		{
+			bishbosh_connection_read_controlpacket_invalid
+		}
+		bishbosh_connection_read_controlpacket_PINGREQ()
+		{
+			bishbosh_connection_read_controlpacket_invalid
+		}
+		bishbosh_connection_read_controlpacket_DISCONNECT()
+		{
+			bishbosh_connection_read_controlpacket_invalid
+		}
+	fi
+}
 
 bishbosh_connection_read_controlpacket_invalid()
 {
