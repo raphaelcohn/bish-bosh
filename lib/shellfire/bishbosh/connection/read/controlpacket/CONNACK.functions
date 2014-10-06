@@ -3,7 +3,7 @@ bishbosh_connection_read_controlpacket_CONNACK()
 	bishbosh_connection_read_protocolErrorIfRemainingLengthNot CONNACK 2
 	
 	local connectAcknowledgeFlags
-	$bishbosh_connection_read_byte connectAcknowledgeFlags
+	$bishbosh_connection_read_byte_blocking connectAcknowledgeFlags
 	
 	case $connectAcknowledgeFlags in
 		
@@ -22,7 +22,7 @@ bishbosh_connection_read_controlpacket_CONNACK()
 	esac
 	
 	local connectReturnCode
-	$bishbosh_connection_read_byte connectReturnCode
+	$bishbosh_connection_read_byte_blocking connectReturnCode
 	
 	case $connectReturnCode in
 		

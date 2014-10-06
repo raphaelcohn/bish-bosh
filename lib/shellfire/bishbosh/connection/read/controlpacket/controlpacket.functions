@@ -1,6 +1,6 @@
-core_usesIn bishbosh/connection/read/controlpacket CONNACK CONNECT DISCONNECT PINGREQ PINGRESP
+core_usesIn bishbosh/connection/read/controlpacket CONNACK DISCONNECT PINGREQ PINGRESP
 
-bishbosh_connection_read_controlpacket_initialiseHandlers()
+bishbosh_connection_read_controlpacket_initialise()
 {
 	local isServer="$1"
 	if core_variable_isTrue "$isServer"; then
@@ -42,6 +42,141 @@ bishbosh_connection_read_controlpacket_initialiseHandlers()
 			bishbosh_connection_read_controlpacket_invalid
 		}
 	fi
+}
+
+bishbosh_connection_read_controlpacket_handle()
+{
+	case $controlPacketByte in
+		
+		16)
+			# Only valid for servers
+			bishbosh_connection_read_CONNECT
+		;;
+		
+		32)
+			# Only valid for clients; never expected after initial read
+			bishbosh_connection_read_controlpacket_invalid
+		;;
+		
+		48)
+			bishbosh_connection_read_PUBLISH_0
+		;;
+		
+		49)
+			bishbosh_connection_read_PUBLISH_1
+		;;
+		
+		50)
+			bishbosh_connection_read_PUBLISH_2
+		;;
+		
+		51)
+			bishbosh_connection_read_PUBLISH_3
+		;;
+		
+		52)
+			bishbosh_connection_read_PUBLISH_4
+		;;
+		
+		53)
+			bishbosh_connection_read_PUBLISH_5
+		;;
+		
+		54)
+			bishbosh_connection_read_PUBLISH_6
+		;;
+		
+		55)
+			bishbosh_connection_read_PUBLISH_7
+		;;
+		
+		56)
+			bishbosh_connection_read_PUBLISH_8
+		;;
+		
+		57)
+			bishbosh_connection_read_PUBLISH_9
+		;;
+		
+		58)
+			bishbosh_connection_read_PUBLISH_10
+		;;
+		
+		59)
+			bishbosh_connection_read_PUBLISH_11
+		;;
+		
+		60)
+			bishbosh_connection_read_PUBLISH_12
+		;;
+		
+		61)
+			bishbosh_connection_read_PUBLISH_13
+		;;
+		
+		62)
+			bishbosh_connection_read_PUBLISH_14
+		;;
+		
+		63)
+			bishbosh_connection_read_PUBLISH_15
+		;;
+		
+		64)
+			bishbosh_connection_read_PUBACK
+		;;
+		
+		80)
+			bishbosh_connection_read_PUBREC
+		;;
+		
+		98)
+			bishbosh_connection_read_PUBREL
+		;;
+		
+		112)
+			bishbosh_connection_read_PUBCOMP
+		;;
+		
+		130)
+			# Only valid for servers
+			bishbosh_connection_read_SUBSCRIBE
+		;;
+		
+		144)
+			# Only valid for clients
+			bishbosh_connection_read_SUBACK
+		;;
+		
+		162)
+			# Only valid for servers
+			bishbosh_connection_read_UNSUBSCRIBE
+		;;
+		
+		176)
+			# Only valid for clients
+			bishbosh_connection_read_UNSUBACK
+		;;
+		
+		192)
+			# Only valid for servers
+			bishbosh_connection_read_controlpacket_PINGREQ
+		;;
+		
+		208)
+			# Only valid for clients
+			bishbosh_connection_read_controlpacket_PINGRESP
+		;;
+		
+		224)
+			# Only valid for servers
+			bishbosh_connection_read_controlpacket_DISCONNECT
+		;;
+		
+		*)
+			bishbosh_connection_read_controlpacket_invalid
+		;;
+	esac
 }
 
 bishbosh_connection_read_controlpacket_invalid()

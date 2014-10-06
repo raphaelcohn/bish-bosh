@@ -1,108 +1,49 @@
 core_usesIn bishbosh/connection/read controlpacket
+core_usesIn bishbosh/connection/read/loop gnuCoreutilsPipe forkHexdump forkOd
 
 core_dependency_requires '*' grep
-bishbosh_connection_read_initialiseStrategy()
+bishbosh_connection_read_initialise()
 {
+	local isServer="$1"
+	
+	bishbosh_connection_read_controlpacket_initialise "$isServer"
+	
 	# Homebrew
 	if core_compatibility_whichNoOutput gstdbuf; then
 		if core_compatibility_whichNoOutput god; then
-			bishbosh_connection_read_loop=bishbosh_connection_read_usingGnuCoreutilsPipeHomebrew
-			bishbosh_connection_read_byte=_bishbosh_connection_read_byte_whenUsingGnuCoreutilsPipe
-			bishbosh_connection_read_byteWithTimeout=_bishbosh_connection_read_byte_whenUsingGnuCoreutilsPipeWithTimeout
+			bishbosh_connection_read_loop=bishbosh_connection_read_loop_gnuCoreutilsPipe_Homebrew
+			bishbosh_connection_read_byte_blocking=bishbosh_connection_read_byte_gnuCoreutilsPipe_blocking
+			bishbosh_connection_read_byte_nonBlocking=bishbosh_connection_read_byte_gnuCoreutilsPipe_nonBlocking
 			return 0
 		fi
 	fi
+	
 	if core_compatibility_whichNoOutput stdbuf; then
 		if core_compatibility_whichNoOutput od; then
-			if god --version 2>&1 | grep -q '^od (GNU coreutils) '; then
-				bishbosh_connection_read_loop=bishbosh_connection_read_usingGnuCoreutilsPipeGnu
-				bishbosh_connection_read_byte=_bishbosh_connection_read_byte_whenUsingGnuCoreutilsPipe
-				bishbosh_connection_read_byteWithTimeout=_bishbosh_connection_read_byte_whenUsingGnuCoreutilsPipeWithTimeout
+			if od --version 2>&1 | grep -q '^od (GNU coreutils) '; then
+				bishbosh_connection_read_loop=bishbosh_connection_read_loop_gnuCoreutilsPipe_regular
+				bishbosh_connection_read_byte_blocking=bishbosh_connection_read_byte_gnuCoreutilsPipe_blocking
+				bishbosh_connection_read_byte_nonBlocking=bishbosh_connection_read_byte_gnuCoreutilsPipe_nonBlocking
 				return 0
 			fi
 		fi
 	fi
-	bishbosh_connection_read_loop=bishbosh_connection_read_exec
+	
 	if core_compatibility_whichNoOutput hexdump; then
-		bishbosh_connection_read_byte=_bishbosh_connection_read_byte_forkHexdump
-		bishbosh_connection_read_byteWithTimeout=_bishbosh_connection_read_byte_forkHexdumpWithTimeout
-	elif core_compatibility_whichNoOutput od; then
-		bishbosh_connection_read_byte=_bishbosh_connection_read_byte_forkOd
-		bishbosh_connection_read_byteWithTimeout=_bishbosh_connection_read_byte_forkOdWithTimeout
-	else
-		core_exitError "Can not find either hexdump or od on the path"
-	fi	
-}
-
-_bishbosh_connection_read_usingGnuCoreutilsPipe()
-{
-	local pathToStdbuf="$1"
-	local pathToOd="$2"
-	shift 2
+		bishbosh_connection_read_loop=bishbosh_connection_read_loop_gnuCoreutilsPipe_forkHexdump
+		bishbosh_connection_read_byte_blocking=_bishbosh_connection_read_byte_forkHexdump
+		bishbosh_connection_read_byte_nonBlocking=_bishbosh_connection_read_byte_forkHexdump_nonBlocking
+		return 0
+	fi
 	
-	"$pathToStdbuf" -i 0 -o 0 -e 0 "$pathToOd" -A n -t u1 -w1 -v "$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo" &
-	core_children_killOnExit $!
+	if core_compatibility_whichNoOutput od; then
+		bishbosh_connection_read_loop=bishbosh_connection_read_loop_gnuCoreutilsPipe_forkOd
+		bishbosh_connection_read_byte_blocking=_bishbosh_connection_read_byte_forkOd
+		bishbosh_connection_read_byte_nonBlocking=_bishbosh_connection_read_byte_forkOd_nonBlocking
+		return 0
+	fi
 	
-	{
-		bishbosh_connection_read_expectingCONNACK
-		
-		while $bishbosh_connection_continue
-		do
-			bishbosh_connection_body
-		done
-		
-	} <"$bishbosh_connection_fromHexConversionFifo"
-}
-
-bishbosh_connection_read_usingGnuCoreutilsPipeHomebrew()
-{
-	_bishbosh_connection_read_usingGnuCoreutilsPipe gstdbuf god
-}
-
-bishbosh_connection_read_usingGnuCoreutilsPipeGnu()
-{
-	_bishbosh_connection_read_usingGnuCoreutilsPipe stdbuf od
-}
-
-bishbosh_connection_read_exec()
-{
-	bishbosh_connection_read_expectingCONNACK
-	
-	while $bishbosh_connection_continue
-	do
-		bishbosh_connection_body
-	done
-}
-
-_bishbosh_connection_read_byte_whenUsingGnuCoreutilsPipe()
-{
-	IFS=' ' read -r $1
-}
-
-_bishbosh_connection_read_byte_forkHexdump()
-{
-	local byte=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | hexdump -e '"%u"')
-	eval "$1=$byte"
-}
-
-_bishbosh_connection_read_byte_forkHexdumpWithTimeout()
-{
-	sleep 5000
-}
-
-_bishbosh_connection_read_byte_forkOd()
-{
-	# The UNQUOTED $(...) capture ensures all leading whitespace and linefeeds are removed (a problem when using od, esp on Mac OS X)
-	# dd is used because
-	# - both od and hexdump buffer input and output when used in a pipeline
-	# - hexdump truncates the FIFO (eg if -n 1 to read one byte, but 4 bytes are in the FIFO, it discards the remaining 3 bytes)
-	local byte=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | od -A n -t u1)
-	eval "$1=$byte"
-}
-
-_bishbosh_connection_read_byte_forkOdWithTimeout()
-{
-	sleep 5000
+	core_exitError "Can not find either hexdump or od on the path"
 }
 
 bishbosh_connection_read_expectingCONNACK()
@@ -116,143 +57,8 @@ bishbosh_connection_read_expectingCONNACK()
 
 bishbosh_connection_read_firstTwoBytesOfControlPacket()
 {
-	$bishbosh_connection_read_byte controlPacketByte
-	$bishbosh_connection_read_byte firstRemainingLengthByte
-}
-
-bishbosh_connection_read_handleControlPacket()
-{
-	case $controlPacketByte in
-		
-		16)
-			# Only valid for servers
-			bishbosh_connection_read_CONNECT
-		;;
-		
-		32)
-			# Only valid for clients; never expected after initial read
-			bishbosh_connection_read_controlpacket_invalid
-		;;
-		
-		48)
-			bishbosh_connection_read_PUBLISH_0
-		;;
-		
-		49)
-			bishbosh_connection_read_PUBLISH_1
-		;;
-		
-		50)
-			bishbosh_connection_read_PUBLISH_2
-		;;
-		
-		51)
-			bishbosh_connection_read_PUBLISH_3
-		;;
-		
-		52)
-			bishbosh_connection_read_PUBLISH_4
-		;;
-		
-		53)
-			bishbosh_connection_read_PUBLISH_5
-		;;
-		
-		54)
-			bishbosh_connection_read_PUBLISH_6
-		;;
-		
-		55)
-			bishbosh_connection_read_PUBLISH_7
-		;;
-		
-		56)
-			bishbosh_connection_read_PUBLISH_8
-		;;
-		
-		57)
-			bishbosh_connection_read_PUBLISH_9
-		;;
-		
-		58)
-			bishbosh_connection_read_PUBLISH_10
-		;;
-		
-		59)
-			bishbosh_connection_read_PUBLISH_11
-		;;
-		
-		60)
-			bishbosh_connection_read_PUBLISH_12
-		;;
-		
-		61)
-			bishbosh_connection_read_PUBLISH_13
-		;;
-		
-		62)
-			bishbosh_connection_read_PUBLISH_14
-		;;
-		
-		63)
-			bishbosh_connection_read_PUBLISH_15
-		;;
-		
-		64)
-			bishbosh_connection_read_PUBACK
-		;;
-		
-		80)
-			bishbosh_connection_read_PUBREC
-		;;
-		
-		98)
-			bishbosh_connection_read_PUBREL
-		;;
-		
-		112)
-			bishbosh_connection_read_PUBCOMP
-		;;
-		
-		130)
-			# Only valid for servers
-			bishbosh_connection_read_SUBSCRIBE
-		;;
-		
-		144)
-			# Only valid for clients
-			bishbosh_connection_read_SUBACK
-		;;
-		
-		162)
-			# Only valid for servers
-			bishbosh_connection_read_UNSUBSCRIBE
-		;;
-		
-		176)
-			# Only valid for clients
-			bishbosh_connection_read_UNSUBACK
-		;;
-		
-		192)
-			# Only valid for servers
-			bishbosh_connection_read_controlpacket_PINGREQ
-		;;
-		
-		208)
-			# Only valid for clients
-			bishbosh_connection_read_controlpacket_PINGRESP
-		;;
-		
-		224)
-			# Only valid for servers
-			bishbosh_connection_read_controlpacket_DISCONNECT
-		;;
-		
-		*)
-			bishbosh_connection_read_controlpacket_invalid
-		;;
-	esac
+	$bishbosh_connection_read_byte_blocking controlPacketByte
+	$bishbosh_connection_read_byte_blocking firstRemainingLengthByte
 }
 
 bishbosh_connection_read_protocolError()

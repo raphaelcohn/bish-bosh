@@ -1,0 +1,14 @@
+bishbosh_connection_read_byte_forkOd_blocking()
+{
+	# The UNQUOTED $(...) capture ensures all leading whitespace and linefeeds are removed (a problem when using od, esp on Mac OS X)
+	# dd is used because
+	# - both od and hexdump buffer input and output when used in a pipeline
+	# - hexdump truncates the FIFO (eg if -n 1 to read one byte, but 4 bytes are in the FIFO, it discards the remaining 3 bytes)
+	local byte=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | od -A n -t u1)
+	eval "$1=$byte"
+}
+
+bishbosh_connection_read_byte_forkOd_nonBlocking()
+{
+	XXX: TODO
+}

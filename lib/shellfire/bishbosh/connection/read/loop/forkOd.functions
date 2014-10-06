@@ -1,0 +1,7 @@
+core_usesIn bishbosh/connection/read/byte forkOd
+core_usesIn bishbosh/connection/read/loop forkHexdump
+
+bishbosh_connection_read_loop_forkOd()
+{
+	bishbosh_connection_read_loop_forkHexdump "$@"
+}

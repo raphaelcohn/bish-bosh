@@ -1,8 +1,6 @@
-#!/usr/bin/env ksh
+#!/usr/bin/env dash
 
-# mksh works without change; pdksh and ksh93u don't
-
-fact=77
+# pdksh and ksh93u to test for local variable support, etc
 
 _program()
 {
@@ -11,20 +9,6 @@ _program()
 	
 	bishbosh()
 	{
-		echo $fact
-		local fact=33
-		echo $fact
-		helloworld()
-		{
-			local fact="44"
-			echo $fact
-		}
-		echo $fact
-		helloworld
-		echo $fact
-		
-		echo $core_init_preferredShell
-		exit 50
 		bishbosh_client_plaintext_find
 		
 		local TMP_FOLDER

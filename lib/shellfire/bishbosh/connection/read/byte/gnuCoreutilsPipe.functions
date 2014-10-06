@@ -1,0 +1,13 @@
+# Works in any shell
+bishbosh_connection_read_byte_gnuCoreutilsPipe_blocking()
+{
+	IFS=' ' read -r $1
+}
+
+# Works in bash, mksh, BusyBox ash, zsh
+# Does not work in dash, pdksh
+# In zsh -t 0 is a non-blocking read, whilst in bash no attempt to read is made
+bishbosh_connection_read_byte_gnuCoreutilsPipe_nonBlocking()
+{
+	IFS=' ' read -r -t 0.01 $1
+}

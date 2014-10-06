@@ -1,5 +1,0 @@
-_bishbosh_connection_read_byte_whenUsingGnuCoreutilsPipeWithTimeout()
-{
-	# -t 0 differs between bash and zsh; with the later, it performs as a non-blocking read
-	IFS=' ' read -r -t 0.01 $1
-}

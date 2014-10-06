@@ -1,0 +1,10 @@
+bishbosh_connection_read_byte_forkHexdump_blocking()
+{
+	local byte=$(dd bs=1 count=1 if="$bishbosh_connection_fromServerFifo" 2>/dev/null | hexdump -e '"%u"')
+	eval "$1=$byte"
+}
+
+bishbosh_connection_read_byte_forkHexdump_nonBlocking()
+{
+	XXX: TODO
+}

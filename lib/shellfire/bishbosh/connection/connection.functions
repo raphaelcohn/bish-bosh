@@ -1,6 +1,7 @@
 core_usesIn bishbosh/connection read write
 core_usesIn core children
 
+# Also stdbuf, GNU od are best
 core_dependency_requires '*' mkfifo
 core_dependency_oneOf '*' hexdump od
 bishbosh_connection_makeClientConnection()
@@ -49,8 +50,7 @@ bishbosh_connection_makeClientConnection()
 	bishbosh_connection_clientPid=$!
 	core_children_killOnExit $bishbosh_connection_clientPid
 	
-	bishbosh_connection_read_initialiseStrategy
-	bishbosh_connection_read_controlpacket_initialiseHandlers "no"
+	bishbosh_connection_read_initialise 'no'
 	bishbosh_connection_write_currentLockFolderPath=''
 	bishbosh_connection_continue=true
 	

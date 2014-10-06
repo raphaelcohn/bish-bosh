@@ -1,0 +1,11 @@
+core_usesIn bishbosh/connection/read/byte forkHexdump
+
+bishbosh_connection_read_loop_forkHexdump()
+{
+	bishbosh_connection_read_expectingCONNACK
+	
+	while $bishbosh_connection_continue
+	do
+		bishbosh_connection_body
+	done
+}
