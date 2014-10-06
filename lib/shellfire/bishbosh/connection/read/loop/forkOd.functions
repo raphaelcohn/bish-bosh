@@ -1,6 +1,14 @@
 core_usesIn bishbosh/connection/read/byte forkOd
 core_usesIn bishbosh/connection/read/loop forkHexdump
 
+bishbosh_connection_read_loop_forkOd_initialise()
+{
+	if core_compatibility_whichNoOutput od; then
+		return 0
+	fi
+	return 1
+}
+
 bishbosh_connection_read_loop_forkOd()
 {
 	bishbosh_connection_read_loop_forkHexdump "$@"

@@ -1,5 +1,5 @@
 core_usesIn bishbosh/connection/read controlpacket
-core_usesIn bishbosh/connection/read/loop gnuCoreutilsPipe forkHexdump forkOd
+core_usesIn bishbosh/connection/read/loop pipeStdbufOd forkHexdump forkOd
 
 core_dependency_requires '*' grep
 bishbosh_connection_read_initialise()
@@ -8,40 +8,24 @@ bishbosh_connection_read_initialise()
 	
 	bishbosh_connection_read_controlpacket_initialise "$isServer"
 	
-	# Homebrew
-	if core_compatibility_whichNoOutput gstdbuf; then
-		if core_compatibility_whichNoOutput god; then
-			bishbosh_connection_read_loop=bishbosh_connection_read_loop_gnuCoreutilsPipe_Homebrew
-			bishbosh_connection_read_byte_blocking=bishbosh_connection_read_byte_gnuCoreutilsPipe_blocking
-			bishbosh_connection_read_byte_nonBlocking=bishbosh_connection_read_byte_gnuCoreutilsPipe_nonBlocking
-			return 0
-		fi
-	fi
-	
-	if core_compatibility_whichNoOutput stdbuf; then
-		if core_compatibility_whichNoOutput od; then
-			if od --version 2>&1 | grep -q '^od (GNU coreutils) '; then
-				bishbosh_connection_read_loop=bishbosh_connection_read_loop_gnuCoreutilsPipe_regular
-				bishbosh_connection_read_byte_blocking=bishbosh_connection_read_byte_gnuCoreutilsPipe_blocking
-				bishbosh_connection_read_byte_nonBlocking=bishbosh_connection_read_byte_gnuCoreutilsPipe_nonBlocking
+	local loopKind
+	local initialiseFunction
+	local exitCode
+	set +e
+		for initialiseFunction in \
+			bishbosh_connection_read_loop_pipeStdbufOd_initialise \
+			bishbosh_connection_read_loop_forkHexdump_initialise \
+			bishbosh_connection_read_loop_forkOd_initialise
+		do
+			initialiseFunction=bishbosh_connection_read_loop_${loopKind}_initialise
+			if $initialiseFunction; then
+				bishbosh_connection_read_loop=bishbosh_connection_read_loop_${loopKind}
+				bishbosh_connection_read_byte_blocking=_bishbosh_connection_read_byte_${loopKind}
+				bishbosh_connection_read_byte_nonBlocking=_bishbosh_connection_read_byte_${loopKind}_nonBlocking
 				return 0
 			fi
-		fi
-	fi
-	
-	if core_compatibility_whichNoOutput hexdump; then
-		bishbosh_connection_read_loop=bishbosh_connection_read_loop_gnuCoreutilsPipe_forkHexdump
-		bishbosh_connection_read_byte_blocking=_bishbosh_connection_read_byte_forkHexdump
-		bishbosh_connection_read_byte_nonBlocking=_bishbosh_connection_read_byte_forkHexdump_nonBlocking
-		return 0
-	fi
-	
-	if core_compatibility_whichNoOutput od; then
-		bishbosh_connection_read_loop=bishbosh_connection_read_loop_gnuCoreutilsPipe_forkOd
-		bishbosh_connection_read_byte_blocking=_bishbosh_connection_read_byte_forkOd
-		bishbosh_connection_read_byte_nonBlocking=_bishbosh_connection_read_byte_forkOd_nonBlocking
-		return 0
-	fi
+		done
+	set -e
 	
 	core_exitError "Can not find either hexdump or od on the path"
 }

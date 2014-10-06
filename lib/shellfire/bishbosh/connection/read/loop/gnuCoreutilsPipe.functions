@@ -1,6 +1,18 @@
-core_usesIn bishbosh/connection/read/byte gnuCoreutilsPipe
+core_usesIn bishbosh/connection/read/byte pipeStdbufOd
 
-_bishbosh_connection_read_loop_gnuCoreutilsPipe_internal()
+bishbosh_connection_read_loop_pipeStdbufOd_initialise()
+{
+	if core_compatibility_whichNoOutput stdbuf; then
+		if core_compatibility_whichNoOutput od; then
+			if od --version 2>&1 | grep -q '^od (GNU coreutils) '; then
+				return 0
+			fi
+		fi
+	fi
+	return 1
+}
+
+_bishbosh_connection_read_loop_pipeStdbufOd_internal()
 {
 	local pathToStdbuf="$1"
 	local pathToOd="$2"
@@ -20,12 +32,7 @@ _bishbosh_connection_read_loop_gnuCoreutilsPipe_internal()
 	} <"$bishbosh_connection_fromHexConversionFifo"
 }
 
-bishbosh_connection_read_loop_gnuCoreutilsPipe_Homebrew()
+bishbosh_connection_read_loop_pipeStdbufOd()
 {
-	_bishbosh_connection_read_loop_gnuCoreutilsPipe_internal gstdbuf god
-}
-
-bishbosh_connection_read_loop_gnuCoreutilsPipe_regular()
-{
-	_bishbosh_connection_read_loop_gnuCoreutilsPipe_internal stdbuf od
+	_bishbosh_connection_read_loop_pipeStdbufOd_internal stdbuf od
 }

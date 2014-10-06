@@ -1,5 +1,13 @@
 core_usesIn bishbosh/connection/read/byte forkHexdump
 
+bishbosh_connection_read_loop_forkHexdump_initialise()
+{
+	if core_compatibility_whichNoOutput hexdump; then
+		return 0
+	fi
+	return 1
+}
+
 bishbosh_connection_read_loop_forkHexdump()
 {
 	bishbosh_connection_read_expectingCONNACK
