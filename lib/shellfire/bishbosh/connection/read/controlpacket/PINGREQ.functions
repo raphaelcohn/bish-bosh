@@ -2,5 +2,5 @@ bishbosh_connection_read_controlpacket_PINGREQ()
 {
 	bishbosh_connection_read_protocolErrorIfRemainingLengthNotZero PINGREQ
 	
-	core_TODO "Immediately write a PINGRESP"
+	bishbosh_connection_handler_PINGREQ
 }

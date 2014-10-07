@@ -57,5 +57,5 @@ bishbosh_connection_read_controlpacket_CONNACK()
 		
 	esac
 	
-	core_TODO "Now call a handler function, so a client can do session stuff if they want (will require fixes to the connection failure logic)"
+	bishbosh_connection_handler_CONNACK
 }

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env dash
 
 _program()
 {
@@ -33,13 +33,14 @@ _program_entrypoint='bishbosh'
 
 _program_commandLine_parseInitialise()
 {
-	_program_default_backends="bash,ncat,nc6,nc,socat,tcpclient"
+	_program_default_backends='bash,ncat,nc6,nc,socat,tcpclient'
 	if core_variable_isSet bishbosh_backends; then
 		_program_configurationSet_bishbosh_backends=0
 	else
 		_program_configurationSet_bishbosh_backends=1
 	fi
-	
+
+	_program_default_server='localhost'
 	if core_variable_isSet bishbosh_server; then
 		_program_configurationSet_bishbosh_server=0
 	else
@@ -121,8 +122,10 @@ _program_commandLine_parseInitialise()
 
 _program_commandLine_helpMessage()
 {
-	_program_commandLine_helpMessage_usage="[OPTION]..."
-	_program_commandLine_helpMessage_description="Connects to MQTT servers."
+	_program_commandLine_helpMessage_usage="[OPTION]... -- [SCRIPTLETS]..."
+	_program_commandLine_helpMessage_description="Connects to a MQTT server and runs SCRIPTLETS.
+May be used as a command interpreter in scripts starting #!/usr/bin/env ${_program_name}
+if on the PATH."
 	_program_commandLine_helpMessage_options="
   -b, --backends A,B,...    Backend types A,B,... to talk to MQTT server.
                             Ordered in preference order. First found used.
@@ -138,48 +141,54 @@ _program_commandLine_helpMessage()
   -c, --clients-path PATH   PATH to folder containing Client Ids.
                             Contains a transmit folder, etc.
                             Defaults to '${_program_default_clientsPath}'.
+  -i, --client-id ID        Specifies the client id to use. Any SCRITPLETS
+                            found at --clients-path PATH/ID will then be
+                            sourced. SCRIPTLETS control how a connection is
+                            managed. ${_program_name} does not generate
+                            random IDs, although a SCRIPTLET or configuration
+                            is entitled to.
       --read-latency MSECS  Maximum time to block for when reading in
                             MSECS milliseconds between 0 and 1000
-							inclusive. 0 has different meaning in
+                            inclusive. 0 has different meaning in
                             'zsh' as opposed to 'bash'.
                             Defaults to '${_program_default_readLatency}'.
                             Default varies by detected shell.
       --transport TRANSPT   TRANSPT of inet, inet4, inet6 or unix.
-	                        Defaults to 'inet'
+                            Defaults to 'inet'
       --source-address S    Bind to network interface with address S.
-	                        Should not normally be needed.
-							Turn off with ''.
-							Off by default.
+                            Should not normally be needed.
+                            Turn off with ''.
+                            Off by default.
                             Does not work with transport 'unix'.
       --source-port PORT    Send packets from port PORT.
-	                        Should not normally be needed.
-							Turn off with ''.
-							Off by default.
+                            Should not normally be needed.
+                            Turn off with ''.
+                            Off by default.
                             Does not work with transport 'unix'.
       --proxy-kind KIND     Use a particular KIND of proxy.
                             KIND is 'SOCKS4','SOCKS5','HTTP' or 'none'.
-	                        Turn off with 'none'.
-							Off by default.
+                            Turn off with 'none'.
+                            Off by default.
                             Does not work with transport 'unix'.
                             Not all backends support this option.
       --proxy-server HOST   Connect to a proxy on a given HOST.
-	                        Turn off with ''.
-							Off by default.
+                            Turn off with ''.
+                            Off by default.
                             Does not work with transport 'unix'.
       --proxy-port PORT     Connect to a proxy on a given PORT.
-	                        Turn off with ''.
-							Off by default, but defaults to 1080
-							for SOCKS4 / SOCKS5 and 3128 for HTTP.
+                            Turn off with ''.
+                            Off by default, but defaults to 1080
+                            for SOCKS4 / SOCKS5 and 3128 for HTTP.
                             Does not work with transport 'unix'.
       --proxy-username UN   Connect to a proxy using username UN.
-	                        Turn off with ''.
-							Off by default.
+                            Turn off with ''.
+                            Off by default.
                             Does not work with transport 'unix'.
                             Insecure - use configuration instead.
                             Not all proxies support this option.
       --proxy-password PWD  Connect to a proxy using password PWD.
-	                        Turn off with ''.
-							Off by default.
+                            Turn off with ''.
+                            Off by default.
                             Does not work with transport 'unix'.
                             Insecure - use configuration instead.
                             Not all proxies support this option."
@@ -189,6 +198,7 @@ _program_commandLine_helpMessage()
   bishbosh_server         Equivalent to --server
   bishbosh_port           Equivalent to --port
   bishbosh_clientsPath    Equivalent to --clients-path
+  bishbosh_clientId       Equivalent to --client-id
   bishbosh_readLatency    Equivalent to --read-latency
   bishbosh_transport      Equivalent to --transport
   bishbosh_sourceAddress  Equivalent to --source-address
@@ -198,9 +208,38 @@ _program_commandLine_helpMessage()
   bishbosh_proxyPort      Equivalent to --proxy-port
   bishbosh_proxyUsername  Equivalent to --proxy-username
   bishbosh_proxyPassword  Equivalent to --proxy-password
+  
+These may also be set in the SCRIPTLETS.
+
+The following values may be used in SCRIPTLETS to manage a connection:-
+  bishbosh_connection_write_CONNECT_cleanSession  Mandatory Boolean
+  bishbosh_connection_write_CONNECT_willTopic     Optional  String
+  bishbosh_connection_write_CONNECT_willMessage   Optional  Binary*
+  bishbosh_connection_write_CONNECT_willQos       Optional  0 - 2
+  bishbosh_connection_write_CONNECT_willRetain    Optional
+  bishbosh_connection_write_CONNECT_keepAlive     Mandatory 0 - 65535
+  bishbosh_connection_write_CONNECT_clientId      Optional  (overrides)
+  bishbosh_connection_write_CONNECT_username      Optional  String
+  bishbosh_connection_write_CONNECT_password      Optional  Binary*
+
+  * ASCII NUL (0x00) is not supported.
+  
+The following handlers may be specified as functions in SCRIPTLETS, with
+the globals specified:-
+  bishbosh_connection_handler_CONNACK()  bishbosh_connection_sessionPresent
+  bishbosh_connection_handler_SUBACK()*   
+  bishbosh_connection_handler_UNSUBACK()*
+  bishbosh_connection_handler_PUBLISH()
+  bishbosh_connection_handler_PUBACK()
+  bishbosh_connection_handler_PUBREC()
+  bishbosh_connection_handler_PINGRESP()
+  bishbosh_connection_handler_beforeWrite()
+  bishbosh_connection_handler_afterWrite()
+  
+  * Called multiple times, once for each subscription
 "
 	_program_commandLine_helpMessage_examples="
-  ${_program_name} --server localhost --backends ncMacOSX,bash
+  ${_program_name} --server localhost --backends ncMacOSX,bash --client-id 12 -- /path/to/connection-details.scriptlet
 "
 }
 
@@ -221,6 +260,10 @@ _program_commandLine_optionExists()
 		;;
 		
 		c|clients-path)
+			echo 'yes-argumented'
+		;;
+		
+		i|client-id)
 			echo 'yes-argumented'
 		;;
 		
@@ -296,6 +339,10 @@ _program_commandLine_processOptionWithArgument()
 			bishbosh_clientsPath="$optionValue"
 		;;
 		
+		i|client-id)
+			bishbosh_clientId="$optionValue"
+		;;
+		
 		read-latency)
 			bishbosh_validate_readLatency $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_readLatency="$optionValue"
@@ -346,18 +393,18 @@ _program_commandLine_processOptionWithArgument()
 			_program_configurationSet_bishbosh_proxyPassword=0
 		;;
 		
-		*)
-			echo 'no'
-		;;
-		
 	esac
 }
 
 _program_commandLine_handleNonOptions()
 {
-	if [ $# -ne 0 ]; then
-		core_commandLine_exitBadCommandLine "Non-options are not supported"
-	fi
+	local scriptletFilePath
+	local suitableForSourceBuiltInFilePath
+	for scriptletFilePath in "$@"
+	do
+		suitableForSourceBuiltInFilePath=$(core_compatibility_dirname "$scriptletFilePath")/"$(core_compatibility_basename "$scriptletFilePath")"
+		. "$suitableForSourceBuiltInFilePath" || core_exitError "Could not source SCRIPTLET '$scriptletFilePath'"
+	done
 }
 
 _program_commandLine_validateTransportSetting()
@@ -433,9 +480,6 @@ _program_commandLine_validateProxySetting()
 	fi
 }
 
-# TODO: There is no current way of overriding username / password (setting to blank is not the same as no password or no username)
-# TODO: Need a secure way to receive password in separate configuration - --proxy-password-file
-# TODO: https://stackoverflow.com/questions/53497/regular-expression-that-matches-valid-inet6-addresses
 _program_commandLine_validate()
 {
 	local categoryProxyKind
@@ -481,7 +525,9 @@ _program_commandLine_validate()
 	fi
 	
 	if core_variable_isUnset bishbosh_server; then
-		core_exitError $core_commandLine_exitCode_USAGE "The option '--server' must be specified"
+		bishbosh_server="$_program_default_server"
+	else
+		bishbosh_validate_address $core_commandLine_exitCode_CONFIG 'configuration setting' "bishbosh_server" "$bishbosh_server"
 	fi
 	
 	if core_variable_isUnset bishbosh_clientsPath; then
@@ -489,6 +535,10 @@ _program_commandLine_validate()
 		core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--clients-path' "$bishbosh_clientsPath"
 	else
 		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_clientsPath' "$bishbosh_clientsPath"
+	fi
+	
+	if core_variable_isUnset bishbosh_clientId; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The option -i,--client-id or configuration setting bishbosh_clientId isn't set, either in configuration or SCRIPTLETS"
 	fi
 	
 	if core_variable_isUnset bishbosh_readLatency; then

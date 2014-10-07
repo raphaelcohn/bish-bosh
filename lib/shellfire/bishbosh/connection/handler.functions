@@ -1,0 +1,34 @@
+bishbosh_connection_handler_CONNACK()
+{
+	core_message DEBUG "bishbosh_connection_handler_CONNACK(bishbosh_connection_sessionPresent=$bishbosh_connection_sessionPresent)"
+}
+
+bishbosh_connection_handler_SUBACK()
+{
+	core_message DEBUG "bishbosh_connection_handler_SUBACK(packetIdentifier=$packetIdentifier, returnCode=$returnCode)"
+}
+
+bishbosh_connection_handler_UNSUBACK()
+{
+	core_message DEBUG "bishbosh_connection_handler_UNSUBACK(packetIdentifier=$packetIdentifier)"
+}
+
+bishbosh_connection_handler_PUBLISH()
+{
+	core_message DEBUG "bishbosh_connection_handler_PUBLISH(packetIdentifier=$packetIdentifier)"
+}
+
+bishbosh_connection_handler_PINGRESP()
+{
+	core_message DEBUG "bishbosh_connection_handler_PINGRESP()"
+}
+
+bishbosh_connection_handler_beforeWrite()
+{
+	core_message DEBUG "bishbosh_connection_handler_beforeWrite()"
+}
+
+bishbosh_connection_handler_afterWrite()
+{
+	core_message DEBUG "bishbosh_connection_handler_afterWrite()"
+}

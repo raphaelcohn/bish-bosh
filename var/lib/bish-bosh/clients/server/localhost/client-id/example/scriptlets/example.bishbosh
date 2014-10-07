@@ -1,0 +1,118 @@
+#!/usr/bin/env bish-bosh
+# If being used as above (ie executable, chmod +x CONNACK.bishbosh), then we can also set configuration, eg
+#bishbosh_server=test.mosquitto.org
+#bishbosh_clientId=12
+
+#bishbosh_connection_write_CONNECT_cleanSession=1
+#bishbosh_connection_write_CONNECT_willTopic='/some/topic'
+#bishbosh_connection_write_CONNECT_willMessage='goodbye'
+#bishbosh_connection_write_CONNECT_willQos=0
+#bishbosh_connection_write_CONNECT_willRetain=0
+#bishbosh_connection_write_CONNECT_keepAlive=0
+#bishbosh_connection_write_CONNECT_username=user
+#bishbosh_connection_write_CONNECT_password=password
+
+bishbosh_connection_handler_CONNACK()
+{	
+	# Set up some subscriptions... another implementation could read from a standard file
+	bishbosh_connection_write_SUBSCRIBE_packetIdentifier=$(bishbosh_connection_nextPacketIdentifier)
+	bishbosh_connection_write_SUBSCRIBE \
+		'/topic/1' 0 \
+		'/topic/2' 0
+	
+	# Make sure we're not subscribed to what we don't want here, too - again, we could read from a file
+	bishbosh_connection_write_UNSUBSCRIBE_packetIdentifier=$(bishbosh_connection_nextPacketIdentifier)
+	bishbosh_connection_write_UNSUBSCRIBE \
+		'/topic/not/wanted' \
+		'/and/also/topic/not/wanted'
+	
+	# Publish an arbitary message
+	#bishbosh_connection_write_PUBLISH_dup=0
+	#bishbosh_connection_write_PUBLISH_qos=0
+	#bishbosh_connection_write_PUBLISH_packetIdentifier=$(bishbosh_connection_nextPacketIdentifier)
+	#bishbosh_connection_write_PUBLISH_retain=no
+	bishbosh_connection_write_PUBLISH_topicName='a/b'
+	bishbosh_connection_write_PUBLISH_message='X'
+	#bishbosh_connection_write_PUBLISH_messageFilePath="example.message"
+	#bishbosh_connection_write_PUBLISH_messageUnlinkFile=no
+	#bishbosh_connection_write_PUBLISH_resetArguments=yes
+	bishbosh_connection_write_PUBLISH
+}
+
+bishbosh_connection_handler_SUBACK()
+{
+	{
+		printf 'bishbosh_connection_handler_SUBACK()\n' 
+		printf '%s\n' "handler variables"
+		printf 'packetIdentifier=%s\n' "$packetIdentifier"
+		printf 'returnCode=%s\n' "$returnCode"
+		printf '\n'
+	} 1>&2
+}
+
+bishbosh_connection_handler_UNSUBACK()
+{
+	{
+		printf 'bishbosh_connection_handler_UNSUBACK()\n' 
+		printf '%s\n' "handler variables"
+		printf 'packetIdentifier=%s\n' "$packetIdentifier"
+		printf '\n'
+	} 1>&2
+}
+bishbosh_connection_handler_PUBLISH()
+{
+	{
+		printf 'bishbosh_connection_handler_PUBLISH()\n' 
+		printf '%s\n' "handler variables"
+		printf '\n'
+	} 1>&2
+}
+
+bishbosh_connection_handler_PUBACK()
+{
+	{
+		printf 'bishbosh_connection_handler_PUBACK()\n' 
+		printf '%s\n' "handler variables"
+		printf '\n'
+	} 1>&2
+}
+
+bishbosh_connection_handler_PUBREC()
+{
+	{
+		printf 'bishbosh_connection_handler_PUBREC()\n' 
+		printf '%s\n' "handler variables"
+		printf '\n'
+	} 1>&2
+}
+
+bishbosh_connection_handler_PINGRESP()
+{
+	{
+		printf 'bishbosh_connection_handler_PINGRESP()\n' 
+		printf '%s\n' "handler variables"
+		printf '\n'
+	} 1>&2
+}
+
+# stdout goes to the server
+# lives in a different shell to read handlers
+bishbosh_connection_handler_beforeWrite()
+{
+	{
+		printf 'bishbosh_connection_handler_beforeWrite()\n' 
+		printf '%s\n' "handler variables"
+		printf '\n'
+	} 1>&2
+}
+
+# stdout goes to the server
+# lives in a different shell to read handlers
+bishbosh_connection_handler_afterWrite()
+{
+	{
+		printf 'bishbosh_connection_handler_afterWrite()\n' 
+		printf '%s\n' "handler variables"
+		printf '\n'
+	} 1>&2
+}

@@ -1,0 +1,21 @@
+bishbosh_connection_read_controlpacket_SUBACK()
+{
+	bishbosh_connection_read_protocolErrorIfRemainingLengthNot SUBACK 3
+	
+	local packetIdentifier
+	bishbosh_connection_readPacketIdentifier
+	
+	local returnCode
+	$bishbosh_connection_read_byte_blocking returnCode
+	case $returnCode in
+		
+		0|1|2|128)
+			bishbosh_connection_handler_SUBACK
+		;;
+		
+		*)
+			bishbosh_connection_read_protocolError SUBACK "Received reserved returnCode code of $returnCode"
+		;;
+		
+	esac
+}

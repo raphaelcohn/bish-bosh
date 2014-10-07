@@ -15,7 +15,7 @@ _bishbosh_connection_write_CONNACK_validateArguments()
 		connectReturnCode=0
 	else
 		core_validate_isUnsignedInteger "$bishbosh_connection_write_CONNACK_connectReturnCode"
-		if [ $bishbosh_connection_write_CONNECT_keepAlive -gt 5 ]; then
+		if [ $bishbosh_connection_write_CONNACK_connectReturnCode -gt 5 ]; then
 			core_exitError $core_commandLine_exitCode_CONFIG "The argument '$bishbosh_connection_write_CONNACK_connectReturnCode' should be between 0 and 5, not '$bishbosh_connection_write_CONNACK_connectReturnCode'"
 		fi
 		connectReturnCode=$bishbosh_connection_write_CONNACK_connectReturnCode

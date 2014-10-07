@@ -1,4 +1,4 @@
-core_usesIn bishbosh/connection read write
+core_usesIn bishbosh/connection read write handler
 core_usesIn core children
 
 core_dependency_requires '*' mkdir
@@ -18,6 +18,7 @@ bishbosh_connection_mkfifo()
 	mkfifo -m 0600 "$fifoPath"
 	printf '%s' "$fifoPath"
 }
+
 
 bishbosh_connection_obtainConnectionId()
 {
@@ -44,10 +45,10 @@ bishbosh_connection_obtainLockForClientId()
 	}
 	core_trap_addOnCleanUp _bishbosh_connection_write_removeClientIdLockFolder
 	local lockPath="$bishbosh_connection_clientsPathForClientId"/lock
-	if mkdir -m 0755 -p "$bishbosh_connection_clientIdLockFolderPath"; then
+	if mkdir -m 0755 -p "$lockPath"; then
 		bishbosh_connection_clientIdLockFolderPath="$lockPath"
 	else
-		core_exitError "Another process has lock'd Client Id '$bishbosh_connection_write_CONNECT_keepAlive' at path '$bishbosh_connection_clientIdLockFolderPath'"
+		core_exitError "Another process has lock'd Client Id '$bishbosh_connection_write_CONNECT_clientId' at path '$bishbosh_connection_clientIdLockFolderPath'"
 	fi
 }
 
@@ -79,7 +80,7 @@ bishbosh_connection_createFifos()
 
 bishbosh_connection_startConnectingProgramInBackground()
 {
-	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_connection_temporaryFolder/$bishbosh_connection_id'"
+	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_temporaryFolderPath/$bishbosh_connection_id'"
 	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
 	bishbosh_connection_clientPid=$!
 	core_children_killOnExit $bishbosh_connection_clientPid
@@ -91,20 +92,20 @@ bishbosh_connection_makeClientConnection()
 {
 	bishbosh_connection_lockLatencyFractionalSeconds=0.001
 	
-	bishbosh_connection_write_CONNECT_cleanSession=1
-	#bishbosh_connection_write_CONNECT_willTopic='/some/topic'
-	#bishbosh_connection_write_CONNECT_willMessage='goodbye'
-	#bishbosh_connection_write_CONNECT_willQos=0
-	#bishbosh_connection_write_CONNECT_willRetain=0
-	bishbosh_connection_write_CONNECT_keepAlive=0
-	bishbosh_connection_write_CONNECT_clientId=clientid
-	#bishbosh_connection_write_CONNECT_username=user
-	#bishbosh_connection_write_CONNECT_password=password
-
+	if core_variable_isUnset bishbosh_connection_write_CONNECT_clientId; then
+		bishbosh_connection_write_CONNECT_clientId=clientid
+	fi
+	
+	if core_variable_isUnset bishbosh_connection_nextPacketIdentifier; then
+		bishbosh_connection_nextPacketIdentifier=0
+	fi
+	
 	bishbosh_connection_obtainConnectionId
 	
 	bishbosh_connection_clientsPathForClientId="$bishbosh_clientsPath"/server/"$bishbosh_server"/client-id/"$bishbosh_connection_write_CONNECT_clientId"
 	mkdir -m 0755 -p "$bishbosh_connection_clientsPathForClientId"
+	
+	bishbosh_connection_receivedMessagesPath="$bishbosh_connection_clientsPathForClientId"/received-messages
 	
 	bishbosh_connection_obtainLockForClientId
 	bishbosh_connection_cleanUpLockFiles
@@ -115,31 +116,51 @@ bishbosh_connection_makeClientConnection()
 	bishbosh_connection_continue=true
 	bishbosh_connection_startConnectingProgramInBackground
 	
-	# ? Are signals inheritited?
-	# http://mywiki.wooledge.org/BashFAQ/027?highlight=%28USR1%29
-	_bishbosh_connection_exitCleanly()
-	{
-		bishbosh_connection_continue=false
-	}
-	core_trap_addHandler USR2 _bishbosh_connection_exitCleanly
-	
-	bishbosh_connection_write_CONNECT >"$bishbosh_connection_toServerFifo"
-
-	$bishbosh_connection_read_byte_blocking controlPacketByte
-	if [ $controlPacketByte -ne 32 ]; then
-		bishbosh_connection_read_controlpacket_invalid
+	# http://mywiki.wooledge.org/SignalTrap
+	# http://www.cons.org/cracauer/sigint.html
+	# Assumes we are in a blocking read
+	trap '' INT TERM
+	if [ "$core_init_preferredShell" = 'bash' ]; then
+		trap 'bishbosh_connection_continue=false; return 0' INT TERM
+	else
+		# tested on dash
+		trap 'bishbosh_connection_continue=false' INT TERM
 	fi
-	$bishbosh_connection_read_byte_blocking firstRemainingLengthByte
-	bishbosh_connection_read_controlpacket_CONNACK
 	
-	bishbosh_connection_writeLoop &
-	bishbosh_connection_writeLoopPid=$!
-	core_children_killOnExit $bishbosh_connection_writeLoopPid
 	
 	$bishbosh_connection_read_loop
+}
+
+bishbosh_connection_nextPacketIdentifier()
+{
+	printf '%s' $bishbosh_connection_nextPacketIdentifier
+	if [ $bishbosh_connection_nextPacketIdentifier -eq 65535 ]; then
+		bishbosh_connection_nextPacketIdentifier=0
+	else
+		bishbosh_connection_nextPacketIdentifier=$((bishbosh_connection_nextPacketIdentifier+1))
+	fi
+}
+
+bishbosh_connection_readPacketIdentifier()
+{
+	local packetIdentifierMsb
+	local packetIdentifierLsb
+	$bishbosh_connection_read_byte_blocking packetIdentifierMsb
+	$bishbosh_connection_read_byte_blocking packetIdentifierLsb
 	
-	# Tell the write loop to die by   kill -USR2 $bishbosh_connection_writeLoopPid
-	# Also, it'd be nice to communicate with it without having to create files
+	packetIdentifier=$((packetIdentifierMsb * 256 + packetIdentifierLsb))
+	
+	# We should now 'free' the packet identifier...
+}
+
+bishbosh_connection_readLength()
+{
+	local lengthMsb
+	local lengthLsb
+	$bishbosh_connection_read_byte_blocking lengthMsb
+	$bishbosh_connection_read_byte_blocking lengthLsb
+	
+	length=$((lengthMsb * 256 + lengthLsb))
 }
 
 core_dependency_requires '*' rmdir mkdir sleep rm
@@ -160,6 +181,8 @@ bishbosh_connection_writeLoop()
 		{
 			while $bishbosh_connection_continue
 			do
+				bishbosh_connection_handler_beforeWrite
+				
 				set +f
 				for controlFilePath in *.control
 				do
@@ -179,16 +202,16 @@ bishbosh_connection_writeLoop()
 					done
 		
 					. ./"$controlFilePath"
-					
-					bishbosh_connection_write_PUBLISH
-					bishbosh_connection_write_PUBLISH_resetArguments
+					#bishbosh_connection_write_PUBLISH
 					
 					rm -f "$controlFilePath"
 					rmdir "$bishbosh_connection_writeLoopControlLockFolderPath"
 					bishbosh_connection_writeLoopControlLockFolderPath=''
 				done
+				set -f
+			
+				bishbosh_connection_handler_afterWrite
 			done
-			set -f
 			
 			bishbosh_connection_write_DISCONNECT
 			

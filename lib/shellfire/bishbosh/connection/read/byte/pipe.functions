@@ -3,11 +3,13 @@ bishbosh_connection_read_byte_pipe_initialise()
 	# TMOUT works for ksh93, bash
 	# But works only for auto-logout in pdksh and Busybox's Ash
 		
-	if [ $bishbosh_connection_supportsNonBlockingRead -eq 0 ]; then
+	if [ $bishbosh_connection_supportsNonBlockingRead -eq 1 ]; then
 
 		bishbosh_connection_read_byte_pipe_blocking()
 		{
+			set +e
 			IFS=' ' read -r -u 5 $1
+			set -e
 		}
 		
 		# ksh93, bash, mksh, zsh, Busybox's Ash
@@ -15,7 +17,6 @@ bishbosh_connection_read_byte_pipe_initialise()
 		{
 			set +e
 			IFS=' ' read -r -u 5 -t $bishbosh_readLatency_inFractionalSeconds $1
-			local exitCode=$?
 			set -e
 		}
 		
@@ -27,7 +28,9 @@ bishbosh_connection_read_byte_pipe_initialise()
 		
 		bishbosh_connection_read_byte_pipe_blocking()
 		{
+			set +e
 			IFS=' ' read -r $1 <&5
+			set -e
 		}
 		
 		bishbosh_connection_read_byte_pipe_nonBlocking()

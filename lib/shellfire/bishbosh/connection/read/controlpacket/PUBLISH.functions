@@ -1,0 +1,96 @@
+bishbosh_connection_read_PUBLISH_0()
+{	
+	local retain=0
+	local qos=0
+	local dup=0
+	_bishbosh_connection_read_PUBLISH
+}
+
+bishbosh_connection_read_PUBLISH_1()
+{
+	local retain=1
+	local qos=0
+	local dup=0
+	_bishbosh_connection_read_PUBLISH
+}
+
+bishbosh_connection_read_PUBLISH_2()
+{
+	local retain=0
+	local qos=1
+	local dup=0
+	_bishbosh_connection_read_PUBLISH
+}
+
+bishbosh_connection_read_PUBLISH_3()
+{
+	local retain=1
+	local qos=1
+	local dup=0
+	_bishbosh_connection_read_PUBLISH
+}
+
+bishbosh_connection_read_PUBLISH_4()
+{
+	local retain=0
+	local qos=2
+	local dup=0
+	_bishbosh_connection_read_PUBLISH
+}
+
+bishbosh_connection_read_PUBLISH_5()
+{
+	local retain=1
+	local qos=2
+	local dup=0
+	_bishbosh_connection_read_PUBLISH
+}
+
+bishbosh_connection_read_PUBLISH_10()
+{
+	local retain=0
+	local qos=1
+	local dup=1
+	_bishbosh_connection_read_PUBLISH
+}
+
+bishbosh_connection_read_PUBLISH_11()
+{
+	local retain=1
+	local qos=1
+	local dup=1
+	_bishbosh_connection_read_PUBLISH
+}
+
+bishbosh_connection_read_PUBLISH_12()
+{
+	local retain=0
+	local qos=2
+	local dup=1
+	_bishbosh_connection_read_PUBLISH
+}
+
+bishbosh_connection_read_PUBLISH_13()
+{
+	local retain=1
+	local qos=2
+	local dup=1
+	_bishbosh_connection_read_PUBLISH
+}
+
+_bishbosh_connection_read_PUBLISH()
+{
+	read topic name
+	local length
+	bishbosh_connection_readLength
+	local topicLength=$length
+	
+	local packetIdentifier
+	bishbosh_connection_readPacketIdentifier
+	
+	local messageLength=$((remainingLength-2-topicLength-2))
+	
+	# We really ought to dump the message to a file
+	
+	bishbosh_connection_handler_PUBLISH
+}

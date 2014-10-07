@@ -1,0 +1,2 @@
+# We can symlink this folder to /tmp/some/path if desired to speed up message receipt
+!.gitignore

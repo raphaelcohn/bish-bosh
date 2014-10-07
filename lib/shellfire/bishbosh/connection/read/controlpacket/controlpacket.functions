@@ -50,7 +50,7 @@ bishbosh_connection_read_controlpacket_handle()
 		
 		16)
 			# Only valid for servers
-			bishbosh_connection_read_CONNECT
+			bishbosh_connection_read_controlpacket_CONNECT
 		;;
 		
 		32)
@@ -59,103 +59,82 @@ bishbosh_connection_read_controlpacket_handle()
 		;;
 		
 		48)
-			bishbosh_connection_read_PUBLISH_0
+			bishbosh_connection_read_controlpacket_PUBLISH_0
 		;;
 		
 		49)
-			bishbosh_connection_read_PUBLISH_1
+			bishbosh_connection_read_controlpacket_PUBLISH_1
 		;;
 		
 		50)
-			bishbosh_connection_read_PUBLISH_2
+			bishbosh_connection_read_controlpacket_PUBLISH_2
 		;;
 		
 		51)
-			bishbosh_connection_read_PUBLISH_3
+			bishbosh_connection_read_controlpacket_PUBLISH_3
 		;;
 		
 		52)
-			bishbosh_connection_read_PUBLISH_4
+			bishbosh_connection_read_controlpacket_PUBLISH_4
 		;;
 		
 		53)
-			bishbosh_connection_read_PUBLISH_5
+			bishbosh_connection_read_controlpacket_PUBLISH_5
 		;;
 		
-		54)
-			bishbosh_connection_read_PUBLISH_6
-		;;
-		
-		55)
-			bishbosh_connection_read_PUBLISH_7
-		;;
-		
-		56)
-			bishbosh_connection_read_PUBLISH_8
-		;;
-		
-		57)
-			bishbosh_connection_read_PUBLISH_9
-		;;
-		
+		# bishbosh_connection_read_PUBLISH_6, bishbosh_connection_read_controlpacket_PUBLISH_7, bishbosh_connection_read_controlpacket_PUBLISH_14, bishbosh_connection_read_controlpacket_PUBLISH_15 all have invalid QoS values and so aren't listed
+		# bishbosh_connection_read_PUBLISH_8 and bishbosh_connection_read_PUBLISH_9 have QoS of 0 and DUP of 1 which isn't allowed
+				
 		58)
-			bishbosh_connection_read_PUBLISH_10
+			bishbosh_connection_read_controlpacket_PUBLISH_10
 		;;
 		
 		59)
-			bishbosh_connection_read_PUBLISH_11
+			bishbosh_connection_read_controlpacket_PUBLISH_11
 		;;
 		
 		60)
-			bishbosh_connection_read_PUBLISH_12
+			bishbosh_connection_read_controlpacket_PUBLISH_12
 		;;
 		
 		61)
-			bishbosh_connection_read_PUBLISH_13
-		;;
-		
-		62)
-			bishbosh_connection_read_PUBLISH_14
-		;;
-		
-		63)
-			bishbosh_connection_read_PUBLISH_15
+			bishbosh_connection_read_controlpacket_PUBLISH_13
 		;;
 		
 		64)
-			bishbosh_connection_read_PUBACK
+			bishbosh_connection_read_controlpacket_PUBACK
 		;;
 		
 		80)
-			bishbosh_connection_read_PUBREC
+			bishbosh_connection_read_controlpacket_PUBREC
 		;;
 		
 		98)
-			bishbosh_connection_read_PUBREL
+			bishbosh_connection_read_controlpacket_PUBREL
 		;;
 		
 		112)
-			bishbosh_connection_read_PUBCOMP
+			bishbosh_connection_read_controlpacket_PUBCOMP
 		;;
 		
 		130)
 			# Only valid for servers
-			bishbosh_connection_read_SUBSCRIBE
+			bishbosh_connection_read_controlpacket_SUBSCRIBE
 		;;
 		
 		144)
 			# Only valid for clients
-			bishbosh_connection_read_SUBACK
+			bishbosh_connection_read_controlpacket_SUBACK
 		;;
 		
 		162)
 			# Only valid for servers
-			bishbosh_connection_read_UNSUBSCRIBE
+			bishbosh_connection_read_controlpacket_UNSUBSCRIBE
 		;;
 		
 		176)
 			# Only valid for clients
-			bishbosh_connection_read_UNSUBACK
+			bishbosh_connection_read_controlpacket_UNSUBACK
 		;;
 		
 		192)

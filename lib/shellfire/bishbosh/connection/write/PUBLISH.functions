@@ -85,9 +85,19 @@ _bishbosh_connection_write_PUBLISH_validateArguments()
 	else
 		messageUnlinkFile=0
 	fi
+	
+	if core_variable_isSet bishbosh_connection_write_PUBLISH_resetArguments; then
+		if core_variable_isTrue bishbosh_connection_write_PUBLISH_resetArguments; then
+			resetArguments=1
+		else
+			resetArguments=0
+		fi
+	else
+		resetArguments=1
+	fi
 }
 
-bishbosh_connection_write_PUBLISH_resetArguments()
+_bishbosh_connection_write_PUBLISH_resetArguments()
 {
 	unset bishbosh_connection_write_PUBLISH_dup
 	unset bishbosh_connection_write_PUBLISH_qos
@@ -99,7 +109,6 @@ bishbosh_connection_write_PUBLISH_resetArguments()
 	unset bishbosh_connection_write_PUBLISH_messageUnlinkFile
 }
 
-core_dependency_requires '*' cat
 bishbosh_connection_write_PUBLISH()
 {
 	local remainingLength=0
@@ -114,10 +123,8 @@ bishbosh_connection_write_PUBLISH()
 	local messageFilePath
 	local message_fieldLength
 	local messageUnlinkFile
+	local resetArguments
 	_bishbosh_connection_write_PUBLISH_validateArguments
-	
-	core_TODO "We don't check for wildcards, ASCII NULL, or empty topic names"
-	core_TODO "We don't handle binary payloads containing ASCII NULL, and we really ought to also allow the use of files (with offsets, sizes, too, for firmware transmissions) and base64 encoded data"
 	
 	bishbosh_connection_write_byte "$controlPacketTypeAndFlags"
 	bishbosh_connection_write_remainingLength $remainingLength
@@ -138,5 +145,9 @@ bishbosh_connection_write_PUBLISH()
 	
 	if [ $messageUnlinkFile -eq 1 ]; then
 		rm -f $messageUnlinkFile || core_exitError $core_commandLine_exitCode_IOERR "Can not unlink message file '$messageUnlinkFile'."
+	fi
+	
+	if [ $resetArguments -eq 1 ]; then
+		_bishbosh_connection_write_PUBLISH_resetArguments
 	fi
 }
