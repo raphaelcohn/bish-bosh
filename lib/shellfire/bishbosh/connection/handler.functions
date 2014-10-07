@@ -15,7 +15,8 @@ bishbosh_connection_handler_UNSUBACK()
 
 bishbosh_connection_handler_PUBLISH()
 {
-	core_message DEBUG "bishbosh_connection_handler_PUBLISH(packetIdentifier=$packetIdentifier)"
+	core_message DEBUG "bishbosh_connection_handler_PUBLISH(retain=$retain, qos=$qos, dup=$dup, topicLength=$topicLength, topicName=$topicName, packetIdentifier=$packetIdentifier, messageLength=$messageLength, messageFilePath=$messageFilePath)"
+	rm "$messageFilePath"
 }
 
 bishbosh_connection_handler_PINGRESP()

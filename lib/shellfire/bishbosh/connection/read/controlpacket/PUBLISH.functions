@@ -85,12 +85,34 @@ _bishbosh_connection_read_PUBLISH()
 	bishbosh_connection_readLength
 	local topicLength=$length
 	
+	local topicName
+	local remainingTopicLength=$messageLength
+	local byte
+	while [ $remainingTopicLength -ne 0 ]
+	do
+		$bishbosh_connection_read_byte_blocking byte
+		topicName="${topicName}$(bishbosh_connection_write_byte $byte)"
+		remainingTopicLength=$((remainingTopicLength-1))
+	done
+	
 	local packetIdentifier
 	bishbosh_connection_readPacketIdentifier
 	
 	local messageLength=$((remainingLength-2-topicLength-2))
 	
 	# We really ought to dump the message to a file
+	local messageFilePath="$bishbosh_connection_receivedMessagesPath"/$bishbosh_connection_nextReceivedMessageNumber
+	bishbosh_connection_nextReceivedMessageNumber=$((bishbosh_connection_nextReceivedMessageNumber+1))
+	
+	local remainingMessageLength=$messageLength
+	local byte
+	while [ $remainingMessageLength -ne 0 ]
+	do
+		# Could we pipe stdin to dd and use a dirty converter?
+		$bishbosh_connection_read_byte_blocking byte
+		bishbosh_connection_write_byte $byte
+		remainingMessageLength=$((remainingMessageLength-1))
+	done >"$messageFilePath"
 	
 	bishbosh_connection_handler_PUBLISH
 }

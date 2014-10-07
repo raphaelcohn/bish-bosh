@@ -28,7 +28,7 @@ bishbosh_validate_address()
 	local value="$4"
 }
 
-bishbosh_validate_readLatency()
+bishbosh_validate_latency()
 {
 	local code=$1
 	local category="$2"

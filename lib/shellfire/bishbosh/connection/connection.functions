@@ -2,7 +2,7 @@ core_usesIn bishbosh/connection read write handler
 core_usesIn core children
 
 core_dependency_requires '*' mkdir
-bishbosh_connection_mkdir()
+bishbosh_connection_mkdirTemporary()
 {
 	local folderName="$1"
 	local folderPath="$bishbosh_temporaryFolderPath"/"$bishbosh_connection_id"/"$folderName"
@@ -10,8 +10,17 @@ bishbosh_connection_mkdir()
 	printf '%s' "$folderPath"
 }
 
+core_dependency_requires '*' mkdir
+bishbosh_connection_mkdirPermanent()
+{
+	local folderName="$1"
+	local folderPath="$bishbosh_connection_clientsPathForClientId"/"$folderName"
+	mkdir -m 0755 -p "$folderPath"
+	printf '%s' "$folderPath"
+}
+
 core_dependency_requires '*' mkfifo
-bishbosh_connection_mkfifo()
+bishbosh_connection_mkfifoTemporary()
 {
 	local fifoName="$1"
 	local fifoPath="$bishbosh_connection_fifoFolder"/"$fifoName"
@@ -19,6 +28,71 @@ bishbosh_connection_mkfifo()
 	printf '%s' "$fifoPath"
 }
 
+bishbosh_connection_defaultEssentialPaths()
+{
+	if core_variable_isUnset bishbosh_connection_clientsPathForClientId; then
+		bishbosh_connection_clientsPathForClientId="$bishbosh_clientsPath"/server/"$bishbosh_server"/client-id/"$clientId"
+	fi
+	
+	mkdir -m 0755 -p "$bishbosh_connection_clientsPathForClientId" 2>/dev/null || core_exitError "Could not create bishbosh_connection_clientsPathForClientId '$bishbosh_connection_clientsPathForClientId'"
+	bishbosh_connection_obtainLockForClientId
+
+	if core_variable_isUnset bishbosh_connection_clientIdScriptletsPath; then
+		bishbosh_connection_clientIdScriptletsPath="$bishbosh_connection_clientsPathForClientId"/scriptlets
+	fi
+}
+
+bishbosh_connection_sourcePerClientIdScriptlets()
+{
+	local scriptletFilePath
+	if [ ! -d "$bishbosh_connection_clientIdScriptletsPath" ]; then
+		return 0
+	fi
+	pushd "$bishbosh_connection_clientIdScriptletsPath"
+		set +f
+			for scriptletFilePath in *.scriptlet
+			do
+				set -f
+				if ! core_path_isReadableNonEmptyFilePath "$scriptletFilePath"; then
+					if [ "$scriptletFilePath" = '*.control' ]; then
+						continue
+					fi
+					core_exitError "The client-id scriptlet file '$scriptletFilePath' is not a readable, non-empty file"
+				fi
+				
+				. ./"$scriptletFilePath"
+			done
+		set -f
+	popd
+}
+	
+bishbosh_connection_defaultEssentialState()
+{
+	if core_variable_isUnset bishbosh_connection_receivedMessagesPath; then
+		bishbosh_connection_receivedMessagesPath="$(bishbosh_connection_mkdirPermanent received-messages)"
+	fi
+	
+	if core_variable_isUnset bishbosh_connection_transmitPath; then
+		bishbosh_connection_transmitPath="$(bishbosh_connection_mkdirPermanent transmit)"
+	fi
+	
+	if core_variable_isUnset bishbosh_connection_statePath; then
+		bishbosh_connection_statePath="$(bishbosh_connection_mkdirPermanent state)"
+	fi
+	
+	# Allows a logical client-id change to occur
+	if core_variable_isUnset bishbosh_connection_write_CONNECT_clientId; then
+		bishbosh_connection_write_CONNECT_clientId=clientid
+	fi
+	
+	# Should have come from state
+	if core_variable_isUnset bishbosh_connection_nextPacketIdentifier; then
+		bishbosh_connection_nextPacketIdentifier=0
+	fi
+	if core_variable_isUnset bishbosh_connection_nextReceivedMessageNumber; then
+		bishbosh_connection_nextReceivedMessageNumber=0
+	fi
+}
 
 bishbosh_connection_obtainConnectionId()
 {
@@ -53,17 +127,17 @@ bishbosh_connection_obtainLockForClientId()
 }
 
 core_dependency_requires '*' rm
-bishbosh_connection_cleanUpLockFiles()
+bishbosh_connection_cleanUpTransmitLockFiles()
 {
-	pushd "$bishbosh_connection_clientsPathForClientId"
+	pushd "$bishbosh_connection_transmitPath"
 		
-		local controlFileLockFolderPath
+		local transmitFileLockFolderPath
 
 		set +f
-		for controlFileLockFolderPath in *.lock
+		for transmitFileLockFolderPath in *.lock
 		do
 			set -f
-			rm -rf "$controlFileLockFolderPath"
+			rm -rf "$transmitFileLockFolderPath"
 		done
 		set +f
 		
@@ -72,10 +146,10 @@ bishbosh_connection_cleanUpLockFiles()
 
 bishbosh_connection_createFifos()
 {
-	bishbosh_connection_fifoFolder="$(bishbosh_connection_mkdir fifo)"
-	bishbosh_connection_toServerFifo="$(bishbosh_connection_mkfifo to-server)"
-	bishbosh_connection_fromServerFifo="$(bishbosh_connection_mkfifo from-server)"
-	bishbosh_connection_fromHexConversionFifo="$(bishbosh_connection_mkfifo from-hex-conversion)"
+	bishbosh_connection_fifoFolder="$(bishbosh_connection_mkdirTemporary fifo)"
+	bishbosh_connection_toServerFifo="$(bishbosh_connection_mkfifoTemporary to-server)"
+	bishbosh_connection_fromServerFifo="$(bishbosh_connection_mkfifoTemporary from-server)"
+	bishbosh_connection_fromHexConversionFifo="$(bishbosh_connection_mkfifoTemporary from-hex-conversion)"
 }
 
 bishbosh_connection_startConnectingProgramInBackground()
@@ -90,26 +164,13 @@ core_dependency_requires '*' mkdir
 core_dependency_oneOf '*' hexdump od
 bishbosh_connection_makeClientConnection()
 {
-	bishbosh_connection_lockLatencyFractionalSeconds=0.001
+	bishbosh_connection_defaultEssentialPaths
 	
-	if core_variable_isUnset bishbosh_connection_write_CONNECT_clientId; then
-		bishbosh_connection_write_CONNECT_clientId=clientid
-	fi
-	
-	if core_variable_isUnset bishbosh_connection_nextPacketIdentifier; then
-		bishbosh_connection_nextPacketIdentifier=0
-	fi
+	bishbosh_connection_sourcePerClientIdScriptlets
+	bishbosh_connection_defaultEssentialState
 	
 	bishbosh_connection_obtainConnectionId
-	
-	bishbosh_connection_clientsPathForClientId="$bishbosh_clientsPath"/server/"$bishbosh_server"/client-id/"$bishbosh_connection_write_CONNECT_clientId"
-	mkdir -m 0755 -p "$bishbosh_connection_clientsPathForClientId"
-	
-	bishbosh_connection_receivedMessagesPath="$bishbosh_connection_clientsPathForClientId"/received-messages
-	
-	bishbosh_connection_obtainLockForClientId
-	bishbosh_connection_cleanUpLockFiles
-	
+	bishbosh_connection_cleanUpTransmitLockFiles
 	bishbosh_connection_createFifos
 	
 	bishbosh_connection_read_initialise 'no'
@@ -175,8 +236,8 @@ bishbosh_connection_writeLoop()
 	}
 	core_trap_addOnCleanUp _bishbosh_connection_writeLoopRemoveControlLockFolder
 
-	local controlFilePath
-	pushd "$bishbosh_connection_clientsPathForClientId"
+	local transmitFilePath
+	pushd "$bishbosh_connection_transmitPath"
 		
 		{
 			while $bishbosh_connection_continue
@@ -184,27 +245,27 @@ bishbosh_connection_writeLoop()
 				bishbosh_connection_handler_beforeWrite
 				
 				set +f
-				for controlFilePath in *.control
+				for transmitFilePath in *.transmit
 				do
 					set -f
-					if ! core_path_isReadableNonEmptyFilePath "$controlFilePath"; then
-						if [ "$controlFilePath" = '*.control' ]; then
+					if ! core_path_isReadableNonEmptyFilePath "$transmitFilePath"; then
+						if [ "$transmitFilePath" = '*.control' ]; then
 							continue
 						fi
-						core_exitError "The control file '$controlFilePath' is not a readable, non-empty file"
+						core_exitError "The control file '$transmitFilePath' is not a readable, non-empty file"
 					fi
 		
-					bishbosh_connection_writeLoopControlLockFolderPath="$controlFilePath".lock
+					bishbosh_connection_writeLoopControlLockFolderPath="$transmitFilePath".lock
 					# Atomic, according to http://wiki.bash-hackers.org/howto/mutex
 					while ! mkdir "$bishbosh_connection_writeLoopControlLockFolderPath" 2>/dev/null
 					do
-						sleep $bishbosh_connection_lockLatencyFractionalSeconds
+						sleep $bishbosh_lockLatency_inFractionalSeconds
 					done
 		
-					. ./"$controlFilePath"
+					. ./"$transmitFilePath"
 					#bishbosh_connection_write_PUBLISH
 					
-					rm -f "$controlFilePath"
+					rm -f "$transmitFilePath"
 					rmdir "$bishbosh_connection_writeLoopControlLockFolderPath"
 					bishbosh_connection_writeLoopControlLockFolderPath=''
 				done
