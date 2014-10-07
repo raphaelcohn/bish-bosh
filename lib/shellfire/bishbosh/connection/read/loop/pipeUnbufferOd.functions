@@ -1,5 +1,7 @@
 core_usesIn bishbosh/connection/read/loop pipe
 
+# Could we use script -t 0?
+
 # eg https://unix.stackexchange.com/questions/25372/turn-off-buffering-in-pipe?rq=1
 # Only works GNU od, as we need the width option
 # Problematic, as does not exit if nc could not make a connection

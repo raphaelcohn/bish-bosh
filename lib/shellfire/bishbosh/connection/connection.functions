@@ -1,6 +1,16 @@
 core_usesIn bishbosh/connection read write
 core_usesIn core children
 
+core_dependency_requires '*' mkdir
+bishbosh_connection_mkdir()
+{
+	local folderName="$1"
+	local folderPath="$bishbosh_temporaryFolderPath"/"$bishbosh_connection_id"/"$folderName"
+	mkdir -m 0700 -p "$folderPath"
+	printf '%s' "$folderPath"
+}
+
+core_dependency_requires '*' mkfifo
 bishbosh_connection_mkfifo()
 {
 	local fifoName="$1"
@@ -9,12 +19,8 @@ bishbosh_connection_mkfifo()
 	printf '%s' "$fifoPath"
 }
 
-# Also stdbuf, GNU od are best
-core_dependency_requires '*' mkfifo
-core_dependency_oneOf '*' hexdump od
-bishbosh_connection_makeClientConnection()
+bishbosh_connection_obtainConnectionId()
 {
-	# bishbosh_connection_id can't be local, otherwise not found in the signal handler...
 	if core_variable_isUnset bishbosh_connection_nextId; then
 		bishbosh_connection_id=0
 		bishbosh_connection_nextId=0
@@ -22,102 +28,171 @@ bishbosh_connection_makeClientConnection()
 		bishbosh_connection_id=$bishbosh_connection_nextId
 		bishbosh_connection_nextId=$((bishbosh_connection_nextId + 1))
 	fi
-	
-	local bishbosh_connection_temporaryFolder="$bishbosh_temporaryFolderPath"/"$bishbosh_connection_id"
-	mkdir -m 0700 -p "$bishbosh_connection_temporaryFolder"
-	
-	local bishbosh_connection_write_CONNECT_cleanSession=1
-	#local bishbosh_connection_write_CONNECT_willTopic='/some/topic'
-	#local bishbosh_connection_write_CONNECT_willMessage='goodbye'
-	#local bishbosh_connection_write_CONNECT_willQos=0
-	#local bishbosh_connection_write_CONNECT_willRetain=0
-	local bishbosh_connection_write_CONNECT_keepAlive=0
-	local bishbosh_connection_write_CONNECT_clientId=clientid
-	#bishbosh_connection_write_CONNECT_username=user
-	#bishbosh_connection_write_CONNECT_password=password
-	
-	local bishbosh_connection_fifoFolder="$bishbosh_connection_temporaryFolder"/fifo
-	mkdir -m 0700 -p "$bishbosh_connection_fifoFolder"
-	
-	local bishbosh_connection_toServerFifo="$(bishbosh_connection_mkfifo to-server)"
-	local bishbosh_connection_fromServerFifo="$(bishbosh_connection_mkfifo from-server)"
-	local bishbosh_connection_fromHexConversionFifo="$(bishbosh_connection_mkfifo from-hex-conversion)"
-	
-	bishbosh_connection_clientsPathForClientId="$bishbosh_clientsPath"/"$bishbosh_connection_write_CONNECT_clientId"
-	mkdir -m 0755 -p "$bishbosh_connection_clientsPathForClientId"
-	
-	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_connection_temporaryFolder'"
-		
-	# (Goes into background internally)
-	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
-	bishbosh_connection_clientPid=$!
-	core_children_killOnExit $bishbosh_connection_clientPid
-	
-	bishbosh_connection_read_initialise 'no'
-	bishbosh_connection_write_currentLockFolderPath=''
-	bishbosh_connection_continue=true
-	
+}
+
+core_dependency_requires '*' rmdir mkdir
+bishbosh_connection_obtainLockForClientId()
+{
+	# This odd-looking design minimises the time between obtaining the lock (mkdir) and enabling clean-up on exit
+	# (there's a slight chance that receiving SIGTERM will leave the lock behind if received between mkdir and assignment of the variable bishbosh_connection_clientIdLockFolderPath)
+	bishbosh_connection_clientIdLockFolderPath=''
+	_bishbosh_connection_write_removeClientIdLockFolder()
 	{
-		bishbosh_connection_write_CONNECT
-		core_trap_addOnCleanUp _bishbosh_connection_write_removeCurrentLockFolder
-		
-		local controlPacketByte
-		local firstRemainingLengthByte
-		$bishbosh_connection_read_loop
-		
-		bishbosh_connection_write_DISCONNECT
-				
-	} >"$bishbosh_connection_toServerFifo"
+		if [ -n "$bishbosh_connection_clientIdLockFolderPath" ]; then
+			rmdir "$bishbosh_connection_clientIdLockFolderPath" 1>/dev/null 2>/dev/null || true
+		fi
+	}
+	core_trap_addOnCleanUp _bishbosh_connection_write_removeClientIdLockFolder
+	local lockPath="$bishbosh_connection_clientsPathForClientId"/lock
+	if mkdir -m 0755 -p "$bishbosh_connection_clientIdLockFolderPath"; then
+		bishbosh_connection_clientIdLockFolderPath="$lockPath"
+	else
+		core_exitError "Another process has lock'd Client Id '$bishbosh_connection_write_CONNECT_keepAlive' at path '$bishbosh_connection_clientIdLockFolderPath'"
+	fi
 }
 
-bishbosh_connection_body()
+core_dependency_requires '*' rm
+bishbosh_connection_cleanUpLockFiles()
 {
-	bishbosh_connection_write_messages
-	
-	# Not needed if (a) not sent any subscribes [SUBACKS] / active subscriptions are known and (b) not expecting any PUBACKS and (c) not reading messages
-	# Ideally, though, we want to time-out here. That's a little tricky unless using bash with its timeout option
-	# it may be possible using signals, though: http://unix.ittoolbox.com/groups/technical-functional/shellscript-l/timeout-in-ksh-517595
-	bishbosh_connection_read_firstTwoBytesOfControlPacket
-	bishbosh_connection_read_handleControlPacket
-	
-	bishbosh_connection_continue=false
-}
-
-bishbosh_connection_write_messages()
-{
-	local messageToTransmitMetaDataFilePath
 	pushd "$bishbosh_connection_clientsPathForClientId"
+		
+		local controlFileLockFolderPath
+
 		set +f
-		for messageToTransmitMetaDataFilePath in *.message
+		for controlFileLockFolderPath in *.lock
 		do
 			set -f
-			if ! core_path_isReadableNonEmptyFilePath "$messageToTransmitMetaDataFilePath"; then
-				if [ "$messageToTransmitMetaDataFilePath" = '*.message' ]; then
-					continue
-				fi
-				core_message WARN "$messageToTransmitMetaDataFilePath" 
-				continue
-			fi
-			
-			bishbosh_connection_write_PUBLISH_resetArguments
-			bishbosh_connection_write_currentLockFolderPath="$messageToTransmitMetaDataFilePath".lock
-			# Atomic, according to http://wiki.bash-hackers.org/howto/mutex
-			while ! mkdir "$bishbosh_connection_write_currentLockFolderPath"
-			do
-				sleep 0.01
-			done
-			
-			source ./"$messageToTransmitMetaDataFilePath"
-			bishbosh_connection_write_PUBLISH
-			rm -f "$messageToTransmitMetaDataFilePath"
-			rmdir "$bishbosh_connection_write_currentLockFolderPath"
-			bishbosh_connection_write_currentLockFolderPath=''
+			rm -rf "$controlFileLockFolderPath"
 		done
-		set -f
+		set +f
+		
 	popd
 }
 
-_bishbosh_connection_write_removeCurrentLockFolder()
+bishbosh_connection_createFifos()
 {
-	rmdir "$bishbosh_connection_write_currentLockFolderPath" 1>/dev/null 2>/dev/null || true
+	bishbosh_connection_fifoFolder="$(bishbosh_connection_mkdir fifo)"
+	bishbosh_connection_toServerFifo="$(bishbosh_connection_mkfifo to-server)"
+	bishbosh_connection_fromServerFifo="$(bishbosh_connection_mkfifo from-server)"
+	bishbosh_connection_fromHexConversionFifo="$(bishbosh_connection_mkfifo from-hex-conversion)"
+}
+
+bishbosh_connection_startConnectingProgramInBackground()
+{
+	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_connection_temporaryFolder/$bishbosh_connection_id'"
+	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
+	bishbosh_connection_clientPid=$!
+	core_children_killOnExit $bishbosh_connection_clientPid
+}
+
+core_dependency_requires '*' mkdir
+core_dependency_oneOf '*' hexdump od
+bishbosh_connection_makeClientConnection()
+{
+	bishbosh_connection_lockLatencyFractionalSeconds=0.001
+	
+	bishbosh_connection_write_CONNECT_cleanSession=1
+	#bishbosh_connection_write_CONNECT_willTopic='/some/topic'
+	#bishbosh_connection_write_CONNECT_willMessage='goodbye'
+	#bishbosh_connection_write_CONNECT_willQos=0
+	#bishbosh_connection_write_CONNECT_willRetain=0
+	bishbosh_connection_write_CONNECT_keepAlive=0
+	bishbosh_connection_write_CONNECT_clientId=clientid
+	#bishbosh_connection_write_CONNECT_username=user
+	#bishbosh_connection_write_CONNECT_password=password
+
+	bishbosh_connection_obtainConnectionId
+	
+	bishbosh_connection_clientsPathForClientId="$bishbosh_clientsPath"/server/"$bishbosh_server"/client-id/"$bishbosh_connection_write_CONNECT_clientId"
+	mkdir -m 0755 -p "$bishbosh_connection_clientsPathForClientId"
+	
+	bishbosh_connection_obtainLockForClientId
+	bishbosh_connection_cleanUpLockFiles
+	
+	bishbosh_connection_createFifos
+	
+	bishbosh_connection_read_initialise 'no'
+	bishbosh_connection_continue=true
+	bishbosh_connection_startConnectingProgramInBackground
+	
+	# ? Are signals inheritited?
+	# http://mywiki.wooledge.org/BashFAQ/027?highlight=%28USR1%29
+	_bishbosh_connection_exitCleanly()
+	{
+		bishbosh_connection_continue=false
+	}
+	core_trap_addHandler USR2 _bishbosh_connection_exitCleanly
+	
+	bishbosh_connection_write_CONNECT >"$bishbosh_connection_toServerFifo"
+
+	$bishbosh_connection_read_byte_blocking controlPacketByte
+	if [ $controlPacketByte -ne 32 ]; then
+		bishbosh_connection_read_controlpacket_invalid
+	fi
+	$bishbosh_connection_read_byte_blocking firstRemainingLengthByte
+	bishbosh_connection_read_controlpacket_CONNACK
+	
+	bishbosh_connection_writeLoop &
+	bishbosh_connection_writeLoopPid=$!
+	core_children_killOnExit $bishbosh_connection_writeLoopPid
+	
+	$bishbosh_connection_read_loop
+	
+	# Tell the write loop to die by   kill -USR2 $bishbosh_connection_writeLoopPid
+	# Also, it'd be nice to communicate with it without having to create files
+}
+
+core_dependency_requires '*' rmdir mkdir sleep rm
+bishbosh_connection_writeLoop()
+{
+	bishbosh_connection_writeLoopControlLockFolderPath=''
+	_bishbosh_connection_writeLoopRemoveControlLockFolder()
+	{
+		if [ -n "$bishbosh_connection_writeLoopControlLockFolderPath" ]; then
+			rmdir "$bishbosh_connection_writeLoopControlLockFolderPath" 1>/dev/null 2>/dev/null || true
+		fi
+	}
+	core_trap_addOnCleanUp _bishbosh_connection_writeLoopRemoveControlLockFolder
+
+	local controlFilePath
+	pushd "$bishbosh_connection_clientsPathForClientId"
+		
+		{
+			while $bishbosh_connection_continue
+			do
+				set +f
+				for controlFilePath in *.control
+				do
+					set -f
+					if ! core_path_isReadableNonEmptyFilePath "$controlFilePath"; then
+						if [ "$controlFilePath" = '*.control' ]; then
+							continue
+						fi
+						core_exitError "The control file '$controlFilePath' is not a readable, non-empty file"
+					fi
+		
+					bishbosh_connection_writeLoopControlLockFolderPath="$controlFilePath".lock
+					# Atomic, according to http://wiki.bash-hackers.org/howto/mutex
+					while ! mkdir "$bishbosh_connection_writeLoopControlLockFolderPath" 2>/dev/null
+					do
+						sleep $bishbosh_connection_lockLatencyFractionalSeconds
+					done
+		
+					. ./"$controlFilePath"
+					
+					bishbosh_connection_write_PUBLISH
+					bishbosh_connection_write_PUBLISH_resetArguments
+					
+					rm -f "$controlFilePath"
+					rmdir "$bishbosh_connection_writeLoopControlLockFolderPath"
+					bishbosh_connection_writeLoopControlLockFolderPath=''
+				done
+			done
+			set -f
+			
+			bishbosh_connection_write_DISCONNECT
+			
+		} >"$bishbosh_connection_toServerFifo"
+		
+	popd
 }

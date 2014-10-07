@@ -1,0 +1,7 @@
+_bishbosh_connection_read_loop_fork()
+{
+	while $bishbosh_connection_continue
+	do
+		bishbosh_connection_read_body
+	done
+}

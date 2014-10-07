@@ -1,5 +1,5 @@
 core_usesIn bishbosh/connection/read/byte forkOd
-core_usesIn bishbosh/connection/read/loop forkHexdump
+core_usesIn bishbosh/connection/read/loop fork
 
 bishbosh_connection_read_loop_forkOd_check()
 {
@@ -17,5 +17,5 @@ bishbosh_connection_read_loop_forkOd_initialise()
 
 bishbosh_connection_read_loop_forkOd()
 {
-	bishbosh_connection_read_loop_forkHexdump "$@"
+	_bishbosh_connection_read_loop_fork "$@"
 }

@@ -46,7 +46,7 @@ bishbosh_connection_read_initialise()
 	local loopKind
 	local checkFunction
 	local initialiseFunction
-	for loopKind in pipeStdbufOd pipeStdbufOdHomebrew pipeUnbufferOd forkHexdump forkOd
+	for loopKind in pipeStdbufOd pipeStdbufOdHomebrew pipeUnbufferHexdump pipeUnbufferOd forkHexdump forkOd
 	do
 		checkFunction=bishbosh_connection_read_loop_${loopKind}_check
 		if $checkFunction; then
@@ -60,19 +60,19 @@ bishbosh_connection_read_initialise()
 	core_exitError "Can not find either hexdump or od on the path"
 }
 
-bishbosh_connection_read_expectingCONNACK()
+bishbosh_connection_read_body()
 {
-	bishbosh_connection_read_firstTwoBytesOfControlPacket
-	if [ $controlPacketByte -ne 32 ]; then
-		bishbosh_connection_read_controlpacket_invalid
-	fi
-	bishbosh_connection_read_controlpacket_CONNACK
-}
+	# Unfortunately, there's very little we can do about the blocking read
+	# - running 'timeout' (whether GNU coreutils, busybox or toybx) can cause an incomplete read
+	# - running a complex subshell in the background and signalling it can cause an incomplete read, too
+	# The only really, really effective way to do non-blocking reads would be to write to a file, not a FIFO, and
+	# Check if file size has changed, then
+	# Every 128Kb or somesuch, restart the entire loop to truncate the file
 
-bishbosh_connection_read_firstTwoBytesOfControlPacket()
-{
 	$bishbosh_connection_read_byte_blocking controlPacketByte
 	$bishbosh_connection_read_byte_blocking firstRemainingLengthByte
+	core_TODO "Handle longer messages"
+	bishbosh_connection_read_controlpacket_handle
 }
 
 bishbosh_connection_read_protocolError()

@@ -1,4 +1,6 @@
 core_usesIn bishbosh/connection/read/byte pipe
+core_usesIn bishbosh/connection/read/loop fork
+
 _bishbosh_connection_read_loop_pipe_initialise()
 {
 	bishbosh_connection_read_byte_pipe_initialise
@@ -9,18 +11,10 @@ _bishbosh_connection_read_loop_pipe_initialise()
 
 _bishbosh_connection_read_loop_pipe()
 {
-	"$@" "$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo" &
+	"$@" >"$bishbosh_connection_fromHexConversionFifo" &
 	core_children_killOnExit $!
 	
-	{
-		bishbosh_connection_read_expectingCONNACK
-		
-		while $bishbosh_connection_continue
-		do
-			bishbosh_connection_body
-		done
-		
-	} 5<"$bishbosh_connection_fromHexConversionFifo"
+	_bishbosh_connection_read_loop_fork 5<"$bishbosh_connection_fromHexConversionFifo"
 }
 
 _bishbosh_connection_read_loop_pipe_stdbufGnuOd()
@@ -29,16 +23,7 @@ _bishbosh_connection_read_loop_pipe_stdbufGnuOd()
 	local pathToOd="$2"
 	shift 2
 	
-	_bishbosh_connection_read_loop_pipe "$pathToStdbuf" -i 0 -o 0 -e 0 "$pathToOd" -A n -t u1 -w1 -v
-}
-
-_bishbosh_connection_read_loop_pipe_unbufferGnuOd()
-{
-	local pathToUnbuffer="$1"
-	local pathToOd="$2"
-	shift 2
-	
-	_bishbosh_connection_read_loop_pipe "$pathToUnbuffer" "$pathToOd" -A n -t u1 -w1 -v
+	_bishbosh_connection_read_loop_pipe "$pathToStdbuf" -i 0 -o 0 -e 0 "$pathToOd" -A n -t u1 -w1 -v "$bishbosh_connection_fromServerFifo"
 }
 
 _bishbosh_connection_read_loop_pipe_unbufferHexdump()
@@ -47,5 +32,14 @@ _bishbosh_connection_read_loop_pipe_unbufferHexdump()
 	local pathToHexdump="$2"
 	shift 2
 	
-	_bishbosh_connection_read_loop_pipe "$pathToUnbuffer" "$pathToHexdump" -v -e '"%u\d"'
+	_bishbosh_connection_read_loop_pipe "$pathToUnbuffer" "$pathToHexdump" -v -e '"%u\d"' "$bishbosh_connection_fromServerFifo"
+}
+
+_bishbosh_connection_read_loop_pipe_unbufferGnuOd()
+{
+	local pathToUnbuffer="$1"
+	local pathToOd="$2"
+	shift 2
+	
+	_bishbosh_connection_read_loop_pipe "$pathToUnbuffer" "$pathToOd" -A n -t u1 -w1 -v "$bishbosh_connection_fromServerFifo"
 }

@@ -4,29 +4,35 @@ bishbosh_connection_read_byte_pipe_initialise()
 	# But works only for auto-logout in pdksh and Busybox's Ash
 		
 	if [ $bishbosh_connection_supportsNonBlockingRead -eq 0 ]; then
-		
-		# ksh93, bash, mksh, zsh, Busybox's Ash
-		bishbosh_connection_read_byte_pipe_nonBlocking()
-		{
-			IFS=' ' read -r -u 5 -t $bishbosh_readLatency_inFractionalSeconds $1
-		}
 
 		bishbosh_connection_read_byte_pipe_blocking()
 		{
 			IFS=' ' read -r -u 5 $1
 		}
 		
-	else
-		#dash, pdksh, other sh
+		# ksh93, bash, mksh, zsh, Busybox's Ash
 		bishbosh_connection_read_byte_pipe_nonBlocking()
 		{
-			#stty -F $pipe -icanon time 0 <&5
-			xxxxx
+			set +e
+			IFS=' ' read -r -u 5 -t $bishbosh_readLatency_inFractionalSeconds $1
+			local exitCode=$?
+			set -e
 		}
-
+		
+	else
+		# dash, pdksh, other sh
+		# the design problem here is that the read is non-atomic, as it's looking for a line - hence the timeout could cause a partially read line
+		# hence GNU coreutils / BusyBox / Toybox timeout isn't appropriate
+		# and also techniques like  http://www.linuxmisc.com/11-unix-aix/bed695a5c4783a08.htm  can result in a partial line being read
+		
 		bishbosh_connection_read_byte_pipe_blocking()
 		{
 			IFS=' ' read -r $1 <&5
+		}
+		
+		bishbosh_connection_read_byte_pipe_nonBlocking()
+		{
+			core_exitError "Non-blocking reads are not supported by your shell"
 		}
 	fi
 }
