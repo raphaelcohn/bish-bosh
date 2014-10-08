@@ -3,13 +3,7 @@ core_usesIn bishbosh/connection write
 # GNU stat
 core_dependency_requires '*' stat
 _bishbosh_connection_write_PUBLISH_validateArguments()
-{
-	if core_variable_isSet bishbosh_connection_write_PUBLISH_dup; then
-		if core_variable_isTrue bishbosh_connection_write_PUBLISH_dup; then
-			controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + 1 << 3 ))
-		fi
-	fi
-	
+{	
 	if core_variable_isUnset bishbosh_connection_write_PUBLISH_qos; then
 		packetIdentifier=-1
 	else
@@ -110,6 +104,7 @@ _bishbosh_connection_write_PUBLISH_resetArguments()
 	unset bishbosh_connection_write_PUBLISH_messageUnlinkFile
 }
 
+core_dependency_requires '*' cat rm
 bishbosh_connection_write_PUBLISH()
 {
 	local remainingLength=0
@@ -127,6 +122,30 @@ bishbosh_connection_write_PUBLISH()
 	local resetArguments
 	_bishbosh_connection_write_PUBLISH_validateArguments
 	
+	case $qos in
+		
+		1)
+			local pendingSendQos1PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos1PendingSendPath"/"$packetIdentifier"
+			if [ -f "$pendingSendQos1PacketIdentifierPath" ]; then
+				# Set DUP flag
+				controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + 1 << 3 ))
+			fi
+		;;
+		
+		2)
+			local pendingSendQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingSendPath"/"$packetIdentifier"
+			local pendingCompQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingCompPath"/"$packetIdentifier"
+			if [ -f "$pendingCompQos2PacketIdentifierPath" ]; then
+				core_exitError $core_commandLine_exitCode_CONFIG "We can not PUBLISH packetIdentifier '$packetIdentifier' because it is pending a PUBCOMP"
+			fi
+			if [ -f "$pendingSendQos2PacketIdentifierPath" ]; then
+				# Set DUP flag
+				controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + 1 << 3 ))
+			fi
+		;;
+		
+	esac
+	
 	bishbosh_connection_write_byte "$controlPacketTypeAndFlags"
 	bishbosh_connection_write_remainingLength $remainingLength
 	
@@ -143,6 +162,18 @@ bishbosh_connection_write_PUBLISH()
 		cat "$messageFilePath"
 		core_TODO 'Experiment with dd bs=$message_fieldLength count=$message_fieldLength if="$messageFilePath" as an alternative to cat'
 	fi
+	
+	case $qos in
+		
+		1)
+			touch "$pendingSendQos1PacketIdentifierPath"
+		;;
+		
+		2)
+			touch "$pendingSendQos2PacketIdentifierPath"
+		;;
+		
+	esac
 	
 	if [ $messageUnlinkFile -eq 1 ]; then
 		rm -f $messageUnlinkFile || core_exitError $core_commandLine_exitCode_IOERR "Can not unlink message file '$messageUnlinkFile'."

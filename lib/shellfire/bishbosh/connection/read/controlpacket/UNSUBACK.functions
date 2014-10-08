@@ -4,5 +4,8 @@ bishbosh_connection_read_controlpacket_UNSUBACK()
 	
 	local packetIdentifier
 	bishbosh_connection_readPacketIdentifier
+	
 	bishbosh_connection_handler_UNSUBACK
+	
+	core_TODO 'We should recycle the packet identifier at this point'
 }

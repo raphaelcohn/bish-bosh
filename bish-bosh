@@ -252,6 +252,8 @@ the globals specified:-
   bishbosh_connection_handler_PUBLISH()
   bishbosh_connection_handler_PUBACK()
   bishbosh_connection_handler_PUBREC()
+  bishbosh_connection_handler_PUBREL()
+  bishbosh_connection_handler_PUBCOMP()
   bishbosh_connection_handler_PINGRESP()
   bishbosh_connection_handler_beforeWrite()
   bishbosh_connection_handler_afterWrite()

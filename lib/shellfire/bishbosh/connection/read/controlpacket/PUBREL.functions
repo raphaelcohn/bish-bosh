@@ -1,0 +1,22 @@
+core_dependency_requires '*' rm
+bishbosh_connection_read_controlpacket_PUBREL()
+{
+	bishbosh_connection_read_protocolError_ifRemainingLengthNot PUBREL 2
+	
+	local packetIdentifier
+	bishbosh_connection_readPacketIdentifier
+	
+	local unknownPacketIdentifier
+	local pendingReceiveQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingReceivePath"/"$packetIdentifier"
+	if [ -f "$pendingReceiveQos2PacketIdentifierPath" ]; then
+		unknownPacketIdentifier=0
+	else
+		unknownPacketIdentifier=1
+	fi
+	
+	bishbosh_connection_handler_PUBREL
+	rm "$pendingReceiveQos2PacketIdentifierPath" 2>/dev/null
+	
+	bishbosh_connection_write_PUBCOMP_packetIdentifier=$packetIdentifier
+	bishbosh_connection_write_PUBCOMP
+}

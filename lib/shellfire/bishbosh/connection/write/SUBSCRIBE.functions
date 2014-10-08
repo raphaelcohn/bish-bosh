@@ -4,9 +4,10 @@ _bishbosh_connection_write_SUBSCRIBE_validateArguments()
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' must contain at least one pair"
 	fi
 	
-	local recordFileBase="$bishbosh_connection_sessionSubscriptionsSubscribingPath"/"$packetIdentifier"
+	local pendingSubscribeByPacketIdentifierPath="$bishbosh_connection_sessionSubscriptionsSubscribingPath"/"$packetIdentifier"
+	mkdir -m 0700 -p "$pendingSubscribeByPacketIdentifierPath"
+	
 	local index=0
-	local strippedTopicFiler
 	while [ $# -gt 1 ]
 	do
 		topicFilter="$1"
@@ -20,27 +21,33 @@ _bishbosh_connection_write_SUBSCRIBE_validateArguments()
 			;;
 			
 			*)
-				bishbosh_connection_cleanUpSessionRecord
+				bishbosh_connection_write_SUBSCRIBE_cleanUpState
 				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' at pair index '$index' must contain QoS values between 0 to 2 (inclusive), not '$topicQoS'"
 			;;
 		esac
 		
-		# Done without space or tab separation as these are permitted in topic filters
-		printf '%s' "${topicQoS}${topicFilter}"
+		# This rather odd looking path produces fixed-width numbers
+		printf '%s\t%s\n' "${topicQoS}" "${topicFilter}" >"$pendingSubscribeByPacketIdentifierPath"/"$(printf '%09s' $index)"
 		
 		shift 2
 		index=$((index+1))
 		topicFilter_fieldLength=${#topicFilter}
 		# 3 is topicFilter length bytes (2) + QoS length (1)
 		remainingLength=$(( remainingLength + 3 + topicFilter_fieldLength ))
-	done >"$recordFileBase".writing
+	done
+	
+	printf '%s\n' $index >"$pendingSubscribeByPacketIdentifierPath".count
 	
 	if [ $# -eq 1 ]; then
-		bishbosh_connection_cleanUpSessionRecord
+		bishbosh_connection_write_SUBSCRIBE_cleanUpState
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' must contain balanced pairs"
 	fi
-	
-	printf '%s' "$index" >"$recordFile".written
+}
+
+core_dependency_requires '*' rm
+bishbosh_connection_write_SUBSCRIBE_cleanUpState()
+{
+	rm -f "$pendingSubscribeByPacketIdentifierPath" "$pendingSubscribeByPacketIdentifierPath".count
 }
 
 core_usesIn bishbosh/connection write

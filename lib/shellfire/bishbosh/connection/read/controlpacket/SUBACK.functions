@@ -1,16 +1,20 @@
+# The form $'\t' does not work in dash
+bishbosh_connection_read_controlpacket_SUBACK_separator="$(printf '\t')"
+core_dependency_declares bishbosh_connection_read_controlpacket_SUBACK_separator
+
+core_dependency_requires '*' rm
 bishbosh_connection_read_controlpacket_SUBACK()
 {
 	local packetIdentifier
 	bishbosh_connection_readPacketIdentifier
 	
-	local recordFileBase="$bishbosh_connection_sessionSubscriptionsSubscribingPath"/"$packetIdentifier"
-	local recordFileWritten="$recordFileBase".written
-	if [ ! -f "$recordFileWritten" ]; then
+	local pendingSubscribeByPacketIdentifierPath="$bishbosh_connection_sessionSubscriptionsSubscribingPath"/"$packetIdentifier"
+	if [ ! -d "$pendingSubscribeByPacketIdentifierPath" ]; then
 		bishbosh_connection_read_protocolError_unknownPacketIdentifier SUBACK
 	fi
 	
 	local returnCodeCount=$((remainingLength-2))
-	local expectedReturnCodeCount=$(<"$recordFileWritten")
+	local expectedReturnCodeCount=$(<"$pendingSubscribeByPacketIdentifierPath".count)
 	if [ $returnCodeCount -ne $expectedReturnCodeCount ]; then
 		bishbosh_connection_read_protocolError SUBACK "Mismatch in number of return codes; received '$returnCodeCount', expected '$expectedReturnCodeCount' from file '$recordFileWritten'"
 	fi
@@ -25,19 +29,6 @@ bishbosh_connection_read_controlpacket_SUBACK()
 		case $returnCode in
 		
 			0|1|2|128)
-				
-				# How are we going to manage the subscriptions?
-				# File per topic-filter, but we need to remember
-				# (A) order
-				# (B) names can cause file system problems
-				
-				
-				if [ ! -s "$recordFileQos" ]; then
-					bishbosh_connection_read_protocolError_unknownPacketIdentifier SUBACK
-				fi
-				"$recordFileBase".$index.topic-filter
-				"$recordFileBase".$index.qos
-				
 				IFS=' ' set -- "$@" $returnCode
 			;;
 		
@@ -50,36 +41,91 @@ bishbosh_connection_read_controlpacket_SUBACK()
 		index=$((index+1))
 	done
 
+	local pendingSubscriptionIndex
+	local pendingExpectedQos
+	local pendingTopicFilter
+	local parsedPendingSubscriptionIndex
+	local core_variable_indirectValue_result
+	local pendingReturnCode
+	local currentSubscriptionIndex
+	local currentExpectedQos
+	local currentReturnCode
+	local currentTopicFilter
+	local found
+	
+	# Using ln -s and two folders, a lot of this logic can be made atomic
+	pushd "$pendingSubscribeByPacketIdentifierPath"
+	
+		set +f
+		
+		# Slight defect - this loop will iterate in non-sort order, so if there are duplicate topic filters in the request with differing
+		# QoS, then an incorrect filter may be chosen.
+		for pendingSubscriptionIndex in *
+		do
+			set -f
+			if [ ! -e "$pendingSubscriptionIndex" ]; then
+				# eg a literal '*'
+				continue
+			fi
+			
+			IFS="$bishbosh_connection_read_controlpacket_SUBACK_separator" read -r pendingExpectedQos pendingTopicFilter <"$pendingSubscriptionIndex"
+			
+			# get $1, $2, etc, a return code
+			parsedPendingSubscriptionIndex=$((1${pendingSubscriptionIndex}-1000000000))
+			core_variable_indirectValue $((parsedPendingSubscriptionIndex+1))
+			pendingReturnCode="$core_variable_indirectValue_result"
+			
+			found=0
+			pushd "$bishbosh_connection_sessionSubscriptionsActivePath"
+			
+				set +f
+
+				for currentSubscriptionIndex in *
+				do
+					set -f
+					if [ ! -e "$currentSubscriptionIndex" ]; then
+						# eg a literal '*'
+						continue
+					fi
+					
+					IFS="$bishbosh_connection_read_controlpacket_SUBACK_separator" read -r currentExpectedQos currentReturnCode currentTopicFilter <"$currentSubscriptionIndex"
+					if [ "$pendingTopicFilter" = "$currentTopicFilter" ]; then
+						printf '%s\t%s\t%s\n' "$pendingExpectedQos" "$pendingReturnCode" "$pendingTopicFilter" >"$currentSubscriptionIndex"
+						found=1
+						break
+					fi
+				done
+				
+				set -f
+			
+			popd
+			if [ $found -eq 0 ]; then
+				printf '%s\t%s\t%s\n' "$pendingExpectedQos" "$pendingReturnCode" "$pendingTopicFilter" >"$(printf '%09s' $bishbosh_connection_nextSubscriptionIndex)"
+				bishbosh_connection_nextSubscriptionIndex=$((bishbosh_connection_nextSubscriptionIndex+1))
+			fi
+			
+		done
+		
+		set -f
+		
+	popd
+
+	unset pendingSubscriptionIndex
+	unset pendingExpectedQos
+	unset pendingTopicFilter
+	unset parsedPendingSubscriptionIndex
+	unset core_variable_indirectValue_result
+	unset pendingReturnCode
+	unset currentSubscriptionIndex
+	unset currentExpectedQos
+	unset currentReturnCode
+	unset currentTopicFilter
+	unset found
 	
 	
+	bishbosh_connection_write_SUBSCRIBE_cleanUpState
 	
-	# .../clients/12/session/pending-subscriptions.d
-	#    <packetIdentifier-12345>.pending-subscription  or just  '12345' (so no need to use basename) *1
-	# .../clients/12/session/active-subscriptions  (just a regular file) *2
-	# .../clients/12/session/pending-unsubcriptions.d
-	#    12345 *3
-	
-	# *1 actually, probably QoS before topic, ,-separated, so we can handle everything but topic names containing '\n' at the end.
-	# Topic Filter  Requested QoS
-	# a/b    0/1/2
-	# ...    ...
-	
-	
-	# *2  Could be one file or just a set of files, one per topic [unfortunately, naming by topic is hard - need to replace '/' with 'xx_' to avoid . .. and // problems, as well as leading and trailing /] [or we could just not permit topics with //, etc]
-	# Topic Filter  Requested Qos  Actual Qos
-	# a/b    2              0/1/2/0x80
-	
-	# *3
-	# Topic Filter
-	# a/b
-	# ...
-	
-	
-	unset index
-	unset returnCode
-	unset recordFileTopicFilter
-	unset recordFileQos
 	bishbosh_connection_handler_SUBACK "$@"
 	
-	bishbosh_connection_cleanUpSessionRecord
+	core_TODO 'We should recycle the packet identifier at this point'
 }

@@ -19,6 +19,33 @@ bishbosh_connection_handler_PUBLISH()
 	rm "$messageFilePath"
 }
 
+bishbosh_connection_handler_PUBLISH_again()
+{
+	# Occurs because a QoS 2 PUBLISH has been received after we sent a PUBREC (but before receiveing a PUBREL)
+	core_message DEBUG "bishbosh_connection_handler_PUBLISH_again(retain=$retain, qos=$qos, dup=$dup, topicLength=$topicLength, topicName=$topicName, packetIdentifier=$packetIdentifier, messageLength=$messageLength, messageFilePath=$messageFilePath)"
+	rm "$messageFilePath"
+}
+
+bishbosh_connection_handler_PUBACK()
+{
+	core_message DEBUG "bishbosh_connection_handler_PUBACK(packetIdentifier=$packetIdentifier, unknownPacketIdentifier=$packetIdentifier)"
+}
+
+bishbosh_connection_handler_PUBREC()
+{
+	core_message DEBUG "bishbosh_connection_handler_PUBREC(packetIdentifier=$packetIdentifier, unknownPacketIdentifier=$packetIdentifier)"
+}
+
+bishbosh_connection_handler_PUBREL()
+{
+	core_message DEBUG "bishbosh_connection_handler_PUBREL(packetIdentifier=$packetIdentifier, unknownPacketIdentifier=$packetIdentifier)"
+}
+
+bishbosh_connection_handler_PUBCOMP()
+{
+	core_message DEBUG "bishbosh_connection_handler_PUBCOMP(packetIdentifier=$packetIdentifier, unknownPacketIdentifier=$packetIdentifier)"
+}
+
 bishbosh_connection_handler_PINGRESP()
 {
 	core_message DEBUG "bishbosh_connection_handler_PINGRESP()"

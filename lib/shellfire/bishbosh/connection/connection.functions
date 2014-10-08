@@ -5,7 +5,11 @@ core_dependency_requires '*' mkdir
 bishbosh_connection_mkdirTemporary()
 {
 	local folderName="$1"
-	local folderPath="$bishbosh_temporaryFolderPath"/"$bishbosh_connection_id"/"$folderName"
+	if [ $# -eq 1 ]; then
+		local folderPath="$bishbosh_temporaryFolderPath"/"$bishbosh_connection_id"/"$folderName"
+	else
+		local folderPath="$2"
+	fi
 	mkdir -m 0700 -p "$folderPath"
 	printf '%s' "$folderPath"
 }
@@ -14,7 +18,11 @@ core_dependency_requires '*' mkdir
 bishbosh_connection_mkdirPermanent()
 {
 	local folderName="$1"
-	local folderPath="$bishbosh_connection_clientsPathForClientId"/"$folderName"
+	if [ $# -eq 1 ]; then
+		local folderPath="$bishbosh_connection_clientsPathForClientId"/"$folderName"
+	else
+		local folderPath="$2"
+	fi
 	mkdir -m 0755 -p "$folderPath"
 	printf '%s' "$folderPath"
 }
@@ -85,13 +93,28 @@ bishbosh_connection_defaultEssentialState()
 		bishbosh_connection_sessionSession="$(bishbosh_connection_mkdirPermanent session/subscriptions)"
 	fi
 	if core_variable_isUnset bishbosh_connection_sessionSubscriptionsSubscribingPath; then
-		bishbosh_connection_sessionSubscriptionsSubscribingPath="$(bishbosh_connection_mkdirPermanent session/subscriptions/subscribing)"
+		bishbosh_connection_sessionSubscriptionsSubscribingPath="$(bishbosh_connection_mkdirPermanent subscribing "$bishbosh_connection_sessionSubscriptionsPath")"
 	fi
 	if core_variable_isUnset bishbosh_connection_sessionSubscriptionsActivePath; then
-		bishbosh_connection_sessionSubscriptionsActivePath="$(bishbosh_connection_mkdirPermanent session/subscriptions/active)"
+		bishbosh_connection_sessionSubscriptionsActivePath="$(bishbosh_connection_mkdirPermanent active)"
 	fi
 	if core_variable_isUnset bishbosh_connection_sessionSubscriptionsUnsubscribingPath; then
-		bishbosh_connection_sessionSubscriptionsUnsubscribingPath="$(bishbosh_connection_mkdirPermanent session/subscriptions/unsubscribing)"
+		bishbosh_connection_sessionSubscriptionsUnsubscribingPath="$(bishbosh_connection_mkdirPermanent unsubscribing "$bishbosh_connection_sessionSubscriptionsPath")"
+	fi
+	if core_variable_isUnset bishbosh_connection_sessionPublicationsPath; then
+		bishbosh_connection_sessionSession="$(bishbosh_connection_mkdirPermanent session/publications)"
+	fi
+	if core_variable_isUnset bishbosh_connection_sessionPublicationsQos2PendingReceivePath; then
+		bishbosh_connection_sessionPublicationsQos2PendingReceivePath="$(bishbosh_connection_mkdirPermanent qos2-receive "$bishbosh_connection_sessionPublicationsPath")"
+	fi
+	if core_variable_isUnset bishbosh_connection_sessionPublicationsQos1PendingSendPath; then
+		bishbosh_connection_sessionPublicationsQos1PendingSendPath="$(bishbosh_connection_mkdirPermanent qos1-sent-publish "$bishbosh_connection_sessionPublicationsPath")"
+	fi
+	if core_variable_isUnset bishbosh_connection_sessionPublicationsQos2PendingSendPath; then
+		bishbosh_connection_sessionPublicationsQos2PendingSendPath="$(bishbosh_connection_mkdirPermanent qos2-sent-publish "$bishbosh_connection_sessionPublicationsPath")"
+	fi
+	if core_variable_isUnset bishbosh_connection_sessionPublicationsQos2PendingCompPath; then
+		bishbosh_connection_sessionPublicationsQos2PendingCompPath="$(bishbosh_connection_mkdirPermanent qos2-sent-pubrel "$bishbosh_connection_sessionPublicationsPath")"
 	fi
 	
 	# Allows a logical client-id change to occur
@@ -117,6 +140,36 @@ bishbosh_connection_obtainConnectionId()
 		bishbosh_connection_id=$bishbosh_connection_nextId
 		bishbosh_connection_nextId=$((bishbosh_connection_nextId + 1))
 	fi
+}
+
+bishbosh_connection_obtainNextSubscriptionIndex()
+{
+	# Or find . -type f -print | awk -v FS='/' '{print $2}' | sort -n  to get a numerically sorted list. Yuck.
+	bishbosh_connection_nextSubscriptionIndex=0
+	
+	pushd "$bishbosh_connection_sessionSubscriptionsActivePath"
+	
+		local currentSubscriptionIndex
+		local parsedCurrentSubscriptionIndex
+		set +f
+		for currentSubscriptionIndex in *
+		do
+			set -f
+			if [ ! -e "$currentSubscriptionIndex" ]; then
+				# ie '*'
+				continue
+			fi
+			
+			# This rather odd logic ensures that a leading-zero padded unsigned decimal integer number is not interpreted as octal
+			# Leading-zero padding is used to ensure the shell's glob-expansion sorts in ascending numerical order subscription files
+			parsedCurrentSubscriptionIndex=$((1${currentSubscriptionIndex}-1000000000))
+			if [ $parsedCurrentSubscriptionIndex -gt $bishbosh_connection_nextSubscriptionIndex ]; then
+				bishbosh_connection_nextSubscriptionIndex=$parsedCurrentSubscriptionIndex
+			fi
+		done
+		set -f
+	
+	popd
 }
 
 core_dependency_requires '*' rmdir mkdir
@@ -184,6 +237,7 @@ bishbosh_connection_makeClientConnection()
 	bishbosh_connection_defaultEssentialState
 	
 	bishbosh_connection_obtainConnectionId
+	bishbosh_connection_obtainNextSubscriptionIndex
 	bishbosh_connection_cleanUpTransmitLockFiles
 	bishbosh_connection_createFifos
 	
@@ -236,13 +290,6 @@ bishbosh_connection_readLength()
 	$bishbosh_connection_read_byte_blocking lengthLsb
 	
 	length=$((lengthMsb * 256 + lengthLsb))
-}
-
-bishbosh_connection_cleanUpSessionRecord()
-{
-	set +f
-	rm "$recordFileBase".*
-	set -f
 }
 
 core_dependency_requires '*' rmdir mkdir sleep rm

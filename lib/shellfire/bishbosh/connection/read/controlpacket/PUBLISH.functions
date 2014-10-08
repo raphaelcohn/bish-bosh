@@ -113,19 +113,29 @@ _bishbosh_connection_read_PUBLISH()
 		bishbosh_connection_write_byte $byte
 		remainingMessageLength=$((remainingMessageLength-1))
 	done >"$messageFilePath"
-	
-	bishbosh_connection_handler_PUBLISH
+
+	local pendingReceiveQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingReceivePath"/"$packetIdentifier"
+	if [ -f "$pendingReceiveQos2PacketIdentifierPath" ]; then
+		# assume we have sent the PUBREC w/o PUBREL being received
+		bishbosh_connection_handler_PUBLISH_again
+	else
+		bishbosh_connection_handler_PUBLISH
+		if [ $qos -eq 2 ]; then
+			touch "$pendingReceiveQos2PacketIdentifierPath"
+		fi
+	fi
 	
 	case $qos in
 		
 		1)
-			bishbosh_connection_write_PUBACK 
+			bishbosh_connection_write_PUBACK_packetIdentifier=$packetIdentifier
+			bishbosh_connection_write_PUBACK
 		;;
 		
 		2)
-			core_TODO 'QoS 2 message flows are not yet supported'
+			bishbosh_connection_write_PUBREC_packetIdentifier=$packetIdentifier
+			bishbosh_connection_write_PUBREC
 		;;
 		
 	esac
-	
 }

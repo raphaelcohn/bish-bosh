@@ -1,135 +1,31 @@
-	# https://stackoverflow.com/questions/9536388/capture-pid-of-terminated-background-process-using-trap-in-bash?rq=1
-	# http://mywiki.wooledge.org/ProcessManagement#I_want_to_process_a_bunch_of_files_in_parallel.2C_and_when_one_finishes.2C_I_want_to_start_the_next._And_I_want_to_make_sure_there_are_exactly_5_jobs_running_at_a_time
+Major TODO
+- password can contain embedded ASCII NUL
+- password should be loadable from a file separate to anything else, so allowing production deployments
+- UNSUBSCRIBE / UNSUBACK is not implemented to record subscription state
+- PING request / response using a timer (SECONDS) is not implemented
+  - best done for shells which support 'SECONDS'
+  - if not, refuse to allow a keep-alive which is non-zero
+  - need to reject keep alives below about 5 seconds, as we'll not be able to satisfy them
+- Need a simple way to send messages from disk on start
+- Need to automatically re-subscribe on start
+- Need to support connecting more than once (ie connection recycling) so that we can script clean-session resets
+- Clean Session = 1 should delete all saved state on start
+- bash backend: exec 3<>/dev/tcp/"$bishbosh_server"/"$bishbosh_port"
+
+Ideas
+- byobu vs tmux vs screen for multiple viewing (or support all 3 in a complex manner [byobu requires newt])
+- newt (whiptail) vs dialog: both in Centos 6.4 default, ? only whiptail in Ubuntu minimal
+- auth backends - ldap, ?pam, local users file
+- generic SOCKS handling via tsocks or proxychains-ng
+- .netrc for proxy password details?
+- .curlrc for proxy details?
+- .wgetrc for proxy details?
+- proxy env variables (originated in wget)
+  - typical values are http_proxy=https://USER@PASSWORD:ADDRESS:PORT/
+  - would need to parse no_proxy="localhost,127.0.0.1,localaddress,.localdomain.com" and https_proxy, too.
 	
-	
-	core_TODO 'password, will payload can contain embedded ASCII NULL!'
-	core_TODO 'consider loading username, password, will details based on client-id...'
-	core_TODO 'keep-alive is based on server connection details - it is a broker specific thing - goes with broker configurations'
-	core_TODO 'Support a binary password (embedded NULs)'
-	core_TODO 'Use .netrc for password! (or a password file; required if we are going to use embedded NULs for SASL)'
-	ish and bish-bosh
-
-	newt (whiptail) vs dialog: both in Centos 6.4 default, ? only whiptail in Ubuntu minimal
-	auth backends - ldap, ?pam, local users file
-
-	byobu vs tmux vs screen for multiple viewing (or support all 3 in a complex manner [byobu requires newt])
-
-	https://stackoverflow.com/questions/402377/using-getopts-in-bash-shell-script-to-get-long-and-short-command-line-options/7680682#7680682
-# using netcat with a FIFO (need mkfifo): https://unix.stackexchange.com/questions/39362/using-in-out-named-pipes-for-a-tcp-connection
+Useful Info
 # reverse bash shell http://www.gnucitizen.org/blog/reverse-shell-with-bash/
 # reverse nc if nc is broken (lacks -e) http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet
 # reverse shell using GAWK! http://www.gnucitizen.org/blog/reverse-shell-with-bash/#comment-122387
-function backend_client_plaintext_bash_start()
-{
-	if [ -n "${backend_client_options['inetFamily']}" ]; then
-		case "${backend_client_options['inetFamily']}" in
-			
-			auto)
-				:
-			;;
-			
-			inet4)
-				:
-			;;
-			
-			inet6)
-				bishbosh_message WARN "The backend 'client plaintext bash' does not support setting the localInterface"
-			;;
 
-			unix)
-				bishbosh_exitError "The backend client 'inetFamily' '${backend_client_options['inetFamily']}' is not supported for the backend 'client plaintext bash'"
-			;;
-			
-			*)
-				bishbosh_exitError "The backend client 'inetFamily' '${backend_client_options['inetFamily']}' is not known"
-			;;
-		esac
-	fi
-	
-	if [ -n "${backend_client_options['localInterface']}" ]; then
-		bishbosh_message WARN "The backend 'client plaintext bash' does not support setting the localInterface"
-	fi
-	
-	if [ -n "${backend_client_options['localAddress']}" ]; then
-		bishbosh_message WARN "The backend 'client plaintext bash' does not support setting the localAddress"
-	fi
-	
-	if [ -n "${backend_client_options['localPort']}" ]; then
-		bishbosh_message WARN "The backend 'client plaintext bash' does not support setting the localPort"
-	fi
-	
-	if [ -n "${backend_client_options['timeout']}" ]; then
-		bishbosh_message WARN "The backend 'client plaintext bash' does not support setting a timeout"
-	fi
-	
-	case "${backend_client_options['proxyKind']}" in
-		
-		none)
-			:
-		;;
-		
-		SOCKS4|SOCKS5|HTTP)
-			bishbosh_exitError "The backend 'client plaintext bash' does not support a proxy"
-		;;
-		
-		*)
-			bishbosh_exitError "The backend client 'proxyKind' '${backend_client_options['proxyKind']}' is not known"
-		;;
-		
-	esac
-	
-	exec 3<>/dev/tcp/"${backend_client_options['remoteAddress']}"/"${backend_client_options['remotePort']}"
-}
-
-function backend_client_plaintext_bash_read()
-{
-	od --width=1 --address-radix=n --output-duplicates --format=u1 <&3
-}
-
-function backend_client_plaintext_bash_stop()
-{
-	exec 3<&-
-	exec 3>&-
-}
-function configuration_client_netrc()
-{
-	local serverName="$1"
-	local netrcFilePath="$2"
-
-	if [ ! -f "$netrcFilePath" ]; then
-		return 0
-	fi
-	if [ ! -r "$netrcFilePath" ]; then
-		return 0
-	fi
-	if [ ! -s "$netrcFilePath" ]; then
-		return 0
-	fi
-	
-	# tokens may be separated by spaces, tabs or NEWLINES...
-	# macdef causes problems - starts on next line and continues until \n\n encountered
-	local machine machineName login loginName password passwordName 
-	while read -r 
-	
-	# finds username, password
-	
-	# could we parse curlrc files?
-	
-	# could we use http_proxy / https_proxy env variables?
-	
-	# could we do look-up in DNS for SRV records?
-	
-	# we could use .wgetrc files, too /etc/wgetrc
-	
-	# Some versions of nc support -P for proxy password (? Mac OS X does not ?)
-	
-	# wget seems to be the originator of these; upper cases variants for windows seem common....
-	# we can also use libproxy
-	# For generic SOCKS handling, consider tsocks and proxychains-ng
-	#typical values are https://USER@PASSWORD:ADDRESS:PORT/
-    #export http_proxy=http://10.203.0.1:5187/
-    #export https_proxy=$http_proxy
-    #export ftp_proxy=$http_proxy
-    #export rsync_proxy=$http_proxy
-    #export no_proxy="localhost,127.0.0.1,localaddress,.localdomain.com"
-}

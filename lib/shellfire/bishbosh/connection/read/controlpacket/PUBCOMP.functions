@@ -1,0 +1,20 @@
+core_dependency_requires '*' mv touch
+bishbosh_connection_read_controlpacket_PUBCOMP()
+{
+	bishbosh_connection_read_protocolError_ifRemainingLengthNot PUBCOMP 2
+	
+	local packetIdentifier
+	bishbosh_connection_readPacketIdentifier
+	
+	local pendingCompQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingCompPath"/"$packetIdentifier"
+	if [ -f "$pendingCompQos2PacketIdentifierPath" ]; then
+		unknownPacketIdentifier=0
+	else
+		unknownPacketIdentifier=1
+	fi
+	rm "$pendingCompQos2PacketIdentifierPath"
+	
+	core_TODO 'We should recycle the packet identifier at this point'
+	
+	bishbosh_connection_handler_PUBCOMP
+}

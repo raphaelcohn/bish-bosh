@@ -1,0 +1,27 @@
+core_dependency_requires '*' mv touch
+bishbosh_connection_read_controlpacket_PUBREC()
+{
+	bishbosh_connection_read_protocolError_ifRemainingLengthNot PUBREC 2
+	
+	local packetIdentifier
+	bishbosh_connection_readPacketIdentifier
+
+	local pendingSendQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingSendPath"/"$packetIdentifier"
+	local pendingCompQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingCompPath"/"$packetIdentifier"
+	if [ -f "$pendingCompQos2PacketIdentifierPath" ]; then
+		bishbosh_connection_read_protocolError PUBREC "Packet identifier $packetIdentifier already exists at pendingCompQos2PacketIdentifierPath '$pendingCompQos2PacketIdentifierPath'. How?"
+	fi
+	
+	if [ -f "$pendingSendQos2PacketIdentifierPath" ]; then
+		unknownPacketIdentifier=0
+		mv "$pendingSendQos2PacketIdentifierPath" "$pendingCompQos2PacketIdentifierPath"
+	else
+		unknownPacketIdentifier=1
+		touch "$pendingCompQos2PacketIdentifierPath"
+	fi
+	
+	bishbosh_connection_handler_PUBREC
+
+	bishbosh_connection_write_PUBREL_packetIdentifier=$packetIdentifier
+	bishbosh_connection_write_PUBREL
+}
