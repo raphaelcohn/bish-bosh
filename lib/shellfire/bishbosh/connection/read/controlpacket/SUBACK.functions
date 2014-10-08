@@ -3,16 +3,42 @@ bishbosh_connection_read_controlpacket_SUBACK()
 	local packetIdentifier
 	bishbosh_connection_readPacketIdentifier
 	
+	local recordFileBase="$bishbosh_connection_sessionSubscriptionsSubscribingPath"/"$packetIdentifier"
+	local recordFileWritten="$recordFileBase".written
+	if [ ! -f "$recordFileWritten" ]; then
+		bishbosh_connection_read_protocolError_unknownPacketIdentifier SUBACK
+	fi
+	
 	local returnCodeCount=$((remainingLength-2))
-	local remainingReturnCodeCode=$returnCodeCount
+	local expectedReturnCodeCount=$(<"$recordFileWritten")
+	if [ $returnCodeCount -ne $expectedReturnCodeCount ]; then
+		bishbosh_connection_read_protocolError SUBACK "Mismatch in number of return codes; received '$returnCodeCount', expected '$expectedReturnCodeCount' from file '$recordFileWritten'"
+	fi
+	
+	local index=0
 	local returnCode
-	while [ $remainingReturnCodeCode -ne 0 ]
+	local recordFileTopicFilter
+	local recordFileQos
+	while [ $index -ne $returnCodeCount ]
 	do
 		$bishbosh_connection_read_byte_blocking returnCode
 		case $returnCode in
 		
 			0|1|2|128)
-				bishbosh_connection_handler_SUBACK
+				
+				# How are we going to manage the subscriptions?
+				# File per topic-filter, but we need to remember
+				# (A) order
+				# (B) names can cause file system problems
+				
+				
+				if [ ! -s "$recordFileQos" ]; then
+					bishbosh_connection_read_protocolError_unknownPacketIdentifier SUBACK
+				fi
+				"$recordFileBase".$index.topic-filter
+				"$recordFileBase".$index.qos
+				
+				IFS=' ' set -- "$@" $returnCode
 			;;
 		
 			*)
@@ -20,14 +46,17 @@ bishbosh_connection_read_controlpacket_SUBACK()
 			;;
 		
 		esac
+		
+		index=$((index+1))
 	done
+
 	
-	core_TODO 'Validate number of return codes matches that in the original SUBSCRIBE'
 	
-	# .../clients/12/state/pending-subscriptions.d
+	
+	# .../clients/12/session/pending-subscriptions.d
 	#    <packetIdentifier-12345>.pending-subscription  or just  '12345' (so no need to use basename) *1
-	# .../clients/12/state/active-subscriptions  (just a regular file) *2
-	# .../clients/12/state/pending-unsubcriptions.d
+	# .../clients/12/session/active-subscriptions  (just a regular file) *2
+	# .../clients/12/session/pending-unsubcriptions.d
 	#    12345 *3
 	
 	# *1 actually, probably QoS before topic, ,-separated, so we can handle everything but topic names containing '\n' at the end.
@@ -45,6 +74,12 @@ bishbosh_connection_read_controlpacket_SUBACK()
 	# a/b
 	# ...
 	
+	
+	unset index
 	unset returnCode
-	bishbosh_connection_handler_SUBACK
+	unset recordFileTopicFilter
+	unset recordFileQos
+	bishbosh_connection_handler_SUBACK "$@"
+	
+	bishbosh_connection_cleanUpSessionRecord
 }

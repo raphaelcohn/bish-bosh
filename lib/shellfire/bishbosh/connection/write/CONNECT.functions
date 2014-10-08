@@ -33,7 +33,7 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		
 		# Will Topic
 		willTopic="$bishbosh_connection_write_CONNECT_willTopic"
-		bishbosh_connection_write_fieldLengthCheck CONNECT 1 willTopic
+		bishbosh_connection_write_validateTopicName bishbosh_connection_write_CONNECT_willTopic "$willTopic"
 		willTopic_fieldLength=${#willTopic}
 		remainingLength=$(( remainingLength + 2 + willTopic_fieldLength ))
 		
@@ -42,7 +42,7 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_willMessage' must be set when 'bishbosh_connection_write_CONNECT_willTopic' is set"
 		fi
 		willMessage="$bishbosh_connection_write_CONNECT_willMessage"
-		bishbosh_connection_write_fieldLengthCheck CONNECT 0 willMessage
+		bishbosh_connection_write_fieldLengthCheck CONNECT willMessage
 		willTopic_fieldLength=${#willMessage}
 		remainingLength=$(( remainingLength + 2 + willMessage_fieldLength ))
 		
@@ -90,9 +90,10 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		clientId=''
 	else
 		clientId="$bishbosh_connection_write_CONNECT_clientId"
+		bishbosh_connection_write_validateUtf8 clientId
 	fi
 	clientId_fieldLength=${#clientId}
-	bishbosh_connection_write_fieldLengthCheck CONNECT 0 clientId
+	bishbosh_connection_write_fieldLengthCheck CONNECT clientId
 	remainingLength=$(( remainingLength + 2 + clientId_fieldLength ))
 
 	if core_variable_isUnset bishbosh_connection_write_CONNECT_username; then
@@ -100,7 +101,8 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		username_fieldLength=-1
 	else
 		username="$bishbosh_connection_write_CONNECT_username"
-		bishbosh_connection_write_fieldLengthCheck CONNECT 0 username
+		bishbosh_connection_write_validateUtf8 username
+		bishbosh_connection_write_fieldLengthCheck CONNECT username
 		username_fieldLength=${#username}
 		remainingLength=$(( remainingLength + 2 + username_fieldLength ))
 		connectFlags=$(( connectFlags + 1 << 7 ))
@@ -111,7 +113,7 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		password_fieldLength=-1
 	else
 		password="$bishbosh_connection_write_CONNECT_password"
-		bishbosh_connection_write_fieldLengthCheck CONNECT 0 password
+		bishbosh_connection_write_fieldLengthCheck CONNECT password
 		password_fieldLength=${#password}
 		remainingLength=$(( remainingLength + 2 + password_fieldLength ))
 		connectFlags=$(( connectFlags + 1 << 6 ))

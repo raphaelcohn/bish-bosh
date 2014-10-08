@@ -76,8 +76,22 @@ bishbosh_connection_defaultEssentialState()
 		bishbosh_connection_transmitPath="$(bishbosh_connection_mkdirPermanent transmit)"
 	fi
 	
-	if core_variable_isUnset bishbosh_connection_statePath; then
-		bishbosh_connection_statePath="$(bishbosh_connection_mkdirPermanent state)"
+	if core_variable_isUnset bishbosh_connection_sessionSession; then
+		bishbosh_connection_sessionSession="$(bishbosh_connection_mkdirPermanent session)"
+	fi
+	
+	# Can be overridden, but not listed as possible
+	if core_variable_isUnset bishbosh_connection_sessionSubscriptionsPath; then
+		bishbosh_connection_sessionSession="$(bishbosh_connection_mkdirPermanent session/subscriptions)"
+	fi
+	if core_variable_isUnset bishbosh_connection_sessionSubscriptionsSubscribingPath; then
+		bishbosh_connection_sessionSubscriptionsSubscribingPath="$(bishbosh_connection_mkdirPermanent session/subscriptions/subscribing)"
+	fi
+	if core_variable_isUnset bishbosh_connection_sessionSubscriptionsActivePath; then
+		bishbosh_connection_sessionSubscriptionsActivePath="$(bishbosh_connection_mkdirPermanent session/subscriptions/active)"
+	fi
+	if core_variable_isUnset bishbosh_connection_sessionSubscriptionsUnsubscribingPath; then
+		bishbosh_connection_sessionSubscriptionsUnsubscribingPath="$(bishbosh_connection_mkdirPermanent session/subscriptions/unsubscribing)"
 	fi
 	
 	# Allows a logical client-id change to occur
@@ -85,7 +99,7 @@ bishbosh_connection_defaultEssentialState()
 		bishbosh_connection_write_CONNECT_clientId=clientid
 	fi
 	
-	# Should have come from state
+	# Should have come from session
 	if core_variable_isUnset bishbosh_connection_nextPacketIdentifier; then
 		bishbosh_connection_nextPacketIdentifier=0
 	fi
@@ -222,6 +236,13 @@ bishbosh_connection_readLength()
 	$bishbosh_connection_read_byte_blocking lengthLsb
 	
 	length=$((lengthMsb * 256 + lengthLsb))
+}
+
+bishbosh_connection_cleanUpSessionRecord()
+{
+	set +f
+	rm "$recordFileBase".*
+	set -f
 }
 
 core_dependency_requires '*' rmdir mkdir sleep rm

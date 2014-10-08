@@ -1,6 +1,6 @@
 bishbosh_connection_read_controlpacket_UNSUBACK()
 {
-	bishbosh_connection_read_protocolErrorIfRemainingLengthNot UNSUBACK 2
+	bishbosh_connection_read_protocolError_ifRemainingLengthNot UNSUBACK 2
 	
 	local packetIdentifier
 	bishbosh_connection_readPacketIdentifier

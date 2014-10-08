@@ -1,6 +1,6 @@
 bishbosh_connection_read_controlpacket_CONNACK()
 {
-	bishbosh_connection_read_protocolErrorIfRemainingLengthNot CONNACK 2
+	bishbosh_connection_read_protocolError_ifRemainingLengthNot CONNACK 2
 	
 	local connectAcknowledgeFlags
 	$bishbosh_connection_read_byte_blocking connectAcknowledgeFlags

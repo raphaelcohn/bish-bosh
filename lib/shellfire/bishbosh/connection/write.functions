@@ -37,20 +37,99 @@ core_usesIn bishbosh/connection/write CONNACK CONNECT DISCONNECT PINGREQ PINGRES
 bishbosh_connection_write_fieldLengthCheck()
 {
 	local packetName="$1"
-	local minimumLength=$2
-	local variableName="$3"
+	local variableName="$2"
 	
-	local length=$(core_variable_length "$variableName")
-	if [ $length -lt $minimumLength ]; then
-		if [ $minimumLength -eq 1 ]; then
-			local plural=''
-		else
-			local plural='s'
-		fi
-		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_${packetName}_${variableName}' can not be less than $minimumLength byte${plural}"
-	fi
-	if [ $length -gt 65535 ]; then
+	if [ $(core_variable_length "$variableName") -gt 65535 ]; then
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_${packetName}_${variableName}' can not be longer than 65,535 bytes"
+	fi
+}
+
+_bishbosh_connection_write_validateUtf8WithIconv()
+{
+	if core_compatibility_whichNoOutput iconv; then
+		if iconv -c -s -f utf-8 -t utf-8 <<-EOF
+			$value
+		EOF; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is not valid UTF-8"
+	fi
+}
+
+core_dependency_requires '*' tr iconv
+bishbosh_connection_write_validateUtf8()
+{
+	local argument="$1"
+	local value="$2"
+	
+	_bishbosh_connection_write_validateUtf8WithIconv
+	
+	local strippedOfAsciiNul="$(tr -d '\000' "$value")"
+	
+	if [ ${#strippedOfAsciiNul} -ne ${#argument} ]; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' contains \u0000 (ASCII NUL)"
+	fi
+	
+}
+
+bishbosh_connection_write_validateTopicName()
+{
+	local argument="$1"
+	local value="$2"
+
+	if [ ${#argument} -eq 0 ]; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is empty; this is not permitted for topic names"
+	fi
+	
+	_bishbosh_connection_write_validateUtf8WithIconv
+	
+	local strippedOfInvalidCharacters="$(tr -d '#*\000' "$value")"
+	
+	if [ ${#strippedOfInvalidCharacters} -ne ${#argument} ]; then
+		local strippedOfAsciiNul="$(tr -d '\000' "$value")"
+	
+		if [ ${#strippedOfAsciiNul} -ne ${#argument} ]; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' contains \u0000 (ASCII NUL)"
+		fi
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' ('$value') contains a wildcard ('#' or '+')"
+	fi
+}
+
+core_dependency_requires '*' sed
+_bishbosh_connection_write_validateTopicFilter_sed()
+{
+	sed -e 's;/+/;XXX;g' -e 's;^+/;XX;g' -e 's;/+$;XX;g' -e 's;/#$;XX;g' -e 's;#;;g' -e 's;+;;g' <<-EOF
+		$topicFilter
+	EOF
+}
+
+bishbosh_connection_write_validateTopicFilter()
+{
+	local argument="$1"
+	local index=$2
+	local value=$3
+	
+	argument="$argument' at pair index '$index"
+	
+	if [ ${#topicFilter} -eq 0 ]; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is empty; this is not permitted for topic filters"
+	fi
+	
+	_bishbosh_connection_write_validateUtf8WithIconv
+	
+	local strippedTopicFilter="$(tr -d '\n\000' "$topicFilter")"
+	if [ ${#strippedTopicFilter} -ne ${#topicFilter} ]; then
+
+		local strippedOfAsciiNul="$(tr -d '\000' "$value")"
+		if [ ${#strippedOfAsciiNul} -ne ${#argument} ]; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' contains \u0000 (ASCII NUL)"
+		fi
+		
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' has a topic filter containing \n (LF, Linefeed), which, although allowed in the MQTT 3.1.1 specification can not be supported in portable shell scripts or common tools (outside of those supplied by GNU)"
+	fi
+	
+	local strippedOfWildcard="$(_bishbosh_connection_write_validateTopicFilter_sed)"
+	
+	if [ ${#strippedOfWildcard} -ne ${#topicFilter} ]; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' ('$value') contains invalid wildcards"
 	fi
 }
 

@@ -4,10 +4,13 @@ _bishbosh_connection_write_SUBSCRIBE_validateArguments()
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' must contain at least one pair"
 	fi
 	
+	local recordFileBase="$bishbosh_connection_sessionSubscriptionsSubscribingPath"/"$packetIdentifier"
+	local index=0
+	local strippedTopicFiler
 	while [ $# -gt 1 ]
 	do
 		topicFilter="$1"
-		bishbosh_connection_write_fieldLengthCheck SUBSCRIBE 1 topicFilter
+		bishbosh_connection_write_validateTopicFilter 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' $index "$topicFilter"
 		
 		topicQos="$2"
 		case "$topicQos" in
@@ -17,19 +20,27 @@ _bishbosh_connection_write_SUBSCRIBE_validateArguments()
 			;;
 			
 			*)
-				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' must contain QoS values between 0 to 2 (inclusive), not '$topicQoS'"
+				bishbosh_connection_cleanUpSessionRecord
+				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' at pair index '$index' must contain QoS values between 0 to 2 (inclusive), not '$topicQoS'"
 			;;
 		esac
 		
+		# Done without space or tab separation as these are permitted in topic filters
+		printf '%s' "${topicQoS}${topicFilter}"
+		
 		shift 2
+		index=$((index+1))
 		topicFilter_fieldLength=${#topicFilter}
 		# 3 is topicFilter length bytes (2) + QoS length (1)
 		remainingLength=$(( remainingLength + 3 + topicFilter_fieldLength ))
-	done
+	done >"$recordFileBase".writing
 	
 	if [ $# -eq 1 ]; then
+		bishbosh_connection_cleanUpSessionRecord
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' must contain balanced pairs"
 	fi
+	
+	printf '%s' "$index" >"$recordFile".written
 }
 
 core_usesIn bishbosh/connection write
@@ -37,12 +48,20 @@ bishbosh_connection_write_SUBSCRIBE()
 {
 	local packetIdentifier
 	bishbosh_connection_write_packetIdentifierCheck bishbosh_connection_write_SUBSCRIBE_packetIdentifier "$bishbosh_connection_write_SUBSCRIBE_packetIdentifier"
-
+	
 	local remainingLength=2
 	local topicFilter
 	local topicQos
 	local topicFilter_fieldLength
 	_bishbosh_connection_write_SUBSCRIBE_validateArguments "$@"
+	
+	local index=0
+	while [ $index -lt $# ]; then
+	do
+		topicFilter="${index}"
+		topicQos=$2
+		index=$((index+2))
+	done
 	
 	# 8 << 4 + 1 << 1 in octal
 	printf '\202'

@@ -1,0 +1,8 @@
+# awk, grep, sed don't handle ASCII NUL unless GNU
+# bash can handle ASCII NUL, other shells can't, for line delimiter
+# using sed requires escaping \n and other sequences, otherwise we'll have regex match issues
+# we might be better off doing '/' replacement with __ and then using the topic as a filename
+
+# Qos Expected Received Topic Filter
+sport/\ntennis/player1 0 0
+/sport/./sport/#

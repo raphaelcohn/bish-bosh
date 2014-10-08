@@ -1,6 +1,6 @@
 bishbosh_connection_read_controlpacket_PINGRESP()
 {
-	bishbosh_connection_read_protocolErrorIfRemainingLengthNotZero PINGRESP
+	bishbosh_connection_read_protocolError_ifRemainingLengthNotZero PINGRESP
 	
 	bishbosh_connection_handler_PINGRESP
 }

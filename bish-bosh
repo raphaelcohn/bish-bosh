@@ -234,11 +234,11 @@ The following values may be used in SCRIPTLETS to manage a connection:-
   * ASCII NUL (0x00) is not supported.
 
 The following values may be used to override client-id based configuration:-
-  bishbosh_connection_clientsPathForClientId  Overrides discovery of client state
+  bishbosh_connection_clientsPathForClientId  Overrides discovery of client session
   bishbosh_connection_clientIdScriptletsPath  Overrides location of client scriptlets
   bishbosh_connection_receivedMessagesPath*   Overrides location of received messages
   bishbosh_connection_transmitPath*           Overrides location of transmit data
-  bishbosh_connection_statePath               Overrides location of state data, eg
+  bishbosh_connection_sessionPath             Overrides location of session data
   bishbosh_connection_nextPacketIdentifier
   
   * Typically set to a path under /tmp to make use of a RAM-backed file
@@ -247,16 +247,14 @@ The following values may be used to override client-id based configuration:-
 The following handlers may be specified as functions in SCRIPTLETS, with
 the globals specified:-
   bishbosh_connection_handler_CONNACK()  bishbosh_connection_sessionPresent
-  bishbosh_connection_handler_SUBACK()*   
-  bishbosh_connection_handler_UNSUBACK()*
+  bishbosh_connection_handler_SUBACK()
+  bishbosh_connection_handler_UNSUBACK()
   bishbosh_connection_handler_PUBLISH()
   bishbosh_connection_handler_PUBACK()
   bishbosh_connection_handler_PUBREC()
   bishbosh_connection_handler_PINGRESP()
   bishbosh_connection_handler_beforeWrite()
   bishbosh_connection_handler_afterWrite()
-  
-  * Called multiple times, once for each subscription
 "
 	_program_commandLine_helpMessage_examples="
   ${_program_name} --server localhost --backends ncMacOSX,bash --client-id 12 -- /path/to/connection-details.scriptlet

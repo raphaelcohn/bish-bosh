@@ -59,25 +59,3 @@ bishbosh_connection_read_initialise()
 	
 	core_exitError "Can not find either hexdump or od on the path"
 }
-
-bishbosh_connection_read_protocolError()
-{
-	local controlPacket="$1"
-	local message="$2"
-	core_message WARN "Connection:$bishbosh_connection_id:read:$controlPacket:$message"
-	return $core_commandLine_exitCode_PROTOCOL
-}
-
-bishbosh_connection_read_protocolErrorIfRemainingLengthNot()
-{
-	local controlPacket="$1"
-	local expectedLength=$2
-	if [ $firstRemainingLengthByte -ne $expectedLength ]; then
-		bishbosh_connection_read_protocolError "$controlPacket" "Remaining length '$firstRemainingLengthByte' should be $expectedLength"
-	fi
-}
-
-bishbosh_connection_read_protocolErrorIfRemainingLengthNotZero()
-{
-	bishbosh_connection_read_protocolErrorIfRemainingLengthNot "$1" 0
-}

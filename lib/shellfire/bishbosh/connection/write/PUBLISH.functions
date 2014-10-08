@@ -47,7 +47,8 @@ _bishbosh_connection_write_PUBLISH_validateArguments()
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_PUBLISH_topicName' must be specified"
 	fi
 	topicName="$bishbosh_connection_write_PUBLISH_topicName"
-	bishbosh_connection_write_fieldLengthCheck PUBLISH 0 topicName
+	bishbosh_connection_write_validateTopicName bishbosh_connection_write_PUBLISH_topicName "$topicName"
+	
 	topicName_fieldLength=${#topicName}
 	remainingLength=$(( remainingLength + 2 + topicName_fieldLength ))
 	
@@ -69,7 +70,7 @@ _bishbosh_connection_write_PUBLISH_validateArguments()
 		message="$bishbosh_connection_write_PUBLISH_message"
 		message_fieldLength=${#message}
 		messageFilePath=''
-		bishbosh_connection_write_fieldLengthCheck PUBLISH 0 message
+		bishbosh_connection_write_fieldLengthCheck PUBLISH message
 	fi
 	remainingLength=$(( remainingLength + message_fieldLength ))
 	

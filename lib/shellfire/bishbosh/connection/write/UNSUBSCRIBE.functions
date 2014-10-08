@@ -4,15 +4,21 @@ _bishbosh_connection_write_UNSUBSCRIBE_validateArguments()
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_UNSUBSCRIBE_topics' must contain at least one topic"
 	fi
 	
+	local recordFile="$bishbosh_connection_sessionSubscriptionsUnsubscribingPath"/"$packetIdentifier"
 	while [ $# -gt 0 ]
 	do
 		topicFilter="$1"
-		bishbosh_connection_write_fieldLengthCheck SUBSCRIBE 1 topicFilter
+		bishbosh_connection_write_validateTopicFilter 'bishbosh_connection_write_UNSUBSCRIBE_topics' $index "$topicFilter"
 		shift 1
+	
+		# We could also record the request as the actual packet, then cat it into the stream; potentially more efficient
+		printf '%s' "${topicFilter}" >"$recordFile"
 		
 		topicFilter_fieldLength=${#topicFilter}
 		remainingLength=$(( remainingLength + 2 + topicFilter_fieldLength ))
 	done
+	
+	touch "$recordFile".written
 }
 
 core_usesIn bishbosh/connection write
