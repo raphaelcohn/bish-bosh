@@ -89,8 +89,8 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		fi
 		clientId=''
 	else
+		bishbosh_connection_write_validateUtf8 bishbosh_connection_write_CONNECT_clientId "$bishbosh_connection_write_CONNECT_clientId"
 		clientId="$bishbosh_connection_write_CONNECT_clientId"
-		bishbosh_connection_write_validateUtf8 clientId
 	fi
 	clientId_fieldLength=${#clientId}
 	bishbosh_connection_write_fieldLengthCheck CONNECT clientId
@@ -100,8 +100,8 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		username=''
 		username_fieldLength=-1
 	else
+		bishbosh_connection_write_validateUtf8 bishbosh_connection_write_CONNECT_username "$bishbosh_connection_write_CONNECT_username"
 		username="$bishbosh_connection_write_CONNECT_username"
-		bishbosh_connection_write_validateUtf8 username
 		bishbosh_connection_write_fieldLengthCheck CONNECT username
 		username_fieldLength=${#username}
 		remainingLength=$(( remainingLength + 2 + username_fieldLength ))

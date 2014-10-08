@@ -44,13 +44,19 @@ bishbosh_connection_write_fieldLengthCheck()
 	fi
 }
 
+_bishbosh_connection_write_validateUtf8WithIconv_icon()
+{
+	iconv -c -s -f utf-8 -t utf-8 <<-EOF
+		$value
+	EOF
+}
+
 _bishbosh_connection_write_validateUtf8WithIconv()
 {
 	if core_compatibility_whichNoOutput iconv; then
-		if iconv -c -s -f utf-8 -t utf-8 <<-EOF
-			$value
-		EOF; then
-		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is not valid UTF-8"
+		if _bishbosh_connection_write_validateUtf8WithIconv_icon; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is not valid UTF-8"
+		fi
 	fi
 }
 
@@ -67,7 +73,6 @@ bishbosh_connection_write_validateUtf8()
 	if [ ${#strippedOfAsciiNul} -ne ${#argument} ]; then
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' contains \u0000 (ASCII NUL)"
 	fi
-	
 }
 
 bishbosh_connection_write_validateTopicName()

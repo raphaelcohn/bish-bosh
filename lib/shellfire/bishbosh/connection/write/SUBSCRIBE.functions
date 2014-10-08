@@ -63,7 +63,7 @@ bishbosh_connection_write_SUBSCRIBE()
 	_bishbosh_connection_write_SUBSCRIBE_validateArguments "$@"
 	
 	local index=0
-	while [ $index -lt $# ]; then
+	while [ $index -lt $# ]
 	do
 		topicFilter="${index}"
 		topicQos=$2

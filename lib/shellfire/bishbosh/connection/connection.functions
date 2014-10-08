@@ -39,7 +39,7 @@ bishbosh_connection_mkfifoTemporary()
 bishbosh_connection_defaultEssentialPaths()
 {
 	if core_variable_isUnset bishbosh_connection_clientsPathForClientId; then
-		bishbosh_connection_clientsPathForClientId="$bishbosh_clientsPath"/server/"$bishbosh_server"/client-id/"$clientId"
+		bishbosh_connection_clientsPathForClientId="$bishbosh_clientsPath"/server/"$bishbosh_server"/client-id/"$bishbosh_clientId"
 	fi
 	
 	mkdir -m 0755 -p "$bishbosh_connection_clientsPathForClientId" 2>/dev/null || core_exitError "Could not create bishbosh_connection_clientsPathForClientId '$bishbosh_connection_clientsPathForClientId'"
@@ -62,7 +62,7 @@ bishbosh_connection_sourcePerClientIdScriptlets()
 			do
 				set -f
 				if ! core_path_isReadableNonEmptyFilePath "$scriptletFilePath"; then
-					if [ "$scriptletFilePath" = '*.control' ]; then
+					if [ "$scriptletFilePath" = '*.scriptlet' ]; then
 						continue
 					fi
 					core_exitError "The client-id scriptlet file '$scriptletFilePath' is not a readable, non-empty file"
@@ -90,7 +90,7 @@ bishbosh_connection_defaultEssentialState()
 	
 	# Can be overridden, but not listed as possible
 	if core_variable_isUnset bishbosh_connection_sessionSubscriptionsPath; then
-		bishbosh_connection_sessionSession="$(bishbosh_connection_mkdirPermanent session/subscriptions)"
+		bishbosh_connection_sessionSubscriptionsPath="$(bishbosh_connection_mkdirPermanent subscriptions "$bishbosh_connection_sessionSession")"
 	fi
 	if core_variable_isUnset bishbosh_connection_sessionSubscriptionsSubscribingPath; then
 		bishbosh_connection_sessionSubscriptionsSubscribingPath="$(bishbosh_connection_mkdirPermanent subscribing "$bishbosh_connection_sessionSubscriptionsPath")"
@@ -102,7 +102,7 @@ bishbosh_connection_defaultEssentialState()
 		bishbosh_connection_sessionSubscriptionsUnsubscribingPath="$(bishbosh_connection_mkdirPermanent unsubscribing "$bishbosh_connection_sessionSubscriptionsPath")"
 	fi
 	if core_variable_isUnset bishbosh_connection_sessionPublicationsPath; then
-		bishbosh_connection_sessionSession="$(bishbosh_connection_mkdirPermanent session/publications)"
+		bishbosh_connection_sessionPublicationsPath="$(bishbosh_connection_mkdirPermanent publications "$bishbosh_connection_sessionSession")"
 	fi
 	if core_variable_isUnset bishbosh_connection_sessionPublicationsQos2PendingReceivePath; then
 		bishbosh_connection_sessionPublicationsQos2PendingReceivePath="$(bishbosh_connection_mkdirPermanent qos2-receive "$bishbosh_connection_sessionPublicationsPath")"

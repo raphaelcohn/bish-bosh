@@ -1,4 +1,5 @@
 Major TODO
+- reading remaining length if > 127
 - password can contain embedded ASCII NUL
 - password should be loadable from a file separate to anything else, so allowing production deployments
 - UNSUBSCRIBE / UNSUBACK is not implemented to record subscription state

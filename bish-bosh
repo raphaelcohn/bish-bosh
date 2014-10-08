@@ -1,5 +1,5 @@
 #!/usr/bin/env dash
-
+set -x
 _program()
 {
 	core_usesIn core temporaryFiles
@@ -71,6 +71,7 @@ _program_commandLine_parseInitialise()
 		_program_configurationSet_bishbosh_readLatency=1
 	fi
 
+	_program_default_lockLatency=1
 	if core_variable_isSet bishbosh_lockLatency; then
 		_program_configurationSet_bishbosh_lockLatency=0
 	else
