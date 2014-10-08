@@ -5,7 +5,7 @@ bishbosh_connection_handler_CONNACK()
 
 bishbosh_connection_handler_SUBACK()
 {
-	core_message DEBUG "bishbosh_connection_handler_SUBACK(packetIdentifier=$packetIdentifier, returnCode=$returnCode)"
+	core_message DEBUG "bishbosh_connection_handler_SUBACK(packetIdentifier=$packetIdentifier, returnCodeCount=$returnCodeCount, returnCodes=$@)"
 }
 
 bishbosh_connection_handler_UNSUBACK()

@@ -38,4 +38,6 @@ bishbosh_connection_write_SUBACK()
 	do
 		bishbosh_connection_write_byte $resultCode
 	done
+	
+	unset bishbosh_connection_write_SUBACK_packetIdentifier
 }

@@ -14,17 +14,16 @@ _bishbosh_connection_read_loop_fork()
 	$bishbosh_connection_read_byte_blocking firstRemainingLengthByte
 	bishbosh_connection_read_controlpacket_CONNACK >"$bishbosh_connection_toServerFifo"
 		
-	bishbosh_connection_writeLoop &
-	bishbosh_connection_writeLoopPid=$!
-	core_children_killOnExit $bishbosh_connection_writeLoopPid
+	#bishbosh_connection_writeLoop &
+	#bishbosh_connection_writeLoopPid=$!
+	#core_children_killOnExit $bishbosh_connection_writeLoopPid
 
 	{
 		while $bishbosh_connection_continue
 		do
 			bishbosh_connection_read_body
 		done
-	}
-
+	} >"$bishbosh_connection_toServerFifo"
 }
 
 bishbosh_connection_read_body()

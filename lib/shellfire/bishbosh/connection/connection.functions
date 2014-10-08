@@ -252,7 +252,7 @@ bishbosh_connection_writeLoop()
 						if [ "$transmitFilePath" = '*.control' ]; then
 							continue
 						fi
-						core_exitError "The control file '$transmitFilePath' is not a readable, non-empty file"
+						core_exitError "The transmit file '$transmitFilePath' is not a readable, non-empty file"
 					fi
 		
 					bishbosh_connection_writeLoopControlLockFolderPath="$transmitFilePath".lock
@@ -263,7 +263,6 @@ bishbosh_connection_writeLoop()
 					done
 		
 					. ./"$transmitFilePath"
-					#bishbosh_connection_write_PUBLISH
 					
 					rm -f "$transmitFilePath"
 					rmdir "$bishbosh_connection_writeLoopControlLockFolderPath"

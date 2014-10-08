@@ -1,21 +1,50 @@
 bishbosh_connection_read_controlpacket_SUBACK()
 {
-	bishbosh_connection_read_protocolErrorIfRemainingLengthNot SUBACK 3
-	
 	local packetIdentifier
 	bishbosh_connection_readPacketIdentifier
 	
+	local returnCodeCount=$((remainingLength-2))
+	local remainingReturnCodeCode=$returnCodeCount
 	local returnCode
-	$bishbosh_connection_read_byte_blocking returnCode
-	case $returnCode in
+	while [ $remainingReturnCodeCode -ne 0 ]
+	do
+		$bishbosh_connection_read_byte_blocking returnCode
+		case $returnCode in
 		
-		0|1|2|128)
-			bishbosh_connection_handler_SUBACK
-		;;
+			0|1|2|128)
+				bishbosh_connection_handler_SUBACK
+			;;
 		
-		*)
-			bishbosh_connection_read_protocolError SUBACK "Received reserved returnCode code of $returnCode"
-		;;
+			*)
+				bishbosh_connection_read_protocolError SUBACK "Received reserved returnCode code of $returnCode"
+			;;
 		
-	esac
+		esac
+	done
+	
+	core_TODO 'Validate number of return codes matches that in the original SUBSCRIBE'
+	
+	# .../clients/12/state/pending-subscriptions.d
+	#    <packetIdentifier-12345>.pending-subscription  or just  '12345' (so no need to use basename) *1
+	# .../clients/12/state/active-subscriptions  (just a regular file) *2
+	# .../clients/12/state/pending-unsubcriptions.d
+	#    12345 *3
+	
+	# *1 actually, probably QoS before topic, ,-separated, so we can handle everything but topic names containing '\n' at the end.
+	# Topic Filter  Requested QoS
+	# a/b    0/1/2
+	# ...    ...
+	
+	
+	# *2  Could be one file or just a set of files, one per topic [unfortunately, naming by topic is hard - need to replace '/' with 'xx_' to avoid . .. and // problems, as well as leading and trailing /] [or we could just not permit topics with //, etc]
+	# Topic Filter  Requested Qos  Actual Qos
+	# a/b    2              0/1/2/0x80
+	
+	# *3
+	# Topic Filter
+	# a/b
+	# ...
+	
+	unset returnCode
+	bishbosh_connection_handler_SUBACK
 }

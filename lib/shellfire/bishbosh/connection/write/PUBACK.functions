@@ -9,4 +9,6 @@ bishbosh_connection_write_PUBACK()
 	printf '\100\002'
 	
 	bishbosh_connection_write_twoByteLength packetIdentifier
+	
+	unset bishbosh_connection_write_PUBACK_packetIdentifier
 }
