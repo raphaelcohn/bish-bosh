@@ -44,7 +44,7 @@ bishbosh_connection_write_fieldLengthCheck()
 	fi
 }
 
-_bishbosh_connection_write_validateUtf8WithIconv_icon()
+_bishbosh_connection_write_validateUtf8WithIconv_iconv()
 {
 	iconv -c -s -f utf-8 -t utf-8 <<-EOF
 		$value
@@ -54,13 +54,21 @@ _bishbosh_connection_write_validateUtf8WithIconv_icon()
 _bishbosh_connection_write_validateUtf8WithIconv()
 {
 	if core_compatibility_whichNoOutput iconv; then
-		if _bishbosh_connection_write_validateUtf8WithIconv_icon; then
+		if ! _bishbosh_connection_write_validateUtf8WithIconv_iconv; then
 			core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is not valid UTF-8"
 		fi
 	fi
 }
 
-core_dependency_requires '*' tr iconv
+core_dependency_requires '*' tr
+bishbosh_connection_write_removeCharacters()
+{
+	local strip="$1"
+	local value="$2"
+	printf '%s' "$value" | tr -d "$strip"
+}
+
+core_dependency_requires '*' iconv
 bishbosh_connection_write_validateUtf8()
 {
 	local argument="$1"
@@ -68,7 +76,7 @@ bishbosh_connection_write_validateUtf8()
 	
 	_bishbosh_connection_write_validateUtf8WithIconv
 	
-	local strippedOfAsciiNul="$(tr -d '\000' "$value")"
+	local strippedOfAsciiNul="$(bishbosh_connection_write_removeCharacters '\000' "$value")"
 	
 	if [ ${#strippedOfAsciiNul} -ne ${#argument} ]; then
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' contains \u0000 (ASCII NUL)"
@@ -86,10 +94,10 @@ bishbosh_connection_write_validateTopicName()
 	
 	_bishbosh_connection_write_validateUtf8WithIconv
 	
-	local strippedOfInvalidCharacters="$(tr -d '#*\000' "$value")"
+	local strippedOfInvalidCharacters="$(bishbosh_connection_write_removeCharacters '#*\000' "$value")"
 	
 	if [ ${#strippedOfInvalidCharacters} -ne ${#argument} ]; then
-		local strippedOfAsciiNul="$(tr -d '\000' "$value")"
+		local strippedOfAsciiNul="$(bishbosh_connection_write_removeCharacters '\000' "$value")"
 	
 		if [ ${#strippedOfAsciiNul} -ne ${#argument} ]; then
 			core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' contains \u0000 (ASCII NUL)"
@@ -120,10 +128,10 @@ bishbosh_connection_write_validateTopicFilter()
 	
 	_bishbosh_connection_write_validateUtf8WithIconv
 	
-	local strippedTopicFilter="$(tr -d '\n\000' "$topicFilter")"
+	local strippedTopicFilter="$(bishbosh_connection_write_removeCharacters '\n\000' "$topicFilter")"
 	if [ ${#strippedTopicFilter} -ne ${#topicFilter} ]; then
 
-		local strippedOfAsciiNul="$(tr -d '\000' "$value")"
+		local strippedOfAsciiNul="$(bishbosh_connection_write_removeCharacters '\000' "$value")"
 		if [ ${#strippedOfAsciiNul} -ne ${#argument} ]; then
 			core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' contains \u0000 (ASCII NUL)"
 		fi
