@@ -78,7 +78,7 @@ bishbosh_connection_write_validateUtf8()
 	
 	local strippedOfAsciiNul="$(bishbosh_connection_write_removeCharacters '\000' "$value")"
 	
-	if [ ${#strippedOfAsciiNul} -ne ${#argument} ]; then
+	if [ ${#strippedOfAsciiNul} -ne ${#value} ]; then
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' contains \u0000 (ASCII NUL)"
 	fi
 }

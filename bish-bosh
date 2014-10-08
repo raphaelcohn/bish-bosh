@@ -1,5 +1,5 @@
 #!/usr/bin/env dash
-set -x
+
 _program()
 {
 	core_usesIn core temporaryFiles
