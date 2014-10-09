@@ -1,12 +1,12 @@
 _bishbosh_connection_read_loop_fork()
 {
+	set -x
 	bishbosh_connection_write_CONNECT >"$bishbosh_connection_toServerFifo"
 	
 	local controlPacketByte
 	local firstRemainingLengthByte
 	local remainingLength
 	
-	set -x
 	$bishbosh_connection_read_byte_blocking controlPacketByte
 	if [ -z "$controlPacketByte" ]; then
 		core_exitError $core_commandLine_exitCode_IOERR "Read of controlPacketByte failed"

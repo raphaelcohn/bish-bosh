@@ -9,6 +9,7 @@ bishbosh_connection_read_byte_pipe_initialise()
 		{
 			set +e
 			IFS=' ' read -r -u 5 $1
+			# $? == 1 is EOF
 			set -e
 		}
 		
@@ -30,6 +31,7 @@ bishbosh_connection_read_byte_pipe_initialise()
 		{
 			set +e
 			IFS=' ' read -r $1 <&5
+			# $? == 1 is EOF
 			set -e
 		}
 		

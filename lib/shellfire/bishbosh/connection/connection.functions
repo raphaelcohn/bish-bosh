@@ -243,7 +243,10 @@ bishbosh_connection_makeClientConnection()
 	
 	bishbosh_connection_read_initialise 'no'
 	bishbosh_connection_continue=true
+	set -x
 	bishbosh_connection_startConnectingProgramInBackground
+	set +x
+	exit 50
 	
 	# http://mywiki.wooledge.org/SignalTrap
 	# http://www.cons.org/cracauer/sigint.html

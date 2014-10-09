@@ -103,6 +103,10 @@ bishbosh_client_plaintext_ncMacOSX_start()
 		;;
 		
 	esac
+	
+	if [ $core_init_verbosity -gt 0 ]; then
+		core_variable_array_append options -v
+	fi
 
 	core_variable_array_append options $bishbosh_server
 	
@@ -114,5 +118,5 @@ bishbosh_client_plaintext_ncMacOSX_start()
 	
 	core_variable_array_append options $port
 	
-	core_variable_array_passToFunctionAsArguments options nc <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	core_variable_array_passToFunctionAsArguments options nc <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo"
 }

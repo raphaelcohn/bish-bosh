@@ -1,4 +1,4 @@
-#!/usr/bin/env dash
+#!/usr/bin/env bash
 
 _program()
 {
@@ -14,8 +14,6 @@ _program()
 		local bishbosh_temporaryFolderPath="$TMP_FOLDER"
 		
 		bishbosh_connection_makeClientConnection
-		
-		echo hello
 	}
 }
 
