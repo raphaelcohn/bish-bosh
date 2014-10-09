@@ -252,7 +252,6 @@ bishbosh_connection_makeClientConnection()
 	
 	bishbosh_connection_obtainConnectionId
 	bishbosh_connection_obtainNextSubscriptionIndex
-	bishbosh_connection_cleanUpTransmitLockFiles
 	bishbosh_connection_createFifos
 	
 	bishbosh_connection_read_initialise 'no'
