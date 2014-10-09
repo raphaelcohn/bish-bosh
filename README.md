@@ -19,24 +19,101 @@ In the newly created folder `bish-bosh`, is a binary `bish-bosh`. It's ready to 
 bish-bosh tries to use as few dependencies as possible, but, since this is shell script, that's not always possible. It's compounded by the need to support the difference between major shells, too. It also does its best to work around differences in common binaries, by using feature detection, and where it can't do any better, by attempting to install using your package manager.
 
 ### Required
-  * mkdir
-  * mkfifo
-  * mv
-  * rm
-  * rmdir
+All of these should be present even on the most minimal system. Usage is restricted to those flags known to work.
+
+* `mkdir`
+* `mkfifo`
+* `touch`
+* `mv`
+* `rm`
+* `rmdir`
+* `tr`
+* `cat`
+* `sed`, any POSIX-compliant version. busybox has been tested against MacOSX sed, GNU sed and BusyBox sed.
+* `grep`, any POSIX-compliant version. busybox has been tested against MacOSX grep, GNU grep and BusyBox grep.
 
 ### Either Or
-These are listed in preference order.
+These are listed in preference order. Ordinarily, bish-bosh uses the PATH and feature detection to try to find an optimum dependency. Making some choices, however, influences others (eg `hexdump` and `od` preferences change when `stdbuf` is discovered, to try to use GNU `od`). Some choices are sub-optimal, and may cause operational irritation (mostly, bishbosh responds far more slowly to signals and socket disconnections).
 
-  * Binary to Hexadecimal conversion
-    * hexdump (preferred)
-    * od (GNU coreutils, but GNU preferred)
-  * Turning off buffering
-	* stdbuf (part of GNU coreutils; also present in FreeBSD) or unbuffer (part of expect)
-  * unbuffer
-  * dd (used if stdbuf or unbuffer not available)
-* Optional
-  * `iconv` (BSD derived or GNU glibc derived)
+* Binary to Hexadecimal conversion
+  * `hexdump`, BSD-derived (part of the `bsdmainutils` packages in Debian/Ubuntu; usually installed by default)
+  * `hexdump`, in BusyBox
+  * `hexdump`, in Toybox
+  * `od`, from GNU `coreutils` package
+  * `od`, in BusyBox
+  * `od`, in Toybox
+  * `od`, BSD-derived
+* Turning off buffering of hexadecimal conversion
+  * `stdbuf`, from the GNU `coreutils` package
+  * `stdbuf`, FreeBSD
+  * `unbuffer`, from the expect package (known as `expect-dev` on Debian/Ubuntu)
+  * `dd` (used if stdbuf or unbuffer not available)
+* Network Connections (can be configured with the `--backends` option to use a different preference order)
+  * `bash` (if compiled with socket support; this is true for Mac OS X, Mac OS X + Homebrew, RHEL 6+, Centos 6+, Debian 6+, and Ubuntu 10.04 LTS +)
+  * `ncat`, part of the `nmap` package (available as `nmap` on Debian/Ubuntu and Mac OS X + Homebrew)
+  * `nc6`, a predecessor of `ncat` (available as `nc6` on Debian/Ubuntu and Mac OS X + Homebrew)
+  ncDebianTraditional ncDebianOpenBSD ncMacOSX ncGNU ncToybox ncBusyBox
+  * `nc`, Debian Traditional variant (available as `netcat-traditional` on Debian/Ubuntu)
+  * `nc`, Debian OpenBSD variant (available as `netcat-openbsd` on Debian/Ubuntu; usually installed by default)
+  * `nc`, Mac OS X
+  * `socat`
+  * `tcpclient`, part of D J Bernstein's [`ucspi-tcp`](http://cr.yp.to/ucspi-tcp.html) package (available as `ucspi-tcp` on Debian/Ubuntu and Mac OS X + Homebrew)
+* Validating UTF-8 strings
+  * `iconv`, from the GNU `glibc` package
+  * `iconv`, BSD-derived
+  * Nothing (validation not performed)
+* Random client-id generation
+  * `openssl`
+  * `dd` with access to either `/dev/urandom` or `/dev/random`
+  * `gpg`
+  * `awk`, any POSIX compliant-version, but using it is not cryptographically robust
+  * Nothing, if the shell has a RANDOM psuedo-environment variable: not cryptographically robust
+  * Nothing, if random client-ids are not needed
+
+
+### `bash` versions
+
+
+### Optimum, Fully-featured Configurations
+
+#### For Debian 7, Ubuntu 12.04 LTS and 14.04 LTS
+* GNU `coreutils` deb package
+* GNU `sed` deb package
+* GNU `grep` deb package
+* `bsdmainutils` deb package
+* 
+* BusyBox configured to use as builtin the list of required dependencies (above) and the following
+  * `ash` (GNU Bash-like features aren't required)
+  * `hexdump`
+  * `dd`
+* From GNU coreutils (because BusyBox doesn't have a builtin for stdbuf)
+  * `stdbuf`
+  * `od`
+* From GNU glibc
+  * `iconv`
+
+#### For BusyBox Embedded Use (as of version 1.22.1)
+* BusyBox configured to use as builtins the list of required dependencies (above) and the following
+  * `ash` (GNU Bash-like features aren't required)
+  * `hexdump`
+  * `dd`
+* From GNU coreutils (because BusyBox doesn't have a builtin for stdbuf)
+  * `stdbuf`
+  * `od`
+* From GNU glibc
+  * `iconv`
+
+
+### Minimum Configurations
+
+#### For BusyBox Embedded Use (as of version 1.22.1)
+* BusyBox configured to use as builtings the list of required dependencies (above) and the following
+  * `ash` (GNU Bash-like features aren't required)
+  * `dd` with `/dev/urandom`
+* From GNU coreutils (because BusyBox doesn't have a builtin for stdbuf)
+  * `stdbuf`
+  * `od`
+* From
 
 ### Supported Operating Systems and Linux Distributions
 To be effective
@@ -51,16 +128,14 @@ bish-bosh tries very hard to make sure it works under any POSIX-compliant shell.
 
 All of these shells support dynamically-scoped `local` variables, something we make extensive use of. Some of them also support read timeouts, which is essential for making
 
-### KornShell
-We try hard to maintain some compatibility with KornShell ksh88 derivatives; bish-bosh may work under [mksh] or [pdksh]() (although the latter hasn't been actively updated since 1999). At this time, [ksh93] is known not to work. Any help g
+### Zsh and KornShell
+bish-bosh is not actively tested under [zsh](http://www.zsh.org/) although it should work once the inevitable few bugs are fixed. zsh is a nice interactive shell, and good for scripting, too. In particular, it is the only shell where it's possible for the `read` builtin to read data containing Unicode `\u0000` (ACSCII `NUL` as was), and is also trully non-blocking.
 
- Additionally, Where possible,  that support local variables. Where a shell provides a more efficient implementation, that can  Primary  (, ) and . (developed on Mac OS X
+We try hard to maintain some compatibility with KornShell ksh88 derivatives; bish-bosh may work under [mksh](https://www.mirbsd.org/mksh.htm) or [pdksh](http://www.cs.mun.ca/~michael/pdksh/) (although the latter hasn't been actively updated since 1999). At this time, [ksh93](http://www.kornshell.org/) is known not to work. We have no access to ksh88 so can't support it.
 
-### Others
+### Unsupported Shells
+The following shells are untested and unsupported:-
 
-pdksh
-osh
-yash
-mkdsh
-ksh93
-ksh88
+* [oksh](http://www.connochaetos.org/oksh/) (A Linux derivative of OpenBSD's ksh shell)
+* [yash](http://sourceforge.jp/projects/yash/)
+* ksh88
