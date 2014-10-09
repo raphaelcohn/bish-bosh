@@ -186,8 +186,12 @@ Anything you can do with a command line switch, you can do as configuration. But
 * In `SCRIPTLETS`
   * Scriptlets are parsed in order they are found on the command line (`bish-bosh -- [SCRIPTLETS]...`)
 * Under `bishbosh_clientPath` (switch `--client-path`):-
-  * Any files in the folder `servers/SERVER/rc.d` where `SERVER` is `bishbosh_server` (`--server`)
-  * Any files in the folder `servers/SERVER/port/PORT/rc.d` where `PORT` is `bishbosh_port` (`--port`)
+  * The file `servers/SERVER/rc` where `SERVER` is `bishbosh_server` (`--server`)
+  * Any files in the folder `servers/SERVER/rc.d`
+  * The file `servers/SERVER/ports/PORT/rc` where `PORT` is `bishbosh_port` (`--port`)
+  * Any files in the folder `servers/SERVER/port/PORT/rc.d` 
+  * The file `servers/SERVER/ports/PORT/client-ids/CLIENT_ID/rc` where `CLIENT_ID` is `bishbosh_clientId` (`--client-id`)
+  * Any files in the folder `servers/SERVER/ports/PORT/client-ids/CLIENT_ID/rc.d` 
   * _Note: nothing stops these paths, or files in them, being symlinks, so allowing aliasing of server names and port numbers (eg to share secure and insecure settings)._
   * _Note: it is possible for a configuration file at `SERVER` or `PORT` level to set `bishbosh_clientId`, so influencing the search._
 

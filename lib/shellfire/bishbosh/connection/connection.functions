@@ -39,13 +39,20 @@ bishbosh_connection_mkfifoTemporary()
 bishbosh_connection_sourceScriptlets()
 {
 	local path="$1"
-	local scriptletsFolderPath="$path"/rc.d
+	mkdir -m 0755 -p "$path" 2>/dev/null
+	
 	
 	local scriptletFilePath
 	if [ ! -d "$scriptletsFolderPath" ]; then
 		return 0
 	fi
 	
+	local scriptletPath="$path"/rc
+	if core_path_isReadableNonEmptyFilePath "$scriptletPath"; then
+		. "$scriptletPath"
+	fi
+	
+	local scriptletsFolderPath="$path"/rc.d
 	pushd "$scriptletsFolderPath"
 		set +f
 			for scriptletFilePath in *.scriptlet
