@@ -47,7 +47,7 @@ You might want to install [bish-bosh] in your `PATH`, or package it. [bish-bosh]
 
 _Fattening_ is not currently supported, but is planned to be very soon.
 
-## Switches and Configuration
+## Switches and Configuring
 [bish-bosh] has a lot of switches! Most of them you'll hopefully never use: they're to deal with situations where network access isn't straightforward. Perhaps you've got multiple NICs or IP addresses, or a proxy is blocking you from connecting directly. And all of the switches, bar one, have sensible defaults. All of [bish-bosh]'s switches can be set using configuration (eg in `/etc`), or even in the scripts you run; the choice is yours. However, the basic invocation is very simple:-
 
     bish-bosh --server SERVER --client-id CLIENT_ID
@@ -95,7 +95,7 @@ There's quite a lot of things than can be configured this way. If a setting is m
 	# is not the same as
 	unset bishbosh_connection_write_CONNECT_username
 
-### Switches are the same as Configuration Opions
+### All switches can be set as configuration
 Everything you specify as a long-option switch can be specified in configuration. By convention, the naming in configuration matches the switches, eg
 
     --server test.mosquitto.org
@@ -107,6 +107,25 @@ is configured as
 	bishbosh_clientPath='/var/lib/bish-bosh/client'
 
 ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a letter, remove the `-` and make the letter capitalized.
+
+### But the really interesting scriptable stuff is done with configuration
+
+#### Being specific about how a is made connection
+These settings relate to [MQTT]'s *CONNACK* packet.
+
+| Configuration Setting | Values | Interpreted as if unset | Explanation |
+| --------------------- | ------ | ----------------------- | ----------- |
+| `bishbosh_connection_write_CONNECT_cleanSession` | 0 or 1 \* | 0 (ie persistent) | Clean Session flag |
+| `bishbosh_connection_write_CONNECT_willTopic` | Any valid topic name | No will messages |  Will topic |
+| `bishbosh_connection_write_CONNECT_willQos` | 0 - 2 inclusive | 0 | Will QoS, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
+| `bishbosh_connection_write_CONNECT_willRetain` | 0 or 1 \* | 0 | Will Retain flag, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
+| `bishbosh_connection_write_CONNECT_willMessage` | Any valid message, but ASCII NUL is not supported | invalid | Will message, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
+| `bishbosh_connection_write_CONNECT_keepAlive` | 0 to 65535 inclusive | 0 | Keep Alive for pings in seconds. A value of 0 disables keep alive handling |
+| `bishbosh_clientId` | Any valid UTF-8 string excluding ASCII NUL | invalid | Client id. Empty client ids, and random client ids, are not yet supported. Usually set on the command line with the switch `--client-id CLIENT_ID` |
+| `bishbosh_connection_write_CONNECT_username` | Any valid UTF-8 string excluding ASCII NUL. May be empty | No username | Username. May be empty or unset (the latter meaning it is not sent) |
+| `bishbosh_connection_write_CONNECT_password` | Any sequence of bytes excluding ASCII NUL. May be empty | No password | Password. May be empty or unset (the latter meaning it is not sent) |
+
+\* technically, a boolean, which might also be `Y`, `YES`, `Yes`, `yes`, `T`, `TRUE`, `True`, `true`, `ON`, `On`, `on` for 1 and `N`, `NO`, `No`, `no`, `F`, `FALSE`, `False`, `false`, `OFF`, `Off` and `off` for 0, but best as a number.
 
 ### OK, back to switches
 
@@ -176,6 +195,8 @@ When using a proxy, you won't be able to use Unix domain sockets (eg `--transpor
 
 _Note: Not running proxies myself, I can't test many of these settings combinations._
 
+## File Locations
+
 ### Configuration Locations
 Anything you can do with a command line switch, you can do as configuration. But configuration can also be used with scripts. Indeed, the configuration syntax is simply shell script. Configuration files _should not_ be executable. This means that if you _really_ want to, you can override just about any feature or behaviour of [bish-bosh] - although that's not explicitly supported. Configuration can be in any number of locations. Configuration may be a single file, or a folder of files; in the latter case, every file in the folder is parsed in 'shell glob-expansion order' (typically ASCII sort order of file names). Locations are searched in order as follows:-
 
@@ -201,7 +222,7 @@ Anything you can do with a command line switch, you can do as configuration. But
   * _Note: nothing stops these paths, or files in them, being symlinks, so allowing aliasing of server names and port numbers (eg to share secure and insecure settings)._
   * _Note: it is possible for a configuration file at `SERVER` or `PORT` level to set `bishbosh_clientId`, so influencing the search._
 
-## Session Location
+### Session Location
 MQTT clients have 'state', which is known as their 'session'. Even clients that are ephmeral need a working area. Ordinarily
 
 ## Dependencies
@@ -404,17 +425,37 @@ The following shells are untested and unsupported:-
 
 In addition, there is the 'meta' backend, `nc`, which attempts to distinguish between `ncMacOSX`, `ncGNU`, `ncDebianTraditional`, `ncDebianOpenBSD`, `ncToybox` and `ncBusyBox`.
 
-### TODO
+## Limitations
+
+### suid / sgid
+bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit as soon as possible with an error. It is madness to run shell scripts with such settings.
+
+### Specification Violations
+* Apart from [zsh], no shell can either have variables with Unicode NUL (aka ASCII NUL, 0x00) in them, or read them directly. [zsh] is not supported at this time. Consequently,
+  * Will messages can not have ASCII NUL in them, although a mechanism to load them from disk may be added
+  * Passwords likewise are so constrained (again, loading directly from disk may be added)
+* It is not possible to support Keep Alives other than 0 on pure POSIX shells such as `dash`, as they lack read timeouts and the pseudo-environment variable `SECONDS` (a workaround with `date` is painful to consider)
+* Shell builtins and most common tools do not support parsing lines delimited with anything other than `\n` (eg `sed`). Whilst some tooling (eg GNU coreutils, [GNU Bash]) can handle `\0` terminated lines, support is not consistent enough. Consequently,
+  * Topic names can not contain `\n`.
+  * Topic filters can not contain `\n`.
+* Since client-ids are used as part of file system paths, they may not be empty even when `bishbosh_connection_write_CONNECT_cleanSession` is 0. This might be fixed in a future version.
+
+### Broken but Fixable
+* Keep Alive handling does not correctly support values other than 0, and *PINGREQ* packets are not sent (and *PINGRESP* packets are discarded)
+* Unsubscribe handling is broken
+* Connection tear down is very brittle, and state can be easily corrupted
+* State transitions are nothing like as close to atomic as they could be
+* SIGINT / SIGTERM signal handling for read
+* Non-blocking reads should cause re-evaluation of connection status
+
+### Useful to do
 * Turning off DNS resolution
 * supporting inactivity timers
 * [MQTT]S using openssl, socat, gnutls, ncat and others
 * [MQTT] over SSH
 * [MQTT] over WebSockets
 * Investigate suckless tools
-
-### Gotchas
-* fattening
-* suid / sgid
+* Investigate supporting empty client ids for clean session = 1
 
 [bish-bosh]: https://github.com/raphaelcohn/bish-bosh  "bish-bosh on GitHub"
 [shellfire]: https://github.com/shellfire-dev  "shellfire on GitHub"

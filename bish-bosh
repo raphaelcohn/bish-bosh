@@ -247,7 +247,6 @@ The following values may be used in SCRIPTLETS to manage a connection:-
   bishbosh_connection_write_CONNECT_willQos       Optional  0 - 2
   bishbosh_connection_write_CONNECT_willRetain    Optional
   bishbosh_connection_write_CONNECT_keepAlive     Mandatory 0 - 65535
-  bishbosh_connection_write_CONNECT_clientId      Optional  (overrides)
   bishbosh_connection_write_CONNECT_username      Optional  String
   bishbosh_connection_write_CONNECT_password      Optional  Binary*
 

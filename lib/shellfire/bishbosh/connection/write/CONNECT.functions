@@ -77,21 +77,17 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		keepAlive=$bishbosh_connection_write_CONNECT_keepAlive
 	fi
 	
-	if core_variable_isUnset bishbosh_connection_write_CONNECT_clientId; then
-		# generate a random client-id
+	if core_variable_isUnset bishbosh_clientId; then
+		core_exitError "How is bishbosh_clientId unset?"
+	elif [ -z "$bishbosh_clientId" ]; then
 		if [ $cleanSession -eq 0 ]; then
-			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_clientId' must be set if the argument 'bishbosh_connection_write_CONNECT_cleanSession' is true (yes)"
+			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_clientId' can not be empty (blank) if the argument 'bishbosh_connection_write_CONNECT_cleanSession' is 0"
 		fi
-		clientId="$(core_random_characterForEncodingLettersAndNumbers)$(core_random_characterForEncodingLettersAndNumbers)$(core_random_characterForEncodingLettersAndNumbers)$(core_random_characterForEncodingLettersAndNumbers)$(core_random_characterForEncodingLettersAndNumbers)"
-	elif [ -z "$bishbosh_connection_write_CONNECT_clientId" ]; then
-		if [ $cleanSession -eq 0 ]; then
-			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_clientId' can not be empty (blank) if the argument 'bishbosh_connection_write_CONNECT_cleanSession' is true (yes)"
-		fi
-		clientId=''
 	else
-		bishbosh_connection_write_validateUtf8 bishbosh_connection_write_CONNECT_clientId "$bishbosh_connection_write_CONNECT_clientId"
-		clientId="$bishbosh_connection_write_CONNECT_clientId"
+		bishbosh_connection_write_validateUtf8 bishbosh_clientId "$bishbosh_clientId"
+		clientId="$bishbosh_clientId"
 	fi
+	
 	clientId_fieldLength=${#clientId}
 	bishbosh_connection_write_fieldLengthCheck CONNECT clientId
 	remainingLength=$(( remainingLength + 2 + clientId_fieldLength ))

@@ -140,12 +140,7 @@ bishbosh_connection_defaultAndCreateSessionSubFolderPaths()
 }
 
 bishbosh_connection_defaultEssentialState()
-{
-	# Allows a logical client-id change to occur
-	if core_variable_isUnset bishbosh_connection_write_CONNECT_clientId; then
-		bishbosh_connection_write_CONNECT_clientId="$bishbosh_clientId"
-	fi
-	
+{	
 	# Should have come from session
 	if core_variable_isUnset bishbosh_connection_nextPacketIdentifier; then
 		bishbosh_connection_nextPacketIdentifier=0
