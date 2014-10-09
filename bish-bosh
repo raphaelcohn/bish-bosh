@@ -31,7 +31,7 @@ _program_entrypoint='bishbosh'
 
 _program_commandLine_parseInitialise()
 {
-	_program_default_backends='bash,ncat,nc6,nc,socat,tcpclient'
+	_program_default_backends='ncat,nc6,nc,bash,socat,tcpclient'
 	if core_variable_isSet bishbosh_backends; then
 		_program_configurationSet_bishbosh_backends=0
 	else
