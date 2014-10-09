@@ -132,10 +132,6 @@ _program_commandLine_helpMessage()
 May be used as a command interpreter in scripts starting #!/usr/bin/env ${_program_name}
 if on the PATH."
 	_program_commandLine_helpMessage_options="
-  -b, --backends A,B,...    Backend types A,B,... to talk to MQTT server.
-                            Ordered in preference order. First found used.
-                            Comma separated.
-                            Defaults to '${_program_default_backends}'.
   -s, --server HOST         Server hostname, HOST, Unix domain socket path,
                             IPv4 or IPv6 address.
                             Unix domain socket paths must contain a '/' (ie
@@ -143,15 +139,19 @@ if on the PATH."
   -p, --port PORT           Server PORT. Ignored for Unix domain sockets.
                             Use 'BACKEND' to let the backend choose.
                             Defaults to 1883 or 8883 depending on backend
-  -c, --clients-path PATH   PATH to folder containing Client Ids.
-                            Contains a transmit folder, etc.
-                            Defaults to '${_program_default_clientsPath}'.
   -i, --client-id ID        Specifies the client id to use. Any SCRITPLETS
                             found at --clients-path PATH/ID will then be
                             sourced. SCRIPTLETS control how a connection is
                             managed. ${_program_name} does not generate
                             random IDs, although a SCRIPTLET or configuration
                             is entitled to.
+  -b, --backends A,B,...    Backend types A,B,... to talk to MQTT server.
+                            Ordered in preference order. First found used.
+                            Comma separated.
+                            Defaults to '${_program_default_backends}'.
+  -c, --clients-path PATH   PATH to folder containing Client Ids.
+                            Contains state, scripts, etc.
+                            Defaults to '${_program_default_clientsPath}'.
       --read-latency MSECS  Maximum time to block for when reading in
                             MSECS milliseconds between 0 and 1000
                             inclusive. 0 has different meaning in

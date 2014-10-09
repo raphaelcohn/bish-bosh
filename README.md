@@ -100,20 +100,58 @@ ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a let
 
 ### OK, back to switches
 
+#### Informational Settings
+
+| Switch | Value | Configuration Setting | Default | Purpose |
+| ------ | ----- | --------------------- | ------- | ------- |
+| `-v, --verbose` | `[LEVEL]` | `core_init_verbosity` | `0` | Adjusts verbosity of output on standard out. `LEVEL` is optional; omitting causes a +1 increase in verbosity. May be specified multiple times, although levels greater than `2` have no effect currently. The only configuration setting that doesn't reflect convention naming (because it is inherited from [shellfire](https://github.com/shellfire-dev)) |
+| `--version` | | | | Version and license information in a GNU-like format |
+
+#### MQTT Big Hitters
+
+
+#### Configuration Tweaks
+
+  -b, --backends A,B,...    Backend types A,B,... to talk to MQTT server.
+                            Ordered in preference order. First found used.
+                            Comma separated.
+                            Defaults to '${_program_default_backends}'.
+  -c, --clients-path PATH   PATH to folder containing Client Ids.
+                            Contains state, scripts, etc.
+                            Defaults to '${_program_default_clientsPath}'.
+      --read-latency MSECS  Maximum time to block for when reading in
+                            MSECS milliseconds between 0 and 1000
+                            inclusive. 0 has different meaning in
+                            'zsh' as opposed to 'bash'.
+                            Defaults to '${_program_default_readLatency}'.
+                            Default varies by detected shell.
+      --lock-latency MSECS  Maximum time to sleep for when trying to acquire a
+                            lock in MSECS milliseconds between 0 and 1000
+                            inclusive. Defaults to '${_program_default_lockLatency}'.
+
+#### Source-Routing Settings
+If you have a box with multiple NICs or IP addresses, broken IPv4 / IPv6 networking (or DNS resolution) or strange firewall policies that block certain source ports, you can control those as follows:-
+
+| Switch | Value | Configuration Setting | Default | Purpose |
+| ------ | ----- | --------------------- | ------- | ------- |
+| `--transport` | `TRANSPT` | `bishbosh_transport` | `inet` | Use a particular socket transport `TRANSPT`. `TRANSPT` may be one of `inet`, `inet4`, `inet6` or `unix`. Using `inet` allows the backend to select either a IPv4 or IPv6 connection as appropriate after DNS resolution. `inet4` forces an IPv4 connection; `inet6` likewise forces an IPv6 connection. `unix` forces a Unix Domain Socket connection |
+| `--source-address` | `S` | `bishbosh_sourceAddress` | unset | Connect using the NIC with the source address `S`. If `TRANSPT` is `unix` then `S` must reference an extant, accessible Unix Domain Socket file path. Results in packets being sent from this address. `S` may be a host name resolved using DNS, or an IPv4 or IPv6 address. If you disable DNS resolution of MQTT server names, it's likely that a backend will do likewise for `HOST`. If `S` is set to `''` (the empty string), then it is treated as if unset. This is to allow local users to override global configuration. |
+| `--source-port` | `PORT` | `bishbosh_sourcePort` | unset | Connect using the source port `PORT`. If `TRANSPT` is `unix` then this setting is invalid. Results in packets being sent from this port. If unset, then a random source port is chosen. If `PORT` is set to `''` (the empty string), then it is treated as if unset. This is to allow local users to override global configuration. |
+
 #### Proxy Settings
 Personally, I find proxies extremely irritating, and of very limited benefit. But many organizations still use them, if simply because once they go in, they tend to stay in - they appeal to the control freak in all of us, I suppose. bish-bosh does its best to support SOCKS and HTTP proxies, but we're reliant on the rather limited support of backends. Many don't support them, not least because most FOSS is produced by developers who wouldn't use them - they're individuals, not power-mad network admins.
 
-When using a proxy, you won't be able to use Unix domain sockets. Not every backend supports using a proxy (there's a compatibility table below). And those that do don't support every option:-
+When using a proxy, you won't be able to use Unix domain sockets (eg `--transport unix`). Not every backend supports using a proxy (there's a compatibility table below). And those that do don't support every option:-
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
 | `--proxy-kind` | `KIND` | `bishbosh_proxyKind` | unset | Use a particular `KIND` of proxy. `KIND` is one of `SOCKS4`, `SOCKS5`, `HTTP` or `none`. Using `none` disables the proxy; this is for when a global configuration has been set for a machine but a local user needs to run without it. |
-| `-proxy-server` | `HOST` | `bishbosh_proxyServer` | unset | Connect to a proxy server on a given `HOST`, which may be a name, an IPv4 or IPv6 address (in the case of the latter, you may need to surround it in `[]`; backends vary and do not document IPv6 proxy address handling). If you disable DNS resolution of MQTT server names, it's likely that a backend will do likewise for `HOST`. |
+| `-proxy-server` | `HOST` | `bishbosh_proxyServer` | unset | Connect to a proxy server on a given `HOST`, which may be a name, an IPv4 or IPv6 address (in the case of the latter, you may need to surround it in `[]`, eg `[::1]`; backends vary and do not document IPv6 proxy address handling). If you disable DNS resolution of MQTT server names, it's likely that a backend will do likewise for `HOST`. |
 | `--proxy-port` | `PORT` | `bishbosh_proxyPort` | 1080 for `KIND` of `SOCKS4` or `SOCKS5`. 3128 for `HTTP`. unset for `none`. | Port the proxy server `HOST` is running on. |
 | `--proxy-username` | `UN` | `bishbosh_proxyUsername` | unset | Username `UN` to use. Please note that passing this as a switch is insecure. |
 | `--proxy-password` | `PWD` | `bishbosh_proxyPassword` | unset | Password `PWD` to use. Please note that passing this as a switch is insecure. Rarely supported. |
 
-_Note: Not running proxies myself, I can't test many of these settings directly._
+_Note: Not running proxies myself, I can't test many of these settings combinations._
 
 ## Configuration
 Configuration is not just about 
