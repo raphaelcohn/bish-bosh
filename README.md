@@ -125,22 +125,13 @@ The currently supported backends are listed in a section below.
 | `-b, --backends` | `A,B,...` | `bishbosh_backends` | `ncat,nc6,nc,bash,socat,tcpclient` | Backends are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. |
 
 #### Configuration Tweaks
-   A,B,...    Backend types A,B,... to talk to MQTT server.
-                            Ordered in preference order. First found used.
-                            Comma separated.
-                            Defaults to '${_program_default_backends}'.
-  -c, --clients-path PATH   PATH to folder containing Client Ids.
-                            Contains state, scripts, etc.
-                            Defaults to '${_program_default_clientsPath}'.
-      --read-latency MSECS  Maximum time to block for when reading in
-                            MSECS milliseconds between 0 and 1000
-                            inclusive. 0 has different meaning in
-                            'zsh' as opposed to 'bash'.
-                            Defaults to '${_program_default_readLatency}'.
-                            Default varies by detected shell.
-      --lock-latency MSECS  Maximum time to sleep for when trying to acquire a
-                            lock in MSECS milliseconds between 0 and 1000
-                            inclusive. Defaults to '${_program_default_lockLatency}'.
+Ordinarily, you should not need to change any of these settings. The `--clients-path` controls where bish-bosh looks for state and script information for a particular client. When bish-bosh is installed, it typically defaults to `/var/lib/bish-bosh/clients`.
+
+| Switch | Value | Configuration Setting | Default | Purpose |
+| ------ | ----- | --------------------- | ------- | ------- |
+| `-c, --clients-path` | `PATH` | `bishbosh_clientsPath` | See help output | `PATH` to a location to store state and script data for a client-id on a per-server, per-client-id basis |
+| `--read-latency` | `MSECS` | `bishbosh_readLatency` | See help output | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak blocking read timeouts. blocking read timeouts are experimental and may not work properly in your shell. The value `0` may be interpreted differently by different shells and should be used with caution. |
+| `--lock-latency` | `MSECS` | `bishbosh_lockLatency` | See help output | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak lock acquisitions. Locking is currently done using `mkdir`, which is believed to be an atomic operation on most common filesystems. |
 
 #### Source-Routing Settings
 If you have a box with multiple NICs or IP addresses, broken IPv4 / IPv6 networking (or DNS resolution) or strange firewall policies that block certain source ports, you can control those as follows:-
