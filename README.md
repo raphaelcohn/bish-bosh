@@ -417,7 +417,7 @@ The following shells are untested and unsupported:-
 | ncDebianTraditional | `nc.openbsd` | Debian OpenBSD | MQTT | Barely Implemented | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. Usernames supported. | Yes |
 | ncDebianOpenBSD | `nc.traditional` | Debian Traditional / Hobbit | MQTT | Barely Implemented | Yes | Yes | No | No | Yes |
 | ncToybox | `nc` / `busybox nc` | BusyBox | MQTT | Barely Implemented | No | No | No, although serial device files are supported | No | Yes |
-| ncBusyBox | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] / Hobbit | MQTT | Barely Implemented | No | No | No, although serial device files are supported | No | Source Port only |
+| ncBusyBox | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] | MQTT | Barely Implemented | No | No | No, although serial device files are supported | No | Source Port only |
 | nc6 | `nc6` | netcat6, nc6 | MQTT | Barely Implemented | Yes | Yes | No | No | Yes |
 | ncat | `ncat`| Nmap ncat | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. Usernames and passwords supported for HTTP, usernames only for SOCKS. | Yes |
 | socat | `socat` | socat | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | ? | ? |
