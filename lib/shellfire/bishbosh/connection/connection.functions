@@ -27,6 +27,16 @@ bishbosh_connection_mkdirPermanent()
 	printf '%s' "$folderPath"
 }
 
+bishbosh_connection_mkdir()
+{
+	local parentPath="$1"
+	local folderName="$2"
+
+	local folderPath="$parentPath"/"$folderName"
+	mkdir -m 0755 -p "$folderPath"
+	printf '%s' "$folderPath"
+}
+
 core_dependency_requires '*' mkfifo
 bishbosh_connection_mkfifoTemporary()
 {
@@ -70,50 +80,67 @@ bishbosh_connection_sourceScriptlets()
 		set -f
 	popd
 }
+
+_bishbosh_connection_defaultFolderPath()
+{
+	local variableName="$1"
+	local parentPath="$2"
+	local folderName="$3"
+	if core_variable_isUnset "$variableName"; then
+		core_variable_setVariable "$variableName" "$(bishbosh_connection_mkdir "$parentPath" "$folderName")"
+	fi
+}
+
+bishbosh_connection_chooseConnectionSessionPathAndCleanUpOldSessionIfRequired()
+{
+	# Choose a temporary location for clean session = 1 clients
+	local chosenParentPath
+	local tryToCleanUpSession
+	if core_variable_isUnset bishbosh_connection_sessionPath; then
+		if core_variable_isUnset bishbosh_connection_write_CONNECT_cleanSession; then
+			chosenParentPath="$bishbosh_sessionPath"
+			tryToCleanUpSession=0
+		else
+			core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_cleanSession "$bishbosh_connection_write_CONNECT_cleanSession"
+			if core_variable_isTrue "$bishbosh_connection_write_CONNECT_cleanSession"; then
+				chosenParentPath="$bishbosh_temporaryFolderPath"
+				tryToCleanUpSession=1
+			else
+				chosenParentPath="$bishbosh_sessionPath"
+				tryToCleanUpSession=0
+			fi
+		fi
+	fi
 	
+	local relativeSessionPath=servers/"$bishbosh_server"/ports/"$bishbosh_port"/client-ids/"$bishbosh_clientId"
+	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPath "$chosenParentPath"/"$relativeSessionPath" session
+	
+	if [ $tryToCleanUpSession ]; then
+		rm -rf "$bishbosh_sessionPath"/"$relativeSessionPath" 2>/dev/null || core_message WARN "Could not clean up session state at '$bishbosh_sessionPath/$relativeSessionPath'"
+	fi
+}
+
+bishbosh_connection_defaultAndCreateSessionSubFolderPaths()
+{
+	# subscriptions: Can be overridden, but not listed in help or README.md
+	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionSubscriptionsPath "$bishbosh_connection_sessionPath" subscriptions
+	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionSubscriptionsSubscribingPath "$bishbosh_connection_sessionSubscriptionsPath" subscribing
+	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionSubscriptionsActivePath "$bishbosh_connection_sessionSubscriptionsPath" active
+	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionSubscriptionsUnsubscribingPath "$bishbosh_connection_sessionSubscriptionsPath" unsubscribing
+	
+	# publications: Can be overridden, but not listed in help or README.md
+	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsPath "$bishbosh_connection_sessionPath" publications
+	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsQos2PendingReceivePath "$bishbosh_connection_sessionPublicationsPath" qos2-receive
+	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsQos1PendingSendPath "$bishbosh_connection_sessionPublicationsPath" qos1-sent-publish
+	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsQos2PendingSendPath "$bishbosh_connection_sessionPublicationsPath" qos2-sent-publish
+	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsQos2PendingCompPath "$bishbosh_connection_sessionPublicationsPath" qos2-sent-pubrel
+	
+	# messages: Can be overridden, but not listed in help or README.md
+	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionReceivedMessagesPath "$bishbosh_connection_sessionPath" received-messages
+}
+
 bishbosh_connection_defaultEssentialState()
 {
-	if core_variable_isUnset bishbosh_connection_receivedMessagesPath; then
-		bishbosh_connection_receivedMessagesPath="$(bishbosh_connection_mkdirPermanent received-messages)"
-	fi
-	
-	if core_variable_isUnset bishbosh_connection_transmitPath; then
-		bishbosh_connection_transmitPath="$(bishbosh_connection_mkdirPermanent transmit)"
-	fi
-	
-	if core_variable_isUnset bishbosh_connection_sessionSession; then
-		bishbosh_connection_sessionSession="$(bishbosh_connection_mkdirPermanent session)"
-	fi
-	
-	# Can be overridden, but not listed as possible
-	if core_variable_isUnset bishbosh_connection_sessionSubscriptionsPath; then
-		bishbosh_connection_sessionSubscriptionsPath="$(bishbosh_connection_mkdirPermanent subscriptions "$bishbosh_connection_sessionSession")"
-	fi
-	if core_variable_isUnset bishbosh_connection_sessionSubscriptionsSubscribingPath; then
-		bishbosh_connection_sessionSubscriptionsSubscribingPath="$(bishbosh_connection_mkdirPermanent subscribing "$bishbosh_connection_sessionSubscriptionsPath")"
-	fi
-	if core_variable_isUnset bishbosh_connection_sessionSubscriptionsActivePath; then
-		bishbosh_connection_sessionSubscriptionsActivePath="$(bishbosh_connection_mkdirPermanent active)"
-	fi
-	if core_variable_isUnset bishbosh_connection_sessionSubscriptionsUnsubscribingPath; then
-		bishbosh_connection_sessionSubscriptionsUnsubscribingPath="$(bishbosh_connection_mkdirPermanent unsubscribing "$bishbosh_connection_sessionSubscriptionsPath")"
-	fi
-	if core_variable_isUnset bishbosh_connection_sessionPublicationsPath; then
-		bishbosh_connection_sessionPublicationsPath="$(bishbosh_connection_mkdirPermanent publications "$bishbosh_connection_sessionSession")"
-	fi
-	if core_variable_isUnset bishbosh_connection_sessionPublicationsQos2PendingReceivePath; then
-		bishbosh_connection_sessionPublicationsQos2PendingReceivePath="$(bishbosh_connection_mkdirPermanent qos2-receive "$bishbosh_connection_sessionPublicationsPath")"
-	fi
-	if core_variable_isUnset bishbosh_connection_sessionPublicationsQos1PendingSendPath; then
-		bishbosh_connection_sessionPublicationsQos1PendingSendPath="$(bishbosh_connection_mkdirPermanent qos1-sent-publish "$bishbosh_connection_sessionPublicationsPath")"
-	fi
-	if core_variable_isUnset bishbosh_connection_sessionPublicationsQos2PendingSendPath; then
-		bishbosh_connection_sessionPublicationsQos2PendingSendPath="$(bishbosh_connection_mkdirPermanent qos2-sent-publish "$bishbosh_connection_sessionPublicationsPath")"
-	fi
-	if core_variable_isUnset bishbosh_connection_sessionPublicationsQos2PendingCompPath; then
-		bishbosh_connection_sessionPublicationsQos2PendingCompPath="$(bishbosh_connection_mkdirPermanent qos2-sent-pubrel "$bishbosh_connection_sessionPublicationsPath")"
-	fi
-	
 	# Allows a logical client-id change to occur
 	if core_variable_isUnset bishbosh_connection_write_CONNECT_clientId; then
 		bishbosh_connection_write_CONNECT_clientId="$bishbosh_clientId"
@@ -190,24 +217,6 @@ bishbosh_connection_obtainLockForClientId()
 	fi
 }
 
-core_dependency_requires '*' rm
-bishbosh_connection_cleanUpTransmitLockFiles()
-{
-	pushd "$bishbosh_connection_transmitPath"
-		
-		local transmitFileLockFolderPath
-
-		set +f
-		for transmitFileLockFolderPath in *.lock
-		do
-			set -f
-			rm -rf "$transmitFileLockFolderPath"
-		done
-		set +f
-		
-	popd
-}
-
 bishbosh_connection_createFifos()
 {
 	bishbosh_connection_fifoFolder="$(bishbosh_connection_mkdirTemporary fifo)"
@@ -243,13 +252,14 @@ bishbosh_connection_makeClientConnection()
 		bishbosh_connection_sourceScriptlets "$bishbosh_connection_clientServersPortsClientIdsPath"
 	fi
 	
-	mkdir -m 0755 -p "$bishbosh_connection_clientServersPortsClientIdsPath" 2>/dev/null || core_exitError "Could not create bishbosh_connection_clientServersPortsClientIdsPath '$bishbosh_connection_clientServersPortsClientIdsPath'"
 	bishbosh_connection_obtainLockForClientId
 	
 	bishbosh_connection_sourcePerServerScriptlets
 	bishbosh_connection_sourcePerServerPerPortScriptlets
 	bishbosh_connection_sourcePerServerPerClientIdScriptlets
 	
+	bishbosh_connection_chooseConnectionSessionPathAndCleanUpOldSessionIfRequired
+	bishbosh_connection_defaultAndCreateSessionSubFolderPaths
 	bishbosh_connection_defaultEssentialState
 	
 	bishbosh_connection_obtainConnectionId
@@ -314,6 +324,23 @@ bishbosh_connection_readLength()
 core_dependency_requires '*' rmdir mkdir sleep rm
 bishbosh_connection_writeLoop()
 {
+	bishbosh_connection_cleanUpTransmitLockFiles()
+	{
+		pushd "$bishbosh_connection_transmitPath"
+		
+			local transmitFileLockFolderPath
+
+			set +f
+			for transmitFileLockFolderPath in *.lock
+			do
+				set -f
+				rm -rf "$transmitFileLockFolderPath"
+			done
+			set +f
+		
+		popd
+	}
+
 	bishbosh_connection_writeLoopControlLockFolderPath=''
 	_bishbosh_connection_writeLoopRemoveControlLockFolder()
 	{

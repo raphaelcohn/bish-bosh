@@ -101,7 +101,7 @@ _bishbosh_connection_read_PUBLISH()
 	local messageLength=$((remainingLength-2-topicLength-2))
 	
 	# We really ought to dump the message to a file
-	local messageFilePath="$bishbosh_connection_receivedMessagesPath"/$bishbosh_connection_nextReceivedMessageNumber
+	local messageFilePath="$bishbosh_connection_sessionReceivedMessagesPath"/$bishbosh_connection_nextReceivedMessageNumber
 	bishbosh_connection_nextReceivedMessageNumber=$((bishbosh_connection_nextReceivedMessageNumber+1))
 	
 	local remainingMessageLength=$messageLength

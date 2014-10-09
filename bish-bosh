@@ -58,6 +58,13 @@ _program_commandLine_parseInitialise()
 	else
 		_program_configurationSet_bishbosh_clientPath=1
 	fi
+	
+	_program_default_sessionPath="${_program_varPath}"/spool/"$_program_name"/session
+	if core_variable_isSet bishbosh_sessionPath; then
+		_program_configurationSet_bishbosh_sessionPath=0
+	else
+		_program_configurationSet_bishbosh_sessionPath=1
+	fi
 
 	if [ "$core_init_preferredShell" = 'zsh' ]; then
 		_program_default_readLatency=0
@@ -150,9 +157,11 @@ if on the PATH."
                             Ordered in preference order. First found used.
                             Comma separated.
                             Defaults to '${_program_default_backends}'.
-  -c, --client-path PATH    PATH to folder containing client scriptlets
-                            and state.
+  -c, --client-path PATH    PATH to folder containing client scriptlets.
                             Defaults to '${_program_default_clientPath}'.
+  -t, --session-path PATH   PATH to folder containing session data for
+                            Clean Session = 0 clients.
+                            Defaults to '${_program_default_sessionPath}'.
       --read-latency MSECS  Maximum time to block for when reading in
                             MSECS milliseconds between 0 and 1000
                             inclusive. 0 has different meaning in
@@ -206,7 +215,8 @@ if on the PATH."
   bishbosh_backends       Equivalent to --backends
   bishbosh_server         Equivalent to --server
   bishbosh_port           Equivalent to --port
-  bishbosh_clientPath    Equivalent to --clients-path
+  bishbosh_clientPath     Equivalent to --clients-path
+  bishbosh_sessionPath    Equivalent to --session-path
   bishbosh_clientId       Equivalent to --client-id
   bishbosh_readLatency    Equivalent to --read-latency
   bishbosh_transport      Equivalent to --transport
@@ -239,10 +249,6 @@ The following values may be used to override client-id based configuration:-
   bishbosh_connection_clientServersPortsClientIdsPath
 
   XXX Under review XXX
-  bishbosh_connection_clientServersPortsClientIdsPath  Overrides discovery of client session
-  bishbosh_connection_receivedMessagesPath*   Overrides location of received messages
-  bishbosh_connection_transmitPath*           Overrides location of transmit data
-  bishbosh_connection_sessionPath             Overrides location of session data
   bishbosh_connection_nextPacketIdentifier
   
 The following handlers may be specified as functions in SCRIPTLETS, with
@@ -281,6 +287,10 @@ _program_commandLine_optionExists()
 		;;
 		
 		c|clients-path)
+			echo 'yes-argumented'
+		;;
+		
+		t|session-path)
 			echo 'yes-argumented'
 		;;
 		
@@ -362,6 +372,11 @@ _program_commandLine_processOptionWithArgument()
 		c|clients-path)
 			core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_clientPath="$optionValue"
+		;;
+		
+		t|session-path)
+			core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_sessionPath="$optionValue"
 		;;
 		
 		i|client-id)
@@ -562,9 +577,16 @@ _program_commandLine_validate()
 	
 	if core_variable_isUnset bishbosh_clientPath; then
 		bishbosh_clientPath="$_program_default_clientPath"
-		core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--clients-path' "$bishbosh_clientPath"
+		core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--client-path' "$bishbosh_clientPath"
 	else
 		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_clientPath' "$bishbosh_clientPath"
+	fi
+	
+	if core_variable_isUnset bishbosh_sessionPath; then
+		bishbosh_sessionPath="$_program_default_sessionPath"
+		core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--session-path' "$bishbosh_sessionPath"
+	else
+		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_sessionPath' "$bishbosh_sessionPath"
 	fi
 	
 	if core_variable_isUnset bishbosh_clientId; then

@@ -99,12 +99,12 @@ There's quite a lot of things than can be configured this way. If a setting is m
 Everything you specify as a long-option switch can be specified in configuration. By convention, the naming in configuration matches the switches, eg
 
     --server test.mosquitto.org
-	--clients-path /var/lib/bish-bosh
+	--client-path /var/lib/bish-bosh/client
 
 is configured as
 
     bishbosh_server='test.mosquitto.org'
-	bishbosh_clientPath='/var/lib/bish-bosh'
+	bishbosh_clientPath='/var/lib/bish-bosh/client'
 
 ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a letter, remove the `-` and make the letter capitalized.
 
@@ -138,11 +138,15 @@ The currently supported backends are listed in a section below.
 | `-b, --backends` | `A,B,...` | `bishbosh_backends` | `ncat,nc6,nc,bash,socat,tcpclient` | Backends are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. |
 
 #### Configuration Tweaks
-Ordinarily, you should not need to change any of these settings. The `--client-path` controls where [bish-bosh] looks for state and script information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/[bish-bosh]/client`.
+Ordinarily, you should not need to change any of these settings.
+
+The `--client-path` controls where [bish-bosh] looks for script information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/[bish-bosh]/client`.
+The `--session-path` controls where [bish-bosh] looks for Clean Session = 0 information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/spool/[bish-bosh]/session`.
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-c, --client-path` | `PATH` | `bishbosh_clientPath` | See help output | `PATH` to a location to store state and script data for a client-id on a per-server, per-port, per-client-id basis. |
+| `-c, --client-path` | `PATH` | `bishbosh_clientPath` | See help output | `PATH` to a location to configuration - scriptlets for a client-id on a per-server, per-port, per-client-id basis. See Configuration Locations below |
+| `-t, --session-path` | `PATH` | `bishbosh_sessionPath` | See help output | `PATH` to a location to store session data for clients connecting with Clean Session = 0 |
 | `--read-latency` | `MSECS` | `bishbosh_readLatency` | See help output | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak blocking read timeouts. blocking read timeouts are experimental and may not work properly in your shell. The value `0` may be interpreted differently by different shells and should be used with caution. |
 | `--lock-latency` | `MSECS` | `bishbosh_lockLatency` | See help output | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak lock acquisitions. Locking is currently done using `mkdir`, which is believed to be an atomic operation on most common filesystems. |
 
@@ -179,7 +183,7 @@ Anything you can do with a command line switch, you can do as configuration. But
 * Per User, where `HOME` is your home folder path
   * The file `HOME/.bish-bosh/rc`
   * Any files in the folder `HOME/.bish-bosh/rc.d`
-  * _Note: an installation as a daemon using a service account would normally set HOME to something like `/var/lib/bishbosh`_
+  * _Note: an installation as a daemon using a service account would normally set HOME to something like `/var/lib/bishbosh`._
 * Per Environment
   * The file in the environment variable `bishbosh_RC` (if the environment variable is set and the path is readable)
   * Any files in the folder in the environment variable `bishbosh_RC_D` (if the environment variable is set and the path is searchable)
@@ -195,7 +199,8 @@ Anything you can do with a command line switch, you can do as configuration. But
   * _Note: nothing stops these paths, or files in them, being symlinks, so allowing aliasing of server names and port numbers (eg to share secure and insecure settings)._
   * _Note: it is possible for a configuration file at `SERVER` or `PORT` level to set `bishbosh_clientId`, so influencing the search._
 
-The default clone from [GitHub] is configured so that files placed in these folders will be ignored.
+## Session Location
+MQTT clients have 'state', which is known as their 'session'. Even clients that are ephmeral need a working area. Ordinarily
 
 ## Dependencies
 [bish-bosh] tries to use as few dependencies as possible, but, since this is shell script, that's not always possible. It's compounded by the need to support the difference between major shells, too. It also does its best to work around differences in common binaries, by using feature detection, and where it can't do any better, by attempting to install using your package manager.
@@ -212,6 +217,7 @@ All of these should be present even on the most minimal system. Usage is restric
 * `tr`
 * `cat`
 * `kill`
+* `sleep`
 * `sed`
 * `grep`
 
