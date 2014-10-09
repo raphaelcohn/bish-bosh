@@ -142,11 +142,13 @@ Ordinarily, you should not need to change any of these settings.
 
 The `--client-path` controls where [bish-bosh] looks for script information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/[bish-bosh]/client`.
 The `--session-path` controls where [bish-bosh] looks for Clean Session = 0 information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/spool/[bish-bosh]/session`.
+The `--lock-path` controls where [bish-bosh] tries to create a lock for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/[bish-bosh]/lock`, which is not the [Linux FHS] default of `/var/lock` (but is used because that works out of the box on Mac OS X).
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
 | `-c, --client-path` | `PATH` | `bishbosh_clientPath` | See help output | `PATH` to a location to configuration - scriptlets for a client-id on a per-server, per-port, per-client-id basis. See Configuration Locations below |
 | `-t, --session-path` | `PATH` | `bishbosh_sessionPath` | See help output | `PATH` to a location to store session data for clients connecting with Clean Session = 0 |
+| `-l, --lock-path` | `PATH` | `bishbosh_lockPath` | See help output | `PATH` to a location to screate a Mutex lock so only one instance connects per-server, per-port, per-client-id at a time. |
 | `--read-latency` | `MSECS` | `bishbosh_readLatency` | See help output | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak blocking read timeouts. blocking read timeouts are experimental and may not work properly in your shell. The value `0` may be interpreted differently by different shells and should be used with caution. |
 | `--lock-latency` | `MSECS` | `bishbosh_lockLatency` | See help output | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak lock acquisitions. Locking is currently done using `mkdir`, which is believed to be an atomic operation on most common filesystems. |
 
@@ -430,3 +432,4 @@ In addition, there is the 'meta' backend, `nc`, which attempts to distinguish be
 [pdksh]: http://www.cs.mun.ca/~michael/pdksh/ "Public Domain KornShell"
 [ksh88]: http://www.kornshell.com "ksh88 at kornshell.com"
 [Almquist]: http://www.in-ulm.de/~mascheck/various/ash/ "Almquist shell"
+[Linux FHS]: http://refspecs.linuxfoundation.org/fhs.shtml "Linux File Hierarchy Standard"

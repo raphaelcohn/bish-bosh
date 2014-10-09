@@ -65,6 +65,13 @@ _program_commandLine_parseInitialise()
 	else
 		_program_configurationSet_bishbosh_sessionPath=1
 	fi
+	
+	_program_default_lockPath="${_program_varPath}"/run/"$_program_name"/lock
+	if core_variable_isSet bishbosh_lockPath; then
+		_program_configurationSet_bishbosh_lockPath=0
+	else
+		_program_configurationSet_bishbosh_lockPath=1
+	fi
 
 	if [ "$core_init_preferredShell" = 'zsh' ]; then
 		_program_default_readLatency=0
@@ -162,6 +169,9 @@ if on the PATH."
   -t, --session-path PATH   PATH to folder containing session data for
                             Clean Session = 0 clients.
                             Defaults to '${_program_default_sessionPath}'.
+  -l, --lock-path PATH      PATH to a parent folder for locking with a
+                            Mutex; ensures only one copy runs at a time.
+                            Defaults to '${_program_default_lockPath}'.
       --read-latency MSECS  Maximum time to block for when reading in
                             MSECS milliseconds between 0 and 1000
                             inclusive. 0 has different meaning in
@@ -274,15 +284,19 @@ _program_commandLine_optionExists()
 {
 	case "$optionName" in
 		
-		b|backends)
-			echo 'yes-argumented'
-		;;
-		
 		s|server)
 			echo 'yes-argumented'
 		;;
 		
 		p|port)
+			echo 'yes-argumented'
+		;;
+		
+		i|client-id)
+			echo 'yes-argumented'
+		;;
+		
+		b|backends)
 			echo 'yes-argumented'
 		;;
 		
@@ -294,7 +308,7 @@ _program_commandLine_optionExists()
 			echo 'yes-argumented'
 		;;
 		
-		i|client-id)
+		l|lock-path)
 			echo 'yes-argumented'
 		;;
 		
@@ -354,11 +368,6 @@ _program_commandLine_processOptionWithArgument()
 {
 	case "$optionName" in
 		
-		b|backends)
-			bishbosh_validate_backends $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
-			bishbosh_backends="$optionValue"
-		;;
-		
 		s|server)
 			bishbosh_validate_address $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_server="$optionValue"
@@ -367,6 +376,15 @@ _program_commandLine_processOptionWithArgument()
 		p|port)
 			core_validate_nonDynamicPort $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_port="$optionValue"
+		;;
+		
+		i|client-id)
+			bishbosh_clientId="$optionValue"
+		;;
+		
+		b|backends)
+			bishbosh_validate_backends $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_backends="$optionValue"
 		;;
 		
 		c|clients-path)
@@ -379,8 +397,9 @@ _program_commandLine_processOptionWithArgument()
 			bishbosh_sessionPath="$optionValue"
 		;;
 		
-		i|client-id)
-			bishbosh_clientId="$optionValue"
+		l|lock-path)
+			core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_lockPath="$optionValue"
 		;;
 		
 		read-latency)
@@ -587,6 +606,13 @@ _program_commandLine_validate()
 		core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--session-path' "$bishbosh_sessionPath"
 	else
 		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_sessionPath' "$bishbosh_sessionPath"
+	fi
+	
+	if core_variable_isUnset bishbosh_lockPath; then
+		bishbosh_lockPath="$_program_default_lockPath"
+		core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--lock-path' "$bishbosh_lockPath"
+	else
+		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_lockPath' "$bishbosh_lockPath"
 	fi
 	
 	if core_variable_isUnset bishbosh_clientId; then
