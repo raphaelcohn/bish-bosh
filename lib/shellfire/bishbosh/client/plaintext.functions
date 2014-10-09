@@ -11,6 +11,10 @@ bishbosh_client_plaintext_find()
 	set -- $bishbosh_backends
 	local IFS="$originalIFS"
 	
+	if core_variable_isUnset bishbosh_port; then
+		bishbosh_port=1883
+	fi
+	
 	local checkFunction
 	for checkFunction in $@
 	do
