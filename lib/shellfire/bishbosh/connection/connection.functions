@@ -209,11 +209,11 @@ bishbosh_connection_obtainLockForClientId()
 		fi
 	}
 	core_trap_addOnCleanUp _bishbosh_connection_write_removeClientIdLockFolder
-	local lockPath="$bishbosh_connection_clientServersPortsClientIdsPath"/lock
+	local lockPath="$bishbosh_lockPath"/servers/"$bishbosh_server"/ports/"$bishbosh_port"/client-ids/"$bishbosh_clientId"/lock
 	if mkdir -m 0755 -p "$lockPath"; then
 		bishbosh_connection_clientIdLockFolderPath="$lockPath"
 	else
-		core_exitError "Another process has lock'd Client Id '$bishbosh_connection_write_CONNECT_clientId' at path '$bishbosh_connection_clientIdLockFolderPath'"
+		core_exitError "Another process has lock'd Client Id '$bishbosh_clientId' at path '$lockPath'"
 	fi
 }
 
