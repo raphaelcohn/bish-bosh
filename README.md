@@ -411,7 +411,7 @@ The following shells are untested and unsupported:-
 ## Status of Supported Backends
 
 | Backend | Filename | Variant | Connectivity | Status | Force IPv4 | Force IPv6 | Unix Domain Sockets Support | Proxy Support | Source IP / Port |
-| ------- | ------- | ------------ | ------ | ---------- | ---------- | --------------------------- | ------------- | ---------------- |
+| ------- | -------- | ------- | ------------ | ------ | ---------- | ---------- | --------------------------- | ------------- | ---------------- |
 | ncMacOSX | `nc` | Mac OS X | MQTT | Fully functional | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes |
 | ncGNU | `nc` | GNU | MQTT | Barely Implemented | Yes | Yes | Yes | No | Yes |
 | ncDebianTraditional | `nc.openbsd` | Debian OpenBSD | MQTT | Barely Implemented | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. Usernames supported. | Yes |
