@@ -99,14 +99,14 @@ There's quite a lot of things than can be configured this way. If a setting is m
 Everything you specify as a long-option switch can be specified in configuration. By convention, the naming in configuration matches the switches, eg
 
     --server test.mosquitto.org
-	--clients-path /var/lib/[bish-bosh]
+	--clients-path /var/lib/bish-bosh
 
 is configured as
 
     bishbosh_server='test.mosquitto.org'
-	bishbosh_clientsPath='/var/lib/[bish-bosh]'
+	bishbosh_clientsPath='/var/lib/bish-bosh'
 
-ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a letter, remove the `-` and make the letter capitalized. (With one exception, `--verbosity`, which is specified as `core_init_verbosity`, because it is inherited from the [shellfire] framework).
+ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a letter, remove the `-` and make the letter capitalized.
 
 ### OK, back to switches
 
@@ -114,7 +114,7 @@ ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a let
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-v, --verbose` | `[LEVEL]` | `core_init_verbosity` | `0` | Adjusts verbosity of output on standard error (stderr). `LEVEL` is optional; omitting causes a +1 increase in verbosity. May be specified multiple times, although levels greater than `2` have no effect currently. The only configuration setting that doesn't reflect convention naming (because it is inherited from [shellfire]) |
+| `-v, --verbose` | `[LEVEL]` | `bishbosh_verbose` | `0` | Adjusts verbosity of output on standard error (stderr). `LEVEL` is optional; omitting causes a +1 increase in verbosity. May be specified multiple times, although levels greater than `2` have no effect currently. `LEVEL` must be an unsigned integer. |
 | `--version` | | | | Version and license information in a GNU-like format on standard error. |
 | `-h,--help` | | | | A very long help message recapping most of this document's information. |
 
@@ -174,23 +174,21 @@ _Note: Not running proxies myself, I can't test many of these settings combinati
 Anything you can do with a command line switch, you can do as configuration. But configuration can also be used with scripts. Indeed, the configuration syntax is simply shell script. Configuration files _should not_ be executable. This means that if you _really_ want to, you can override just about any feature or behaviour of [bish-bosh] - although that's not explicitly supported. Configuration can be in any number of locations. Configuration may be a single file, or a folder of files; in the latter case, every file in the folder is parsed in 'shell glob-expansion order' (typically ASCII sort order of file names). Locations are searched in order as follows:-
 
 * Global, per-machine
-  * For all [shellfire]-based programs, including [bish-bosh]
-    * As a file `/etc/shellfire/rc`
-    * As any file in `/etc/shellfire/rc.d`, parsed in shell glob-expansion order (ASCII sort order, typically)
-  * For any [bish-bosh] program
-    * As a file in `/`
-* Per User
+  * The file `/etc/bish-bosh/rc`
+  * Any files in the folder `/etc/bish-bosh/rc.d`
+* Per User, where `HOME` is your home folder path
+  * The file `HOME/.bish-bosh/rc`
+  * Any files in the folder `HOME/.bish-bosh/rc.d`
 * Per Environment
-* By [MQTT] server, port and Client Id
+  * The file in the environment variable `bishbosh_RC` (if the environment variable is set and the path is readable)
+  * Any files in the folder in the environment variable `bishbosh_RC_D` (if the environment variable is set and the path is searchable)
+* In `SCRIPTLETS`
+  * Scriptlets are parsed in order they are found on the command line (`bish-bosh -- [SCRIPTLETS]...`)
+* Any files in the folder `PATH/servers/SERVER/client-id/CLIENT_ID/scriptlets`
 * Per Invocation
 
 #### Global, Per-Machine
 
-  
-  /Users/raphcohn/Documents/[bish-bosh]/etc/shellfire/rc
-  /Users/raphcohn/Documents/[bish-bosh]/etc/shellfire/rc.d
-  /Users/raphcohn/Documents/[bish-bosh]/etc/[bish-bosh]/rc
-  /Users/raphcohn/Documents/[bish-bosh]/etc/[bish-bosh]/rc.d
   HOME/.shellfire/rc
   HOME/.shellfire/rc.d
   shellfire_RC
@@ -373,7 +371,7 @@ No installation should be required.
 ## Supported Shells
 [bish-bosh] tries very hard to make sure it works under any POSIX-compliant shell. However, in practice, that's quite hard to do; many features on the periphery of POSIX compliance, are subtly different (eg signal handling during read). That can lead to a matrix of pain. We constrain the list to widely-used shells common in the sorts of places you'd want to use [bish-bosh]: system administration, one-off scripting, boot-time and embedded devices with no compiler toolchain. Consequently, we test against:-
 
-* The [Almquist-derived](https://en.wikipedia.org/wiki/Almquist_shell) shells
+* The [Almquist]-derived shells, specifically
   * [DASH]
   * [BusyBox]'s ash
 * [GNU Bash]
@@ -435,3 +433,4 @@ In addition, there is the 'meta' backend, `nc`, which attempts to distinguish be
 [mksh]: https://www.mirbsd.org/mksh.htm "Mir KornShell"
 [pdksh]: http://www.cs.mun.ca/~michael/pdksh/ "Public Domain KornShell"
 [ksh88]: http://www.kornshell.com "ksh88 at kornshell.com"
+[Almquist]: http://www.in-ulm.de/~mascheck/various/ash/ "Almquist shell"

@@ -39,7 +39,7 @@ bishbosh_connection_mkfifoTemporary()
 bishbosh_connection_defaultEssentialPaths()
 {
 	if core_variable_isUnset bishbosh_connection_clientsPathForClientId; then
-		bishbosh_connection_clientsPathForClientId="$bishbosh_clientsPath"/server/"$bishbosh_server"/client-id/"$bishbosh_clientId"
+		bishbosh_connection_clientsPathForClientId="$bishbosh_clientsPath"/servers/"$bishbosh_server"/ports/"$bishbosh_port"/client-ids/"$bishbosh_clientId"
 	fi
 	
 	mkdir -m 0755 -p "$bishbosh_connection_clientsPathForClientId" 2>/dev/null || core_exitError "Could not create bishbosh_connection_clientsPathForClientId '$bishbosh_connection_clientsPathForClientId'"
