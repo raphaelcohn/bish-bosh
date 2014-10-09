@@ -19,7 +19,7 @@ bishbosh_connection_mkdirPermanent()
 {
 	local folderName="$1"
 	if [ $# -eq 1 ]; then
-		local folderPath="$bishbosh_connection_clientsPathForClientId"/"$folderName"
+		local folderPath="$bishbosh_connection_clientServersPortsClientIdsPath"/"$folderName"
 	else
 		local folderPath="$2"
 	fi
@@ -175,7 +175,7 @@ bishbosh_connection_obtainLockForClientId()
 		fi
 	}
 	core_trap_addOnCleanUp _bishbosh_connection_write_removeClientIdLockFolder
-	local lockPath="$bishbosh_connection_clientsPathForClientId"/lock
+	local lockPath="$bishbosh_connection_clientServersPortsClientIdsPath"/lock
 	if mkdir -m 0755 -p "$lockPath"; then
 		bishbosh_connection_clientIdLockFolderPath="$lockPath"
 	else
@@ -221,30 +221,23 @@ core_dependency_requires '*' mkdir
 core_dependency_oneOf '*' hexdump od
 bishbosh_connection_makeClientConnection()
 {
-	if core_variable_isUnset bishbosh_connection_clientsServersPath; then
-		bishbosh_connection_clientsServersPath="$bishbosh_clientsPath"/servers/"$bishbosh_server"
-		bishbosh_connection_sourceScriptlets "$bishbosh_connection_clientsServersPath"
+	if core_variable_isUnset bishbosh_connection_clientServersPath; then
+		bishbosh_connection_clientServersPath="$bishbosh_clientPath"/servers/"$bishbosh_server"
+		bishbosh_connection_sourceScriptlets "$bishbosh_connection_clientServersPath"
 	fi
 	
-	if core_variable_isUnset bishbosh_connection_clientsServersPortsPath; then
-		bishbosh_connection_clientsServersPortsPath="$bishbosh_connection_clientsServersPath"/ports/"$bishbosh_port"
-		bishbosh_connection_sourceScriptlets "$bishbosh_connection_clientsServersPortsPath"
+	if core_variable_isUnset bishbosh_connection_clientServersPortsPath; then
+		bishbosh_connection_clientServersPortsPath="$bishbosh_connection_clientServersPath"/ports/"$bishbosh_port"
+		bishbosh_connection_sourceScriptlets "$bishbosh_connection_clientServersPortsPath"
 	fi
 	
-	if core_variable_isUnset bishbosh_connection_clientsServersPortsClientIdsPath; then
-		bishbosh_connection_clientsServersPortsClientIdsPath="$bishbosh_connection_clientsServersPortsPath"/client-ids/"$bishbosh_clientId"
-		bishbosh_connection_sourceScriptlets "$bishbosh_connection_clientsServersPortsClientIdsPath"
+	if core_variable_isUnset bishbosh_connection_clientServersPortsClientIdsPath; then
+		bishbosh_connection_clientServersPortsClientIdsPath="$bishbosh_connection_clientServersPortsPath"/client-ids/"$bishbosh_clientId"
+		bishbosh_connection_sourceScriptlets "$bishbosh_connection_clientServersPortsClientIdsPath"
 	fi
 	
-	if core_variable_isUnset bishbosh_connection_clientsPathForClientId; then
-		bishbosh_connection_clientsPathForClientId="$bishbosh_clientsPath"/servers/"$bishbosh_server"/ports/"$bishbosh_port"/client-ids/"$bishbosh_clientId"
-	fi
-	
-	mkdir -m 0755 -p "$bishbosh_connection_clientsPathForClientId" 2>/dev/null || core_exitError "Could not create bishbosh_connection_clientsPathForClientId '$bishbosh_connection_clientsPathForClientId'"
+	mkdir -m 0755 -p "$bishbosh_connection_clientServersPortsClientIdsPath" 2>/dev/null || core_exitError "Could not create bishbosh_connection_clientServersPortsClientIdsPath '$bishbosh_connection_clientServersPortsClientIdsPath'"
 	bishbosh_connection_obtainLockForClientId
-	if core_variable_isUnset bishbosh_connection_clientIdScriptletsPath; then
-		bishbosh_connection_clientIdScriptletsPath="$bishbosh_connection_clientsPathForClientId"/rc.d
-	fi
 	
 	bishbosh_connection_sourcePerServerScriptlets
 	bishbosh_connection_sourcePerServerPerPortScriptlets

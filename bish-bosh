@@ -52,11 +52,11 @@ _program_commandLine_parseInitialise()
 		_program_configurationSet_bishbosh_port=1
 	fi
 
-	_program_default_clientsPath="${_program_varPath}"/lib/"$_program_name"/clients
-	if core_variable_isSet bishbosh_clientsPath; then
-		_program_configurationSet_bishbosh_clientsPath=0
+	_program_default_clientPath="${_program_varPath}"/lib/"$_program_name"/client
+	if core_variable_isSet bishbosh_clientPath; then
+		_program_configurationSet_bishbosh_clientPath=0
 	else
-		_program_configurationSet_bishbosh_clientsPath=1
+		_program_configurationSet_bishbosh_clientPath=1
 	fi
 
 	if [ "$core_init_preferredShell" = 'zsh' ]; then
@@ -150,9 +150,9 @@ if on the PATH."
                             Ordered in preference order. First found used.
                             Comma separated.
                             Defaults to '${_program_default_backends}'.
-  -c, --clients-path PATH   PATH to folder containing Client Ids.
-                            Contains state, scripts, etc.
-                            Defaults to '${_program_default_clientsPath}'.
+  -c, --client-path PATH    PATH to folder containing client scriptlets
+                            and state.
+                            Defaults to '${_program_default_clientPath}'.
       --read-latency MSECS  Maximum time to block for when reading in
                             MSECS milliseconds between 0 and 1000
                             inclusive. 0 has different meaning in
@@ -206,7 +206,7 @@ if on the PATH."
   bishbosh_backends       Equivalent to --backends
   bishbosh_server         Equivalent to --server
   bishbosh_port           Equivalent to --port
-  bishbosh_clientsPath    Equivalent to --clients-path
+  bishbosh_clientPath    Equivalent to --clients-path
   bishbosh_clientId       Equivalent to --client-id
   bishbosh_readLatency    Equivalent to --read-latency
   bishbosh_transport      Equivalent to --transport
@@ -234,16 +234,17 @@ The following values may be used in SCRIPTLETS to manage a connection:-
   * ASCII NUL (0x00) is not supported.
 
 The following values may be used to override client-id based configuration:-
-  bishbosh_connection_clientsPathForClientId  Overrides discovery of client session
-  bishbosh_connection_clientIdScriptletsPath  Overrides location of client scriptlets
+  bishbosh_connection_clientServersPath
+  bishbosh_connection_clientServersPortsPath
+  bishbosh_connection_clientServersPortsClientIdsPath
+
+  XXX Under review XXX
+  bishbosh_connection_clientServersPortsClientIdsPath  Overrides discovery of client session
   bishbosh_connection_receivedMessagesPath*   Overrides location of received messages
   bishbosh_connection_transmitPath*           Overrides location of transmit data
   bishbosh_connection_sessionPath             Overrides location of session data
   bishbosh_connection_nextPacketIdentifier
   
-  * Typically set to a path under /tmp to make use of a RAM-backed file
-    system, eg tmpfs.
-
 The following handlers may be specified as functions in SCRIPTLETS, with
 the globals specified:-
   bishbosh_connection_handler_CONNACK()  bishbosh_connection_sessionPresent
@@ -360,7 +361,7 @@ _program_commandLine_processOptionWithArgument()
 		
 		c|clients-path)
 			core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
-			bishbosh_clientsPath="$optionValue"
+			bishbosh_clientPath="$optionValue"
 		;;
 		
 		i|client-id)
@@ -559,11 +560,11 @@ _program_commandLine_validate()
 		bishbosh_validate_address $core_commandLine_exitCode_CONFIG 'configuration setting' "bishbosh_server" "$bishbosh_server"
 	fi
 	
-	if core_variable_isUnset bishbosh_clientsPath; then
-		bishbosh_clientsPath="$_program_default_clientsPath"
-		core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--clients-path' "$bishbosh_clientsPath"
+	if core_variable_isUnset bishbosh_clientPath; then
+		bishbosh_clientPath="$_program_default_clientPath"
+		core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--clients-path' "$bishbosh_clientPath"
 	else
-		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_clientsPath' "$bishbosh_clientsPath"
+		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_clientPath' "$bishbosh_clientPath"
 	fi
 	
 	if core_variable_isUnset bishbosh_clientId; then

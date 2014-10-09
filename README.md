@@ -104,7 +104,7 @@ Everything you specify as a long-option switch can be specified in configuration
 is configured as
 
     bishbosh_server='test.mosquitto.org'
-	bishbosh_clientsPath='/var/lib/bish-bosh'
+	bishbosh_clientPath='/var/lib/bish-bosh'
 
 ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a letter, remove the `-` and make the letter capitalized.
 
@@ -138,11 +138,11 @@ The currently supported backends are listed in a section below.
 | `-b, --backends` | `A,B,...` | `bishbosh_backends` | `ncat,nc6,nc,bash,socat,tcpclient` | Backends are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. |
 
 #### Configuration Tweaks
-Ordinarily, you should not need to change any of these settings. The `--clients-path` controls where [bish-bosh] looks for state and script information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/[bish-bosh]/clients`.
+Ordinarily, you should not need to change any of these settings. The `--client-path` controls where [bish-bosh] looks for state and script information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/[bish-bosh]/client`.
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-c, --clients-path` | `PATH` | `bishbosh_clientsPath` | See help output | `PATH` to a location to store state and script data for a client-id on a per-server, per-client-id basis |
+| `-c, --client-path` | `PATH` | `bishbosh_clientPath` | See help output | `PATH` to a location to store state and script data for a client-id on a per-server, per-port, per-client-id basis. |
 | `--read-latency` | `MSECS` | `bishbosh_readLatency` | See help output | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak blocking read timeouts. blocking read timeouts are experimental and may not work properly in your shell. The value `0` may be interpreted differently by different shells and should be used with caution. |
 | `--lock-latency` | `MSECS` | `bishbosh_lockLatency` | See help output | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak lock acquisitions. Locking is currently done using `mkdir`, which is believed to be an atomic operation on most common filesystems. |
 
@@ -173,41 +173,25 @@ _Note: Not running proxies myself, I can't test many of these settings combinati
 ### Configuration Locations
 Anything you can do with a command line switch, you can do as configuration. But configuration can also be used with scripts. Indeed, the configuration syntax is simply shell script. Configuration files _should not_ be executable. This means that if you _really_ want to, you can override just about any feature or behaviour of [bish-bosh] - although that's not explicitly supported. Configuration can be in any number of locations. Configuration may be a single file, or a folder of files; in the latter case, every file in the folder is parsed in 'shell glob-expansion order' (typically ASCII sort order of file names). Locations are searched in order as follows:-
 
-* Global, per-machine
-  * The file `/etc/bish-bosh/rc`
-  * Any files in the folder `/etc/bish-bosh/rc.d`
+* Global (Per-machine)
+  * The file `INSTALL_PREFIX/etc/bish-bosh/rc`
+  * Any files in the folder `INSTALL_PREFIX/etc/bish-bosh/rc.d`
 * Per User, where `HOME` is your home folder path
   * The file `HOME/.bish-bosh/rc`
   * Any files in the folder `HOME/.bish-bosh/rc.d`
+  * _Note: an installation as a daemon using a service account would normally set HOME to something like `/var/lib/bishbosh`_
 * Per Environment
   * The file in the environment variable `bishbosh_RC` (if the environment variable is set and the path is readable)
   * Any files in the folder in the environment variable `bishbosh_RC_D` (if the environment variable is set and the path is searchable)
 * In `SCRIPTLETS`
   * Scriptlets are parsed in order they are found on the command line (`bish-bosh -- [SCRIPTLETS]...`)
-* Any files in the folder `PATH/servers/SERVER/client-id/CLIENT_ID/scriptlets`
-* Per Invocation
+* Under `bishbosh_clientPath` (switch `--client-path`):-
+  * Any files in the folder `servers/SERVER/rc.d` where `SERVER` is `bishbosh_server` (`--server`)
+  * Any files in the folder `servers/SERVER/port/PORT/rc.d` where `PORT` is `bishbosh_port` (`--port`)
+  * _Note: nothing stops these paths, or files in them, being symlinks, so allowing aliasing of server names and port numbers (eg to share secure and insecure settings)._
+  * _Note: it is possible for a configuration file at `SERVER` or `PORT` level to set `bishbosh_clientId`, so influencing the search._
 
-#### Global, Per-Machine
-
-  HOME/.shellfire/rc
-  HOME/.shellfire/rc.d
-  shellfire_RC
-  shellfire_RC_D
-  HOME/.[bish-bosh]/rc
-  HOME/.[bish-bosh]/rc.d
-  [bish-bosh]_RC
-  [bish-bosh]_RC_D
-
-#### Per-User
-
-#### Per-Environment
-
-#### Per [MQTT] server & client id
-
-#### Per-Invocation on the command-line
-This is the grand-daddy. In effect, any of 
-
-#### Standalone
+The default clone from github is configured so that files placed in these folders will be ignored.
 
 ## Dependencies
 [bish-bosh] tries to use as few dependencies as possible, but, since this is shell script, that's not always possible. It's compounded by the need to support the difference between major shells, too. It also does its best to work around differences in common binaries, by using feature detection, and where it can't do any better, by attempting to install using your package manager.
