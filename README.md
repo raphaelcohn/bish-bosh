@@ -109,10 +109,22 @@ ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a let
 
 #### MQTT Big Hitters
 
+| Switch | Value | Configuration Setting | Default | Purpose |
+| ------ | ----- | --------------------- | ------- | ------- |
+
+#### Backends
+A backend is the strategy bish-bosh uses to connect to a MQTT server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. bish-bosh ships with a large number of backends to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
+
+By default, bish-bosh has a list of backends in preferred order, and tries to choose the first that looks like it will work. Of course, given the vagaries of your system, it might not get that right, so you might want to override it.
+
+The currently supported backends are listed in a section below.
+
+| Switch | Value | Configuration Setting | Default | Purpose |
+| ------ | ----- | --------------------- | ------- | ------- |
+| `-b, --backends` | `A,B,...` | `bishbosh_backends` | `ncat,nc6,nc,bash,socat,tcpclient` | Backends are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. |
 
 #### Configuration Tweaks
-
-  -b, --backends A,B,...    Backend types A,B,... to talk to MQTT server.
+   A,B,...    Backend types A,B,... to talk to MQTT server.
                             Ordered in preference order. First found used.
                             Comma separated.
                             Defaults to '${_program_default_backends}'.
@@ -329,12 +341,12 @@ No installation should be required.
 ## Supported Shells
 bish-bosh tries very hard to make sure it works under any POSIX-compliant shell. However, in practice, that's quite hard to do; many features on the periphery of POSIX compliance, are subtly different (eg signal handling during read). That can lead to a matrix of pain. We constrain the list to widely-used shells common in the sorts of places you'd want to use bish-bosh: system administration, one-off scripting, boot-time and embedded devices with no compiler toolchain. Consequently, we test against:-
 
-* [Almquist-derived](https://en.wikipedia.org/wiki/Almquist_shell) shells, particularly
+* The [Almquist-derived](https://en.wikipedia.org/wiki/Almquist_shell) shells
   * [DASH](http://gondor.apana.org.au/~herbert/dash/)
   * [BusyBox](http://www.busybox.net/downloads/BusyBox.html)'s ash
- * [GNU Bash](https://www.gnu.org/software/bash/bash.html)
+* [GNU Bash](https://www.gnu.org/software/bash/bash.html)
 
-All of these shells support dynamically-scoped `local` variables, something we make extensive use of. Some of them also support read timeouts, which is essential for making
+All of these shells support dynamically-scoped `local` variables, something we make extensive use of. Some of them also support read timeouts, which is very useful for making bish-bosh responsive.
 
 ### Zsh and KornShell
 bish-bosh is not actively tested under [zsh](http://www.zsh.org/) although it should work once the inevitable few bugs are fixed. zsh is a nice interactive shell, and good for scripting, too. In particular, it is the only shell where it's possible for the `read` builtin to read data containing Unicode `\u0000` (ACSCII `NUL` as was), and is also trully non-blocking.
@@ -352,21 +364,26 @@ The following shells are untested and unsupported:-
 
 | Backend | Filename | Variant | Connectivity | Status | Force IPv4 | Force IPv6 | Unix Domain Sockets Support | Proxy Support | Source IP / Port |
 | ------- | ------- | ------------ | ------ | ---------- | ---------- | --------------------------- | ------------- | ---------------- |
-| netcat | nc | Mac OS X | MQTT | Fully functional | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes |
-| netcat | nc | GNU | MQTT | Barely Implemented | Yes | Yes | Yes | No | Yes |
-| netcat | nc.openbsd | Debian OpenBSD | MQTT | Barely Implemented | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. Usernames supported. | Yes |
-| netcat | nc.traditional | Debian Traditional / Hobbit | MQTT | Barely Implemented | Yes | Yes | No | No | Yes |
-| netcat | nc6 | netcat6, nc6 | MQTT | Barely Implemented | Yes | Yes | No | No | Yes |
-| netcat | ncat| Nmap ncat | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. Usernames and passwords supported for HTTP, usernames only for SOCKS. | Yes |
-| socat | socat | socat | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | ? | ? |
-| tcpclient | tcpclient | tcpclient | MQTT | Barely Implemented | Yes | Yes | No | No | Yes |
+| ncMacOSX | `nc` | Mac OS X | MQTT | Fully functional | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes |
+| ncGNU | `nc` | GNU | MQTT | Barely Implemented | Yes | Yes | Yes | No | Yes |
+| ncDebianTraditional | `nc.openbsd` | Debian OpenBSD | MQTT | Barely Implemented | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. Usernames supported. | Yes |
+| ncDebianOpenBSD | `nc.traditional` | Debian Traditional / Hobbit | MQTT | Barely Implemented | Yes | Yes | No | No | Yes |
+| ncToybox | `nc` / `busybox nc` | BusyBox | MQTT | Barely Implemented | No | No | No, although serial device files are supported | No | Yes |
+| ncBusyBox | `nc` / `toybox nc` / `toybox-$(uname)` /  | Toybox / Hobbit | MQTT | Barely Implemented | No | No | No, although serial device files are supported | No | Source Port only |
+| nc6 | `nc6` | netcat6, nc6 | MQTT | Barely Implemented | Yes | Yes | No | No | Yes |
+| ncat | `ncat`| Nmap ncat | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. Usernames and passwords supported for HTTP, usernames only for SOCKS. | Yes |
+| socat | `socat` | socat | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | ? | ? |
+| tcpclient | `tcpclient` | tcpclient | MQTT | Barely Implemented | Yes | Yes | No | No | Yes |
+
+In addition, there is the 'meta' backend, `nc`, which attempts to distinguish between `ncMacOSX`, `ncGNU`, `ncDebianTraditional`, `ncDebianOpenBSD`, `ncToybox` and `ncBusyBox`.
 
 ### TODO
 * Turning off DNS resolution
 * supporting inactivity timers
-* MQTTS using openssl, socat, gnutls and others
+* MQTTS using openssl, socat, gnutls, ncat and others
 * MQTT over SSH
 * MQTT over WebSockets
+* Investigate suckless tools
 
 ## netcat, Mac OS X Variant
 F
