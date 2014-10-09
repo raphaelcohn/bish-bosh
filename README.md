@@ -1,7 +1,7 @@
 # [bish-bosh]
-[bish-bosh] is a client and library for using [MQTT](http://mqtt.org/), particularly [MQTT 3.1.1](http://www.oasis-open.org/committees/mqtt/) from the shell and command-line for Linux and Unix. It works with [DASH](http://gondor.apana.org.au/~herbert/dash/), [GNU Bash](https://www.gnu.org/software/bash/bash.html) and [BusyBox](http://www.busybox.net/downloads/BusyBox.html)'s ash, with a minimal set of helper programs that even the most basic of Unix systems should have.
+[bish-bosh] is a client and library for using [MQTT], particularly [[MQTT] 3.1.1](http://www.oasis-open.org/committees/mqtt/) from the shell and command-line for Linux and Unix. It works with [DASH](http://gondor.apana.org.au/~herbert/dash/), [GNU Bash](https://www.gnu.org/software/bash/bash.html) and [BusyBox](http://www.busybox.net/downloads/BusyBox.html)'s ash, with a minimal set of helper programs that even the most basic of Unix systems should have.
 
-Additionally, it is also a command interpreter. Once installed in your `PATH`, it can be used to script [MQTT](http://mqtt.org/) sessions, eg
+Additionally, it is also a command interpreter. Once installed in your `PATH`, it can be used to script [MQTT] sessions, eg
 
     #!/usr/bin/env [bish-bosh]
 	bishbosh_server=test.mosquitto.org
@@ -16,7 +16,7 @@ Additionally, it is also a command interpreter. Once installed in your `PATH`, i
 		cat "$messageFilePath"
 	}
 
-Making the above snippet executable (`chmod +x SNIPPET`) creates a fully-fledged MQTT driven program. Ideal for one-off testing, system administrators clearing out queues and simple message driven apps that can use the Unix/Linux ecosystem and philosphy. Also quite handy for small embedded systems without a compiler toolchain and initrd boot time configuration grabbing...
+Making the above snippet executable (`chmod +x SNIPPET`) creates a fully-fledged [MQTT] driven program. Ideal for one-off testing, system administrators clearing out queues and simple message driven apps that can use the Unix/Linux ecosystem and philosphy. Also quite handy for small embedded systems without a compiler toolchain and initrd boot time configuration grabbing...
 
 If there's interest, a more advanced version could function as interactive shell driven by ncurses...
 
@@ -31,7 +31,7 @@ If there's interest, a more advanced version could function as interactive shell
 This will create a folder [bish-bosh] inside your `$HOME`. [bish-bosh] can then be used straightaway, eg
 
     cd "$HOME"/[bish-bosh]
-	./[bish-bosh] --server test.mosquitto.org --client-id CLIENT_ID
+	./bish-bosh --server test.mosquitto.org --client-id CLIENT_ID
 
 where `CLIENT_ID` is a client id you'd like to use. bosh-bosh will attempt to find its dependencies on the `PATH`, install any missing dependencies (with your permission) if it recognises your package manager, choose an optimum configuration and connect to the server (in this case, a commonly available test one).
 
@@ -40,35 +40,35 @@ Of course, this might not work, and so you might need to install some dependenci
 ### Getting it from [Homebrew](http://brew.sh/) for Mac OS X
 Hopefully in the next few weeks [bish-bosh] will be available as a [Homebrew](http://brew.sh/) recipe, so you should be able to do
 
-    brew install [bish-bosh]
+    brew install bish-bosh
 
 ### Installing into your `PATH` and Packaging
-You might want to install [bish-bosh] in your `PATH`, or package it. [bish-bosh] as checked into github _isn't standalone_: it needs to be _fattened_ using [shellfire](https://github.com/shellfire-dev). shellfire is a set of common libraries for shell scripting which [bish-bosh] uses. _Fattening_ is the name the shellfire project uses for creating a standalone, self-contained shell binary (even one that can include templates, documents and tarballs) that can then reside anywhere.
+You might want to install [bish-bosh] in your `PATH`, or package it. [bish-bosh] as checked into github _isn't standalone_: it needs to be _fattened_ using [shellfire]. shellfire is a set of common libraries for shell scripting which [bish-bosh] uses. _Fattening_ is the name the shellfire project uses for creating a standalone, self-contained shell binary (even one that can include templates, documents and tarballs) that can then reside anywhere.
 
 _Fattening_ is not currently supported, but is planned to be very soon.
 
 ## Switches and Configuration
 [bish-bosh] has a lot of switches! Most of them you'll hopefully never use: they're to deal with situations where network access isn't straightforward. Perhaps you've got multiple NICs or IP addresses, or a proxy is blocking you from connecting directly. And all of the switches, bar one, have sensible defaults. All of [bish-bosh]'s switches can be set using configuration (eg in `/etc`), or even in the scripts you run; the choice is yours. However, the basic invocation is very simple:-
 
-    [bish-bosh] --server SERVER --client-id CLIENT_ID
+    bish-bosh --server SERVER --client-id CLIENT_ID
 	
 	# or, if you prefer short options
 	
-	[bish-bosh] -s SERVER -c CLIENT_ID
+	bish-bosh -s SERVER -c CLIENT_ID
 
-If you don't specify `SERVER`, it defaults to `localhost`. `CLIENT_ID` is a MQTT client id. (We have partial support for random client ids, so eventually you'll not even need to specify this).
+If you don't specify `SERVER`, it defaults to `localhost`. `CLIENT_ID` is a [MQTT] client id. (We have partial support for random client ids, so eventually you'll not even need to specify this).
 
-If your MQTT server isn't running on port `1883`, you can specify it:-
+If your [MQTT] server isn't running on port `1883`, you can specify it:-
 
-    [bish-bosh] --server SERVER --client-id CLIENT_ID --port PORT
+    bish-bosh --server SERVER --client-id CLIENT_ID --port PORT
 	
 	# or, if you prefer short options
 	
-	[bish-bosh] -s SERVER -c CLIENT_ID -p PORT
+	bish-bosh -s SERVER -c CLIENT_ID -p PORT
 
 where `PORT` is a port between 1 and 65535.
 
-### Hang on a minute, where do I put the MQTT username / password / other connect stuff?
+### Hang on a minute, where do I put the [MQTT] username / password / other connect stuff?
 Well, it's quite straightforward. Rather than use _even more_ switches (and place sensitive data in the command line where any user with `ps` can see it), you can specify configuration scripts. For example, we could have the script snippet:-
 
     # Save as script.bishbosh
@@ -77,19 +77,19 @@ Well, it's quite straightforward. Rather than use _even more_ switches (and plac
 
 saved as `file.bishbosh` and use it as
 
-    [bish-bosh] --server SERVER --client-id CLIENT_ID -- script.bishbosh
+    bish-bosh --server SERVER --client-id CLIENT_ID -- script.bishbosh
 
 The `--` isn't strictly necessary, but it's good practice - just in case you name something `--silly-file-name`, it stops [bish-bosh] getting confused.
 
 Of course, you can have more than one script, eg
 
-    [bish-bosh] --server SERVER --client-id CLIENT_ID -- script.bishbosh another-script.bishbosh
+    bish-bosh --server SERVER --client-id CLIENT_ID -- script.bishbosh another-script.bishbosh
 
 So you could keep sensitive data (eg a password) in one file, and everything else in another - a good approach which would let you check all your scripts into source control bar the one with the password, and so do simple production deployments and devops-stuff.
 
 As an added convenience, you can also store configuration scripts on a per-client-id basis, too. This means that common connection settings for a client can be stored, but different runtime invocations catered for. Very useful for system administration tasks.
 
-There's quite a lot of things than can be configured this way. If a setting is missing, [bish-bosh] appliesa default. For things like QoS, we got for the lowest; for usernames and passwords and wills, we omit them. So it you've got a MQTT server that doesn't need passwords (a bit odd, but possible), then you can just not set it. Please note that not set isn't the same thing as empty:-
+There's quite a lot of things than can be configured this way. If a setting is missing, [bish-bosh] applies a default. For things like QoS, we got for the lowest; for usernames and passwords and wills, we omit them. So it you've got a [MQTT] server that doesn't need passwords (a bit odd, but possible), then you can just not set it. Please note that not set isn't the same thing as empty:-
 
     bishbosh_connection_write_CONNECT_username=''
 	# is not the same as
@@ -106,7 +106,7 @@ is configured as
     bishbosh_server='test.mosquitto.org'
 	bishbosh_clientsPath='/var/lib/[bish-bosh]'
 
-ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a letter, remove the `-` and make the letter capitalized. (With one exception, `--verbosity`, which is specified as `core_init_verbosity`, because it is inherited from the [shellfire](https://github.com/shellfire-dev) framework).
+ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a letter, remove the `-` and make the letter capitalized. (With one exception, `--verbosity`, which is specified as `core_init_verbosity`, because it is inherited from the [shellfire] framework).
 
 ### OK, back to switches
 
@@ -114,20 +114,20 @@ ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a let
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-v, --verbose` | `[LEVEL]` | `core_init_verbosity` | `0` | Adjusts verbosity of output on standard error (stderr). `LEVEL` is optional; omitting causes a +1 increase in verbosity. May be specified multiple times, although levels greater than `2` have no effect currently. The only configuration setting that doesn't reflect convention naming (because it is inherited from [shellfire](https://github.com/shellfire-dev)) |
+| `-v, --verbose` | `[LEVEL]` | `core_init_verbosity` | `0` | Adjusts verbosity of output on standard error (stderr). `LEVEL` is optional; omitting causes a +1 increase in verbosity. May be specified multiple times, although levels greater than `2` have no effect currently. The only configuration setting that doesn't reflect convention naming (because it is inherited from [shellfire]) |
 | `--version` | | | | Version and license information in a GNU-like format on standard error. |
 | `-h,--help` | | | | A very long help message recapping most of this document's information. |
 
-#### MQTT Big Hitters
+#### [MQTT] Big Hitters
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-s, --server` | `HOST` | `bishbosh_server` | `localhost` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an MQTT server to connect to, or, if using Unix Domain Sockets (see `--transport` in Source-Routing Settings, below) a file path to a readable Unix Domain Socket. |
-| `-p, --port` | `PORT` | `bishbosh_port` | 1883 for most backends; 8883 if backend is secure | Port your MQTT `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix Domain Sockets. |
-| `-i, --client-id` | `ID` | `bishbosh_clientId` | unset | MQTT Client ID. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. |
+| `-s, --server` | `HOST` | `bishbosh_server` | `localhost` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an [MQTT] server to connect to, or, if using Unix Domain Sockets (see `--transport` in Source-Routing Settings, below) a file path to a readable Unix Domain Socket. |
+| `-p, --port` | `PORT` | `bishbosh_port` | 1883 for most backends; 8883 if backend is secure | Port your [MQTT] `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix Domain Sockets. |
+| `-i, --client-id` | `ID` | `bishbosh_clientId` | unset | [MQTT] Client ID. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. |
 
 #### Backends
-A backend is the strategy [bish-bosh] uses to connect to a MQTT server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. [bish-bosh] ships with a large number of backends to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
+A backend is the strategy [bish-bosh] uses to connect to a [MQTT] server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. [bish-bosh] ships with a large number of backends to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
 
 By default, [bish-bosh] has a list of backends in preferred order, and tries to choose the first that looks like it will work. Of course, given the vagaries of your system, it might not get that right, so you might want to override it.
 
@@ -152,7 +152,7 @@ If you have a box with multiple NICs or IP addresses, broken IPv4 / IPv6 network
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
 | `--transport` | `TRANSPT` | `bishbosh_transport` | `inet` | Use a particular socket transport `TRANSPT`. `TRANSPT` may be one of `inet`, `inet4`, `inet6` or `unix`. Using `inet` allows the backend to select either a IPv4 or IPv6 connection as appropriate after DNS resolution. `inet4` forces an IPv4 connection; `inet6` likewise forces an IPv6 connection. `unix` forces a Unix Domain Socket connection |
-| `--source-address` | `S` | `bishbosh_sourceAddress` | unset | Connect using the NIC with the source address `S`. If `TRANSPT` is `unix` then `S` must reference an extant, accessible Unix Domain Socket file path. Results in packets being sent from this address. `S` may be a host name resolved using DNS, or an IPv4 or IPv6 address. If you disable DNS resolution of MQTT server names, it's likely that a backend will do likewise for `HOST`. If `S` is set to `''` (the empty string), then it is treated as if unset. This is to allow local users to override global configuration. |
+| `--source-address` | `S` | `bishbosh_sourceAddress` | unset | Connect using the NIC with the source address `S`. If `TRANSPT` is `unix` then `S` must reference an extant, accessible Unix Domain Socket file path. Results in packets being sent from this address. `S` may be a host name resolved using DNS, or an IPv4 or IPv6 address. If you disable DNS resolution of [MQTT] server names, it's likely that a backend will do likewise for `HOST`. If `S` is set to `''` (the empty string), then it is treated as if unset. This is to allow local users to override global configuration. |
 | `--source-port` | `PORT` | `bishbosh_sourcePort` | unset | Connect using the source port `PORT`. If `TRANSPT` is `unix` then this setting is invalid. Results in packets being sent from this port. If unset, then a random source port is chosen. If `PORT` is set to `''` (the empty string), then it is treated as if unset. This is to allow local users to override global configuration. |
 
 #### Proxy Settings
@@ -163,7 +163,7 @@ When using a proxy, you won't be able to use Unix domain sockets (eg `--transpor
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
 | `--proxy-kind` | `KIND` | `bishbosh_proxyKind` | unset | Use a particular `KIND` of proxy. `KIND` is one of `SOCKS4`, `SOCKS5`, `HTTP` or `none`. Using `none` disables the proxy; this is for when a global configuration has been set for a machine but a local user needs to run without it. |
-| `-proxy-server` | `HOST` | `bishbosh_proxyServer` | unset | Connect to a proxy server on a given `HOST`, which may be a name, an IPv4 or IPv6 address (in the case of the latter, you may need to surround it in `[]`, eg `[::1]`; backends vary and do not document IPv6 proxy address handling). If you disable DNS resolution of MQTT server names, it's likely that a backend will do likewise for `HOST`. |
+| `-proxy-server` | `HOST` | `bishbosh_proxyServer` | unset | Connect to a proxy server on a given `HOST`, which may be a name, an IPv4 or IPv6 address (in the case of the latter, you may need to surround it in `[]`, eg `[::1]`; backends vary and do not document IPv6 proxy address handling). If you disable DNS resolution of [MQTT] server names, it's likely that a backend will do likewise for `HOST`. |
 | `--proxy-port` | `PORT` | `bishbosh_proxyPort` | 1080 for `KIND` of `SOCKS4` or `SOCKS5`. 3128 for `HTTP`. unset for `none`. | Port the proxy server `HOST` is running on. |
 | `--proxy-username` | `UN` | `bishbosh_proxyUsername` | unset | Username `UN` to use. Please note that passing this as a switch is insecure. |
 | `--proxy-password` | `PWD` | `bishbosh_proxyPassword` | unset | Password `PWD` to use. Please note that passing this as a switch is insecure. Rarely supported. |
@@ -174,14 +174,14 @@ _Note: Not running proxies myself, I can't test many of these settings combinati
 Anything you can do with a command line switch, you can do as configuration. But configuration can also be used with scripts. Indeed, the configuration syntax is simply shell script. Configuration files _should not_ be executable. This means that if you _really_ want to, you can override just about any feature or behaviour of [bish-bosh] - although that's not explicitly supported. Configuration can be in any number of locations. Configuration may be a single file, or a folder of files; in the latter case, every file in the folder is parsed in 'shell glob-expansion order' (typically ASCII sort order of file names). Locations are searched in order as follows:-
 
 * Global, per-machine
-  * For all [shellfire](https://github.com/shellfire-dev)-based programs, including [bish-bosh]
+  * For all [shellfire]-based programs, including [bish-bosh]
     * As a file `/etc/shellfire/rc`
     * As any file in `/etc/shellfire/rc.d`, parsed in shell glob-expansion order (ASCII sort order, typically)
   * For any [bish-bosh] program
     * As a file in `/`
 * Per User
 * Per Environment
-* By MQTT server, port and Client Id
+* By [MQTT] server, port and Client Id
 * Per Invocation
 
 #### Global, Per-Machine
@@ -204,7 +204,7 @@ Anything you can do with a command line switch, you can do as configuration. But
 
 #### Per-Environment
 
-#### Per MQTT server & client id
+#### Per [MQTT] server & client id
 
 #### Per-Invocation on the command-line
 This is the grand-daddy. In effect, any of 
@@ -328,7 +328,7 @@ In a terminal window running bash or dash, do:-
 * From GNU glibc
   * `iconv`
 
-_Note: BusyBox configurations will work on Debian/Ubuntu, too, and so can be used for boot-time MQTT activities._
+_Note: BusyBox configurations will work on Debian/Ubuntu, too, and so can be used for boot-time [MQTT] activities._
 
 #### For Mac OS X
 * [Homebrew package manager](http://brew.sh/), with
@@ -412,9 +412,9 @@ In addition, there is the 'meta' backend, `nc`, which attempts to distinguish be
 ### TODO
 * Turning off DNS resolution
 * supporting inactivity timers
-* MQTTS using openssl, socat, gnutls, ncat and others
-* MQTT over SSH
-* MQTT over WebSockets
+* [MQTT]S using openssl, socat, gnutls, ncat and others
+* [MQTT] over SSH
+* [MQTT] over WebSockets
 * Investigate suckless tools
 
 ### Gotchas
@@ -422,3 +422,5 @@ In addition, there is the 'meta' backend, `nc`, which attempts to distinguish be
 * suid / sgid
 
 [bish-bosh]: https://github.com/raphaelcohn/bish-bosh  "bish-bosh on GitHub"
+[shellfire]: https://github.com/shellfire-dev  "shellfire on GitHub"
+[MQTT]: http://mqtt.org/ "[MQTT]"
