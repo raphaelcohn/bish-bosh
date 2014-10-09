@@ -1,5 +1,5 @@
 # [bish-bosh]
-[bish-bosh] is a client and library for using [MQTT], particularly [[MQTT] 3.1.1](http://www.oasis-open.org/committees/mqtt/) from the shell and command-line for Linux and Unix. It works with [DASH](http://gondor.apana.org.au/~herbert/dash/), [GNU Bash](https://www.gnu.org/software/bash/bash.html) and [BusyBox](http://www.busybox.net/downloads/BusyBox.html)'s ash, with a minimal set of helper programs that even the most basic of Unix systems should have.
+[bish-bosh] is a client and library for using [MQTT], particularly [MQTT 3.1.1](http://www.oasis-open.org/committees/mqtt/) from the shell and command-line for Linux and Unix. It works with [DASH], [GNU Bash] and [BusyBox]'s ash, with a minimal set of helper programs that even the most basic of Unix systems should have.
 
 Additionally, it is also a command interpreter. Once installed in your `PATH`, it can be used to script [MQTT] sessions, eg
 
@@ -236,10 +236,10 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
 * Binary to Hexadecimal conversion
   * `hexdump`, BSD-derived (part of the `bsdmainutils` packages in Debian/Ubuntu; usually installed by default)
   * `hexdump`, in BusyBox
-  * `hexdump`, in Toybox
+  * `hexdump`, in [Toybox]
   * `od`, from GNU `coreutils` package
   * `od`, in BusyBox
-  * `od`, in Toybox
+  * `od`, in [Toybox]
   * `od`, BSD-derived
 * Turning off buffering of hexadecimal conversion
   * `stdbuf`, from the GNU `coreutils` package
@@ -269,8 +269,8 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * Nothing, if random client-ids are not needed
 
 
-### GNU Bash versions
-Unfortunately, there are a lot of GNU Bash versions that are still in common use. Versions 3 and 4 of Bash differ in their support of key features (such as associative arrays). Even then, Bash 4.1 is arguably not particularly useful with associative arrays, though, as its declare syntax lacks the `-g` global setting. [bish-bosh] tries to maintain compatibility with `bash` as at version 3.1/3.2, even though it's obsolescent, because it occurs on two common platforms. A quick guide to common bash version occurrence is below.
+### [GNU Bash] versions
+Unfortunately, there are a lot of [GNU Bash] versions that are still in common use. Versions 3 and 4 of Bash differ in their support of key features (such as associative arrays). Even then, Bash 4.1 is arguably not particularly useful with associative arrays, though, as its declare syntax lacks the `-g` global setting. [bish-bosh] tries to maintain compatibility with `bash` as at version 3.1/3.2, even though it's obsolescent, because it occurs on two common platforms. A quick guide to common bash version occurrence is below.
 
 * bash 3.1+
   * Git-Bash
@@ -319,7 +319,7 @@ In a terminal window running bash or dash, do:-
 
 #### For BusyBox Embedded Use (as of version 1.22.1)
 * BusyBox configured to use as builtins the list of required dependencies (above) and the following
-  * `ash` (GNU Bash-like features aren't required)
+  * `ash` ([GNU Bash]-like features aren't required)
   * `hexdump`
   * `dd`
 * From GNU coreutils (because BusyBox doesn't have a builtin for stdbuf)
@@ -357,14 +357,14 @@ As for the optimum configuration, but substituting `dash` for `bash` and `nc-ope
 
 #### For BusyBox Embedded Use (as of version 1.22.1)
 * BusyBox configured to use as builtins the list of required dependencies (above) and the following
-  * `ash` (GNU Bash-like features aren't required)
+  * `ash` ([GNU Bash]-like features aren't required)
   * `hexdump`
   * `dd`
 
 #### For Mac OS X
 No installation should be required.
 
-#### For Toybox Embedded Use (as of 0.5.0)
+#### For [Toybox] Embedded Use (as of 0.5.0)
 * BusyBox configured to use as builtins the list of required dependencies (above) and the following
   * `hexdump`
   * `dd`
@@ -374,23 +374,23 @@ No installation should be required.
 [bish-bosh] tries very hard to make sure it works under any POSIX-compliant shell. However, in practice, that's quite hard to do; many features on the periphery of POSIX compliance, are subtly different (eg signal handling during read). That can lead to a matrix of pain. We constrain the list to widely-used shells common in the sorts of places you'd want to use [bish-bosh]: system administration, one-off scripting, boot-time and embedded devices with no compiler toolchain. Consequently, we test against:-
 
 * The [Almquist-derived](https://en.wikipedia.org/wiki/Almquist_shell) shells
-  * [DASH](http://gondor.apana.org.au/~herbert/dash/)
-  * [BusyBox](http://www.busybox.net/downloads/BusyBox.html)'s ash
-* [GNU Bash](https://www.gnu.org/software/bash/bash.html)
+  * [DASH]
+  * [BusyBox]'s ash
+* [GNU Bash]
 
 All of these shells support dynamically-scoped `local` variables, something we make extensive use of. Some of them also support read timeouts, which is very useful for making [bish-bosh] responsive.
 
 ### Zsh and KornShell
-[bish-bosh] is not actively tested under [zsh](http://www.zsh.org/) although it should work once the inevitable few bugs are fixed. zsh is a nice interactive shell, and good for scripting, too. In particular, it is the only shell where it's possible for the `read` builtin to read data containing Unicode `\u0000` (ACSCII `NUL` as was), and is also trully non-blocking.
+[bish-bosh] is not actively tested under [zsh] although it should work once the inevitable few bugs are fixed. [zsh] is a nice interactive shell, and good for scripting, too. In particular, it is the only shell where it's possible for the `read` builtin to read data containing Unicode `\u0000` (ACSCII `NUL` as was), and is also trully non-blocking.
 
-We try hard to maintain some compatibility with KornShell ksh88 derivatives; [bish-bosh] may work under [mksh](https://www.mirbsd.org/mksh.htm) or [pdksh](http://www.cs.mun.ca/~michael/pdksh/) (although the latter hasn't been actively updated since 1999). At this time, [ksh93](http://www.kornshell.org/) is known not to work. We have no access to ksh88 so can't support it.
+We try hard to maintain some compatibility with KornShell ksh88 derivatives; [bish-bosh] may work under [mksh] or [pdksh], although the latter hasn't been actively updated since 1999. At this time, [ksh93] is known not to work. We have no access to [ksh88] so can't support it.
 
 ### Unsupported Shells
 The following shells are untested and unsupported:-
 
-* [oksh](http://www.connochaetos.org/oksh/) (A Linux derivative of OpenBSD's ksh shell)
-* [yash](http://sourceforge.jp/projects/yash/)
-* ksh88
+* [oksh], a Linux derivative of OpenBSD's ksh shell
+* [yash]
+* [ksh88]
 
 ## Status of Supported Backends
 
@@ -401,7 +401,7 @@ The following shells are untested and unsupported:-
 | ncDebianTraditional | `nc.openbsd` | Debian OpenBSD | MQTT | Barely Implemented | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. Usernames supported. | Yes |
 | ncDebianOpenBSD | `nc.traditional` | Debian Traditional / Hobbit | MQTT | Barely Implemented | Yes | Yes | No | No | Yes |
 | ncToybox | `nc` / `busybox nc` | BusyBox | MQTT | Barely Implemented | No | No | No, although serial device files are supported | No | Yes |
-| ncBusyBox | `nc` / `toybox nc` / `toybox-$(uname)` /  | Toybox / Hobbit | MQTT | Barely Implemented | No | No | No, although serial device files are supported | No | Source Port only |
+| ncBusyBox | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] / Hobbit | MQTT | Barely Implemented | No | No | No, although serial device files are supported | No | Source Port only |
 | nc6 | `nc6` | netcat6, nc6 | MQTT | Barely Implemented | Yes | Yes | No | No | Yes |
 | ncat | `ncat`| Nmap ncat | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. Usernames and passwords supported for HTTP, usernames only for SOCKS. | Yes |
 | socat | `socat` | socat | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | ? | ? |
@@ -423,4 +423,15 @@ In addition, there is the 'meta' backend, `nc`, which attempts to distinguish be
 
 [bish-bosh]: https://github.com/raphaelcohn/bish-bosh  "bish-bosh on GitHub"
 [shellfire]: https://github.com/shellfire-dev  "shellfire on GitHub"
-[MQTT]: http://mqtt.org/ "[MQTT]"
+[MQTT]: http://mqtt.org/ "MQTT.org"
+[DASH]: http://gondor.apana.org.au/~herbert/dash/ "DASH Shell"
+[GNU Bash]: https://www.gnu.org/software/bash/bash.html "GNU Bash"
+[BusyBox]: http://www.busybox.net/downloads/BusyBox.html "BusyBox"
+[Toybox]: http://www.landley.net/toybox/ "Toybox"
+[zsh]: http://www.zsh.org/ "zsh"
+[oksh]: http://www.connochaetos.org/oksh/ "oksh"
+[yash]: http://sourceforge.jp/projects/yash/ "yash"
+[ksh93]: http://www.kornshell.org/ "ksh93"
+[mksh]: https://www.mirbsd.org/mksh.htm "Mir KornShell"
+[pdksh]: http://www.cs.mun.ca/~michael/pdksh/ "Public Domain KornShell"
+[ksh88]: http://www.kornshell.com "ksh88 at kornshell.com"
