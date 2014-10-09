@@ -15,14 +15,14 @@ bishbosh_connection_handler_UNSUBACK()
 
 bishbosh_connection_handler_PUBLISH()
 {
-	core_message DEBUG "bishbosh_connection_handler_PUBLISH(retain=$retain, qos=$qos, dup=$dup, topicLength=$topicLength, topicName=$topicName, packetIdentifier=$packetIdentifier, messageLength=$messageLength, messageFilePath=$messageFilePath)"
+	core_message DEBUG "bishbosh_connection_handler_PUBLISH(packetIdentifier=$packetIdentifier, retain=$retain, qos=$qos, dup=$dup, topicLength=$topicLength, topicName=$topicName, messageLength=$messageLength, messageFilePath=$messageFilePath)"
 	rm "$messageFilePath"
 }
 
 bishbosh_connection_handler_PUBLISH_again()
 {
 	# Occurs because a QoS 2 PUBLISH has been received after we sent a PUBREC (but before receiveing a PUBREL)
-	core_message DEBUG "bishbosh_connection_handler_PUBLISH_again(retain=$retain, qos=$qos, dup=$dup, topicLength=$topicLength, topicName=$topicName, packetIdentifier=$packetIdentifier, messageLength=$messageLength, messageFilePath=$messageFilePath)"
+	core_message DEBUG "bishbosh_connection_handler_PUBLISH_again(packetIdentifier=$packetIdentifier, retain=$retain, qos=$qos, dup=$dup, topicLength=$topicLength, topicName=$topicName, messageLength=$messageLength, messageFilePath=$messageFilePath)"
 	rm "$messageFilePath"
 }
 
@@ -49,14 +49,4 @@ bishbosh_connection_handler_PUBCOMP()
 bishbosh_connection_handler_PINGRESP()
 {
 	core_message DEBUG "bishbosh_connection_handler_PINGRESP()"
-}
-
-bishbosh_connection_handler_beforeWrite()
-{
-	core_message DEBUG "bishbosh_connection_handler_beforeWrite()"
-}
-
-bishbosh_connection_handler_afterWrite()
-{
-	core_message DEBUG "bishbosh_connection_handler_afterWrite()"
 }

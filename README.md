@@ -108,7 +108,7 @@ is configured as
 
 ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a letter, remove the `-` and make the letter capitalized.
 
-### But the really interesting scriptable stuff is done with configuration
+### But the really interesting scriptable stuff is done with configuration files or scriptlets
 
 #### Being specific about how a is made connection
 These settings relate to [MQTT]'s *CONNACK* packet.
@@ -126,6 +126,83 @@ These settings relate to [MQTT]'s *CONNACK* packet.
 | `bishbosh_connection_write_CONNECT_password` | Any sequence of bytes excluding ASCII NUL. May be empty | No password | Password. May be empty or unset (the latter meaning it is not sent) |
 
 \* technically, a boolean, which might also be `Y`, `YES`, `Yes`, `yes`, `T`, `TRUE`, `True`, `true`, `ON`, `On`, `on` for 1 and `N`, `NO`, `No`, `no`, `F`, `FALSE`, `False`, `false`, `OFF`, `Off` and `off` for 0, but best as a number.
+
+#### Handling read events
+[bish-bosh] supports a number of callbacks, called handlers, whenever something interesting has been read and processed. The default implementations of these just do logging if `--verbose 2` is used.
+
+To override a handler, you just write a shell function definition:-
+
+    bishbosh_connection_handler_PUBLISH()
+	{
+		printf '%s' "Received a message on topic ${topicName} which was ${messageLength} byte(s) long and is in the file ${messageFilePath}" 1>&2
+		
+		# Run a parser?
+		# Write a reply?
+		# Move or Hardlink to another location (perhaps an inotify-based process)?
+		# Or something else? You could even embed your entire program logic here, if it's shell script
+		
+		# Make sure we clean up
+		rm "${messageFilePath}"
+	}
+
+You need to be careful if using `printf` or `echo` - by default, all data written to standard out goes to the [MQTT] server! BTW, [bish-bosh] handles all the publication, subscription and unscribe acknowledgments. You don't have to do anything apart from have a handler (`bishbosh_connection_handler_PUBLISH`) to read your messages. But if you do:-
+
+| Handler | Control Packet Received | Local Variables in Scope | Notes |
+| ------- | --------------- | ------------------------ | ----- |
+| `bishbosh_connection_handler_CONNACK` | *CONNACK* | `bishbosh_connection_sessionPresent` | Invalid packets and non-zero CONNACK codes are handled for you |
+| `bishbosh_connection_handler_SUBACK` | *SUBACK* | `packetIdentifier`, `returnCodeCount`, `$@` which is a list of return codes | Invalid and unexpected packets are handled for you; active sessions are tracked on your behalf |
+| `bishbosh_connection_handler_UNSUBACK` | *UNSUBACK* | `packetIdentifier` | Invalid and unexpected packets are handled for you; active sessions are tracked on your behalf |
+| `bishbosh_connection_handler_PUBLISH` | *PUBLISH* | `packetIdentifier`, `retain`, `dup`, `qos`, `topicLength`, `topicName`, `messageLength`, `messageFilePath` | Invalid and unexpected packets and duplicates are handled appropriately. Publication acknowledgments (*PUBACK*, *PUBCOMP*) likewise are handled. The only thing you need to do is `rm "$messageFilePath"` if you want |
+| `bishbosh_connection_handler_PUBLISH_again` | *PUBLISH* | `packetIdentifier`, `retain`, `dup`, `qos`, `topicLength`, `topicName`, `messageLength`, `messageFilePath` | Called when a QoS 2 message is redelivered |
+| `bishbosh_connection_handler_PUBLISH_again` | *PUBLISH* | `packetIdentifier`, `retain`, `dup`, `qos`, `topicLength`, `topicName`, `messageLength`, `messageFilePath` | Called when a QoS 2 message is redelivered |
+| `bishbosh_connection_handler_PUBACK` | *PUBACK* |  `packetIdentifier` | Invalid and unexpected packets are handled for you. Acknowledgments likewise. |
+| `bishbosh_connection_handler_PUBREC` | *PUBREC* |  `packetIdentifier` | Invalid and unexpected packets are handled for you. Acknowledgments likewise. |
+| `bishbosh_connection_handler_PUBREL` | *PUBREL* |  `packetIdentifier` | Invalid and unexpected packets are handled for you. |
+| `bishbosh_connection_handler_PUBCOMP` | *PUBCOMP* |  `packetIdentifier` | Invalid and unexpected packets are handled for you. |
+| `bishbosh_connection_handler_PINGRESP` | *PINGRESP* |  | Nothing much to say. |
+
+#### Writing control packets
+Inside any of [bish-bosh]'s handlers, you can publish a message, make a subscription request, etc. Indeed, you can do it yourself - anything sent to standard out goes to the server - but it's probably better to use our built in writers. For example once connected (you received *CONNACK* control packet), you might want to subscribe and send some messages:-
+
+    bishbosh_connection_handler_CONNACK()
+	{
+		bishbosh_connection_write_SUBSCRIBE_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
+		bishbosh_connection_incrementNextPacketIdentifier
+		bishbosh_connection_write_SUBSCRIBE \
+			'/topic/1' 0 \
+			'/topic/2' 0
+        
+		bishbosh_connection_write_UNSUBSCRIBE_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
+		bishbosh_connection_incrementNextPacketIdentifier
+		bishbosh_connection_write_UNSUBSCRIBE \
+			'/topic/not/wanted' \
+			'/and/also/topic/not/wanted'
+		
+		# Publish a QoS 0 message from a string
+		bishbosh_connection_write_PUBLISH_topicName='a/b'
+		bishbosh_connection_write_PUBLISH_message='Message from a string'
+		bishbosh_connection_write_PUBLISH
+		
+		# Publish a duplicate QoS 2 retained message from a file that is to not be deleted (unlinked) after publication
+		bishbosh_connection_write_PUBLISH_dup=1
+		bishbosh_connection_write_PUBLISH_qos=2
+		bishbosh_connection_write_PUBLISH_retain=yes
+		bishbosh_connection_write_PUBLISH_messageFilePath="/path/to/message"
+		bishbosh_connection_write_PUBLISH_messageUnlinkFile=no
+		bishbosh_connection_write_PUBLISH_resetArguments=no
+		bishbosh_connection_write_PUBLISH_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
+		bishbosh_connection_incrementNextPacketIdentifier
+		bishbosh_connection_write_PUBLISH
+		
+		# Publish again - using bishbosh_connection_write_PUBLISH_resetArguments=no allows reuse of settings
+		bishbosh_connection_write_PUBLISH_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
+		bishbosh_connection_incrementNextPacketIdentifier
+		bishbosh_connection_write_PUBLISH
+	}
+
+_Note: This code is still evolving and the syntax is likely to change._
+
+_*TODO: Document control packet writers of interest*_
 
 ### OK, back to switches
 
@@ -449,6 +526,7 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 * Non-blocking reads should cause re-evaluation of connection status
 
 ### Useful to do
+* Publish messages from a handler that happens before / after read
 * Turning off DNS resolution
 * supporting inactivity timers
 * [MQTT]S using openssl, socat, gnutls, ncat and others

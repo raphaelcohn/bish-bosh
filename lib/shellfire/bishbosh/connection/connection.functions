@@ -284,7 +284,7 @@ bishbosh_connection_makeClientConnection()
 	$bishbosh_connection_read_loop
 }
 
-bishbosh_connection_nextPacketIdentifier()
+bishbosh_connection_incrementNextPacketIdentifier()
 {
 	printf '%s' $bishbosh_connection_nextPacketIdentifier
 	if [ $bishbosh_connection_nextPacketIdentifier -eq 65535 ]; then

@@ -15,13 +15,17 @@
 bishbosh_connection_handler_CONNACK()
 {	
 	# Set up some subscriptions... another implementation could read from a standard file
-	bishbosh_connection_write_SUBSCRIBE_packetIdentifier=$(bishbosh_connection_nextPacketIdentifier)
+	bishbosh_connection_write_SUBSCRIBE_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
+	bishbosh_connection_incrementNextPacketIdentifier
+	
 	bishbosh_connection_write_SUBSCRIBE \
 		'/topic/1' 0 \
 		'/topic/2' 0
 	
 	# Make sure we're not subscribed to what we don't want here, too - again, we could read from a file
-	bishbosh_connection_write_UNSUBSCRIBE_packetIdentifier=$(bishbosh_connection_nextPacketIdentifier)
+	bishbosh_connection_write_UNSUBSCRIBE_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
+	bishbosh_connection_incrementNextPacketIdentifier
+	
 	bishbosh_connection_write_UNSUBSCRIBE \
 		'/topic/not/wanted' \
 		'/and/also/topic/not/wanted'
