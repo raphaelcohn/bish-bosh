@@ -112,6 +112,9 @@ ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a let
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
+| `-s, --server` | `HOST` | `bishbosh_server` | `localhost` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an MQTT server to connect to, or, if using Unix Domain Sockets (see `--transport` in Source-Routing Settings, below) a file path to a readable Unix Domain Socket. |
+| `-p, --port` | `PORT` | `bishbosh_port` | 1883 for most backends; 8883 if backend is secure | Port your MQTT `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix Domain Sockets. |
+| `-i, --client-id` | `ID` | `bishbosh_clientId` | unset | MQTT Client ID. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. |
 
 #### Backends
 A backend is the strategy bish-bosh uses to connect to a MQTT server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. bish-bosh ships with a large number of backends to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
