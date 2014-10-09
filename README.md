@@ -1,9 +1,9 @@
-# bish-bosh
-bish-bosh is a client and library for using [MQTT](http://mqtt.org/), particularly [MQTT 3.1.1](http://www.oasis-open.org/committees/mqtt/) from the shell and command-line for Linux and Unix. It works with [DASH](http://gondor.apana.org.au/~herbert/dash/), [GNU Bash](https://www.gnu.org/software/bash/bash.html) and [BusyBox](http://www.busybox.net/downloads/BusyBox.html)'s ash, with a minimal set of helper programs that even the most basic of Unix systems should have.
+# [bish-bosh]
+[bish-bosh] is a client and library for using [MQTT](http://mqtt.org/), particularly [MQTT 3.1.1](http://www.oasis-open.org/committees/mqtt/) from the shell and command-line for Linux and Unix. It works with [DASH](http://gondor.apana.org.au/~herbert/dash/), [GNU Bash](https://www.gnu.org/software/bash/bash.html) and [BusyBox](http://www.busybox.net/downloads/BusyBox.html)'s ash, with a minimal set of helper programs that even the most basic of Unix systems should have.
 
 Additionally, it is also a command interpreter. Once installed in your `PATH`, it can be used to script [MQTT](http://mqtt.org/) sessions, eg
 
-    #!/usr/bin/env bish-bosh
+    #!/usr/bin/env [bish-bosh]
 	bishbosh_server=test.mosquitto.org
 	bishbosh_clientId=CLIENT_ID
 	
@@ -11,7 +11,7 @@ Additionally, it is also a command interpreter. Once installed in your `PATH`, i
 	
 	bishbosh_connection_handler_PUBLISH()
 	{
-		# We've got a message. bish-bosh handles QoS 1 and 2 for us; we just need to use it.
+		# We've got a message. [bish-bosh] handles QoS 1 and 2 for us; we just need to use it.
 		printf '%s:' "$topicName"
 		cat "$messageFilePath"
 	}
@@ -21,40 +21,50 @@ Making the above snippet executable (`chmod +x SNIPPET`) creates a fully-fledged
 If there's interest, a more advanced version could function as interactive shell driven by ncurses...
 
 ## Download and Quick Start
-bish-bosh can be used simply by cloning from github. To clone into your home folder, type:-
+[bish-bosh] can be used simply by cloning from github. To clone into your home folder, type:-
 
     cd "$HOME"
-	git clone https://github.com/raphaelcohn/bish-bosh.git
+	git clone https://github.com/raphaelcohn/[bish-bosh].git
 	git submodule update --init --recursive
 	cd -
 
-This will create a folder `bish-bosh` inside your `$HOME`. bish-bosh can then be used straightaway, eg
+This will create a folder [bish-bosh] inside your `$HOME`. [bish-bosh] can then be used straightaway, eg
 
-    cd "$HOME"/bish-bosh
-	./bish-bosh --server test.mosquitto.org --client-id CLIENT_ID
+    cd "$HOME"/[bish-bosh]
+	./[bish-bosh] --server test.mosquitto.org --client-id CLIENT_ID
 
-where `CLIENT_ID` is a client id you'd like to use. bosh-bosh will attempt to find its dependencies on the PATH, install any missing dependencies (with your permission) if it recognises your package manager, choose an optimum configuration and connect to the server (in this case, a commonly available test one).
+where `CLIENT_ID` is a client id you'd like to use. bosh-bosh will attempt to find its dependencies on the `PATH`, install any missing dependencies (with your permission) if it recognises your package manager, choose an optimum configuration and connect to the server (in this case, a commonly available test one).
 
-Of course, this might not work, and so you might need to install some dependencies (see below).
+Of course, this might not work, and so you might need to install some dependencies (see below) or change your backend (see Switched and Configuration, below).
+
+### Getting it from [Homebrew](http://brew.sh/) for Mac OS X
+Hopefully in the next few weeks [bish-bosh] will be available as a [Homebrew](http://brew.sh/) recipe, so you should be able to do
+
+    brew install [bish-bosh]
+
+### Installing into your `PATH` and Packaging
+You might want to install [bish-bosh] in your `PATH`, or package it. [bish-bosh] as checked into github _isn't standalone_: it needs to be _fattened_ using [shellfire](https://github.com/shellfire-dev). shellfire is a set of common libraries for shell scripting which [bish-bosh] uses. _Fattening_ is the name the shellfire project uses for creating a standalone, self-contained shell binary (even one that can include templates, documents and tarballs) that can then reside anywhere.
+
+_Fattening_ is not currently supported, but is planned to be very soon.
 
 ## Switches and Configuration
-bish-bosh has a lot of switches! Most of them you'll hopefully never use: they're to deal with situations where network access isn't straightforward. Perhaps you've got multiple NICs or IP addresses, or a proxy is blocking you from connecting directly. And all of the switches, bar one, have sensible defaults. All of bish-bosh's switches can be set using configuration (eg in `/etc`), or even in the scripts you run; the choice is yours. However, the basic invocation is very simple:-
+[bish-bosh] has a lot of switches! Most of them you'll hopefully never use: they're to deal with situations where network access isn't straightforward. Perhaps you've got multiple NICs or IP addresses, or a proxy is blocking you from connecting directly. And all of the switches, bar one, have sensible defaults. All of [bish-bosh]'s switches can be set using configuration (eg in `/etc`), or even in the scripts you run; the choice is yours. However, the basic invocation is very simple:-
 
-    bish-bosh --server SERVER --client-id CLIENT_ID
+    [bish-bosh] --server SERVER --client-id CLIENT_ID
 	
 	# or, if you prefer short options
 	
-	bish-bosh -s SERVER -c CLIENT_ID
+	[bish-bosh] -s SERVER -c CLIENT_ID
 
 If you don't specify `SERVER`, it defaults to `localhost`. `CLIENT_ID` is a MQTT client id. (We have partial support for random client ids, so eventually you'll not even need to specify this).
 
 If your MQTT server isn't running on port `1883`, you can specify it:-
 
-    bish-bosh --server SERVER --client-id CLIENT_ID --port PORT
+    [bish-bosh] --server SERVER --client-id CLIENT_ID --port PORT
 	
 	# or, if you prefer short options
 	
-	bish-bosh -s SERVER -c CLIENT_ID -p PORT
+	[bish-bosh] -s SERVER -c CLIENT_ID -p PORT
 
 where `PORT` is a port between 1 and 65535.
 
@@ -67,19 +77,19 @@ Well, it's quite straightforward. Rather than use _even more_ switches (and plac
 
 saved as `file.bishbosh` and use it as
 
-    bish-bosh --server SERVER --client-id CLIENT_ID -- script.bishbosh
+    [bish-bosh] --server SERVER --client-id CLIENT_ID -- script.bishbosh
 
-The `--` isn't strictly necessary, but it's good practice - just in case you name something `--silly-file-name`, it stops bish-bosh getting confused.
+The `--` isn't strictly necessary, but it's good practice - just in case you name something `--silly-file-name`, it stops [bish-bosh] getting confused.
 
 Of course, you can have more than one script, eg
 
-    bish-bosh --server SERVER --client-id CLIENT_ID -- script.bishbosh another-script.bishbosh
+    [bish-bosh] --server SERVER --client-id CLIENT_ID -- script.bishbosh another-script.bishbosh
 
 So you could keep sensitive data (eg a password) in one file, and everything else in another - a good approach which would let you check all your scripts into source control bar the one with the password, and so do simple production deployments and devops-stuff.
 
 As an added convenience, you can also store configuration scripts on a per-client-id basis, too. This means that common connection settings for a client can be stored, but different runtime invocations catered for. Very useful for system administration tasks.
 
-There's quite a lot of things than can be configured this way. If a setting is missing, bish-bosh appliesa default. For things like QoS, we got for the lowest; for usernames and passwords and wills, we omit them. So it you've got a MQTT server that doesn't need passwords (a bit odd, but possible), then you can just not set it. Please note that not set isn't the same thing as empty:-
+There's quite a lot of things than can be configured this way. If a setting is missing, [bish-bosh] appliesa default. For things like QoS, we got for the lowest; for usernames and passwords and wills, we omit them. So it you've got a MQTT server that doesn't need passwords (a bit odd, but possible), then you can just not set it. Please note that not set isn't the same thing as empty:-
 
     bishbosh_connection_write_CONNECT_username=''
 	# is not the same as
@@ -89,14 +99,14 @@ There's quite a lot of things than can be configured this way. If a setting is m
 Everything you specify as a long-option switch can be specified in configuration. By convention, the naming in configuration matches the switches, eg
 
     --server test.mosquitto.org
-	--clients-path /var/lib/bish-bosh
+	--clients-path /var/lib/[bish-bosh]
 
 is configured as
 
     bishbosh_server='test.mosquitto.org'
-	bishbosh_clientsPath='/var/lib/bish-bosh'
+	bishbosh_clientsPath='/var/lib/[bish-bosh]'
 
-ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a letter, remove the `-` and make the letter capitalized.
+ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a letter, remove the `-` and make the letter capitalized. (With one exception, `--verbosity`, which is specified as `core_init_verbosity`, because it is inherited from the [shellfire](https://github.com/shellfire-dev) framework).
 
 ### OK, back to switches
 
@@ -117,9 +127,9 @@ ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a let
 | `-i, --client-id` | `ID` | `bishbosh_clientId` | unset | MQTT Client ID. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. |
 
 #### Backends
-A backend is the strategy bish-bosh uses to connect to a MQTT server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. bish-bosh ships with a large number of backends to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
+A backend is the strategy [bish-bosh] uses to connect to a MQTT server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. [bish-bosh] ships with a large number of backends to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
 
-By default, bish-bosh has a list of backends in preferred order, and tries to choose the first that looks like it will work. Of course, given the vagaries of your system, it might not get that right, so you might want to override it.
+By default, [bish-bosh] has a list of backends in preferred order, and tries to choose the first that looks like it will work. Of course, given the vagaries of your system, it might not get that right, so you might want to override it.
 
 The currently supported backends are listed in a section below.
 
@@ -128,7 +138,7 @@ The currently supported backends are listed in a section below.
 | `-b, --backends` | `A,B,...` | `bishbosh_backends` | `ncat,nc6,nc,bash,socat,tcpclient` | Backends are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. |
 
 #### Configuration Tweaks
-Ordinarily, you should not need to change any of these settings. The `--clients-path` controls where bish-bosh looks for state and script information for a particular client. When bish-bosh is installed, it typically defaults to `/var/lib/bish-bosh/clients`.
+Ordinarily, you should not need to change any of these settings. The `--clients-path` controls where [bish-bosh] looks for state and script information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/[bish-bosh]/clients`.
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
@@ -146,7 +156,7 @@ If you have a box with multiple NICs or IP addresses, broken IPv4 / IPv6 network
 | `--source-port` | `PORT` | `bishbosh_sourcePort` | unset | Connect using the source port `PORT`. If `TRANSPT` is `unix` then this setting is invalid. Results in packets being sent from this port. If unset, then a random source port is chosen. If `PORT` is set to `''` (the empty string), then it is treated as if unset. This is to allow local users to override global configuration. |
 
 #### Proxy Settings
-Personally, I find proxies extremely irritating, and of very limited benefit. But many organizations still use them, if simply because once they go in, they tend to stay in - they appeal to the control freak in all of us, I suppose. bish-bosh does its best to support SOCKS and HTTP proxies, but we're reliant on the rather limited support of backends. Many don't support them, not least because most FOSS is produced by developers who wouldn't use them - they're individuals, not power-mad network admins.
+Personally, I find proxies extremely irritating, and of very limited benefit. But many organizations still use them, if simply because once they go in, they tend to stay in - they appeal to the control freak in all of us, I suppose. [bish-bosh] does its best to support SOCKS and HTTP proxies, but we're reliant on the rather limited support of backends. Many don't support them, not least because most FOSS is produced by developers who wouldn't use them - they're individuals, not power-mad network admins.
 
 When using a proxy, you won't be able to use Unix domain sockets (eg `--transport unix`). Not every backend supports using a proxy (there's a compatibility table below). And those that do don't support every option:-
 
@@ -160,22 +170,49 @@ When using a proxy, you won't be able to use Unix domain sockets (eg `--transpor
 
 _Note: Not running proxies myself, I can't test many of these settings combinations._
 
-## Configuration
-Configuration is not just about 
+### Configuration Locations
+Anything you can do with a command line switch, you can do as configuration. But configuration can also be used with scripts. Indeed, the configuration syntax is simply shell script. Configuration files _should not_ be executable. This means that if you _really_ want to, you can override just about any feature or behaviour of [bish-bosh] - although that's not explicitly supported. Configuration can be in any number of locations. Configuration may be a single file, or a folder of files; in the latter case, every file in the folder is parsed in 'shell glob-expansion order' (typically ASCII sort order of file names). Locations are searched in order as follows:-
 
-### Global, Per-Machine
+* Global, per-machine
+  * For all [shellfire](https://github.com/shellfire-dev)-based programs, including [bish-bosh]
+    * As a file `/etc/shellfire/rc`
+    * As any file in `/etc/shellfire/rc.d`, parsed in shell glob-expansion order (ASCII sort order, typically)
+  * For any [bish-bosh] program
+    * As a file in `/`
+* Per User
+* Per Environment
+* By MQTT server, port and Client Id
+* Per Invocation
 
-### Per-User
+#### Global, Per-Machine
 
-### Per-Environment
+  
+  /Users/raphcohn/Documents/[bish-bosh]/etc/shellfire/rc
+  /Users/raphcohn/Documents/[bish-bosh]/etc/shellfire/rc.d
+  /Users/raphcohn/Documents/[bish-bosh]/etc/[bish-bosh]/rc
+  /Users/raphcohn/Documents/[bish-bosh]/etc/[bish-bosh]/rc.d
+  HOME/.shellfire/rc
+  HOME/.shellfire/rc.d
+  shellfire_RC
+  shellfire_RC_D
+  HOME/.[bish-bosh]/rc
+  HOME/.[bish-bosh]/rc.d
+  [bish-bosh]_RC
+  [bish-bosh]_RC_D
 
-### Per MQTT server & client id
+#### Per-User
 
-### Per-Invocation
+#### Per-Environment
+
+#### Per MQTT server & client id
+
+#### Per-Invocation on the command-line
 This is the grand-daddy. In effect, any of 
 
+#### Standalone
+
 ## Dependencies
-bish-bosh tries to use as few dependencies as possible, but, since this is shell script, that's not always possible. It's compounded by the need to support the difference between major shells, too. It also does its best to work around differences in common binaries, by using feature detection, and where it can't do any better, by attempting to install using your package manager.
+[bish-bosh] tries to use as few dependencies as possible, but, since this is shell script, that's not always possible. It's compounded by the need to support the difference between major shells, too. It also does its best to work around differences in common binaries, by using feature detection, and where it can't do any better, by attempting to install using your package manager.
 
 ### Required Dependencies
 All of these should be present even on the most minimal system. Usage is restricted to those flags known to work.
@@ -194,7 +231,7 @@ All of these should be present even on the most minimal system. Usage is restric
 If cloning from github, then you'll also need to make sure you have `git`.
 
 ### Either Or Dependencies (one is required)
-These are listed in preference order. Ordinarily, bish-bosh uses the PATH and feature detection to try to find an optimum dependency. Making some choices, however, influences others (eg `hexdump` and `od` preferences change when `stdbuf` is discovered, to try to use GNU `od`). Some choices are sub-optimal, and may cause operational irritation (mostly, bishbosh responds far more slowly to signals and socket disconnections).
+These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and feature detection to try to find an optimum dependency. Making some choices, however, influences others (eg `hexdump` and `od` preferences change when `stdbuf` is discovered, to try to use GNU `od`). Some choices are sub-optimal, and may cause operational irritation (mostly, bishbosh responds far more slowly to signals and socket disconnections).
 
 * Binary to Hexadecimal conversion
   * `hexdump`, BSD-derived (part of the `bsdmainutils` packages in Debian/Ubuntu; usually installed by default)
@@ -233,7 +270,7 @@ These are listed in preference order. Ordinarily, bish-bosh uses the PATH and fe
 
 
 ### GNU Bash versions
-Unfortunately, there are a lot of GNU Bash versions that are still in common use. Versions 3 and 4 of Bash differ in their support of key features (such as associative arrays). Even then, Bash 4.1 is arguably not particularly useful with associative arrays, though, as its declare syntax lacks the `-g` global setting. bish-bosh tries to maintain compatibility with `bash` as at version 3.1/3.2, even though it's obsolescent, because it occurs on two common platforms. A quick guide to common bash version occurrence is below.
+Unfortunately, there are a lot of GNU Bash versions that are still in common use. Versions 3 and 4 of Bash differ in their support of key features (such as associative arrays). Even then, Bash 4.1 is arguably not particularly useful with associative arrays, though, as its declare syntax lacks the `-g` global setting. [bish-bosh] tries to maintain compatibility with `bash` as at version 3.1/3.2, even though it's obsolescent, because it occurs on two common platforms. A quick guide to common bash version occurrence is below.
 
 * bash 3.1+
   * Git-Bash
@@ -276,7 +313,7 @@ In a terminal window running bash or dash, do:-
     sudo apt-get update
 	sudo apt-get install bash coreutils sed grep bsdmainutils libc-bin bash nc-traditional git
 	cd "$HOME"
-	git clone https://github.com/raphaelcohn/bish-bosh.git
+	git clone https://github.com/raphaelcohn/[bish-bosh].git
 	git submodule update --init --recursive
 	cd -
 
@@ -314,7 +351,7 @@ As for the optimum configuration, but substituting `dash` for `bash` and `nc-ope
     sudo apt-get update
 	sudo apt-get install dash coreutils sed grep bsdmainutils libc-bin bash nc-openbsd git
 	cd "$HOME"
-	git clone https://github.com/raphaelcohn/bish-bosh.git
+	git clone https://github.com/raphaelcohn/[bish-bosh].git
 	git submodule update --init --recursive
 	cd -
 
@@ -334,19 +371,19 @@ No installation should be required.
 * `dash` shell
 
 ## Supported Shells
-bish-bosh tries very hard to make sure it works under any POSIX-compliant shell. However, in practice, that's quite hard to do; many features on the periphery of POSIX compliance, are subtly different (eg signal handling during read). That can lead to a matrix of pain. We constrain the list to widely-used shells common in the sorts of places you'd want to use bish-bosh: system administration, one-off scripting, boot-time and embedded devices with no compiler toolchain. Consequently, we test against:-
+[bish-bosh] tries very hard to make sure it works under any POSIX-compliant shell. However, in practice, that's quite hard to do; many features on the periphery of POSIX compliance, are subtly different (eg signal handling during read). That can lead to a matrix of pain. We constrain the list to widely-used shells common in the sorts of places you'd want to use [bish-bosh]: system administration, one-off scripting, boot-time and embedded devices with no compiler toolchain. Consequently, we test against:-
 
 * The [Almquist-derived](https://en.wikipedia.org/wiki/Almquist_shell) shells
   * [DASH](http://gondor.apana.org.au/~herbert/dash/)
   * [BusyBox](http://www.busybox.net/downloads/BusyBox.html)'s ash
 * [GNU Bash](https://www.gnu.org/software/bash/bash.html)
 
-All of these shells support dynamically-scoped `local` variables, something we make extensive use of. Some of them also support read timeouts, which is very useful for making bish-bosh responsive.
+All of these shells support dynamically-scoped `local` variables, something we make extensive use of. Some of them also support read timeouts, which is very useful for making [bish-bosh] responsive.
 
 ### Zsh and KornShell
-bish-bosh is not actively tested under [zsh](http://www.zsh.org/) although it should work once the inevitable few bugs are fixed. zsh is a nice interactive shell, and good for scripting, too. In particular, it is the only shell where it's possible for the `read` builtin to read data containing Unicode `\u0000` (ACSCII `NUL` as was), and is also trully non-blocking.
+[bish-bosh] is not actively tested under [zsh](http://www.zsh.org/) although it should work once the inevitable few bugs are fixed. zsh is a nice interactive shell, and good for scripting, too. In particular, it is the only shell where it's possible for the `read` builtin to read data containing Unicode `\u0000` (ACSCII `NUL` as was), and is also trully non-blocking.
 
-We try hard to maintain some compatibility with KornShell ksh88 derivatives; bish-bosh may work under [mksh](https://www.mirbsd.org/mksh.htm) or [pdksh](http://www.cs.mun.ca/~michael/pdksh/) (although the latter hasn't been actively updated since 1999). At this time, [ksh93](http://www.kornshell.org/) is known not to work. We have no access to ksh88 so can't support it.
+We try hard to maintain some compatibility with KornShell ksh88 derivatives; [bish-bosh] may work under [mksh](https://www.mirbsd.org/mksh.htm) or [pdksh](http://www.cs.mun.ca/~michael/pdksh/) (although the latter hasn't been actively updated since 1999). At this time, [ksh93](http://www.kornshell.org/) is known not to work. We have no access to ksh88 so can't support it.
 
 ### Unsupported Shells
 The following shells are untested and unsupported:-
@@ -380,5 +417,8 @@ In addition, there is the 'meta' backend, `nc`, which attempts to distinguish be
 * MQTT over WebSockets
 * Investigate suckless tools
 
-## netcat, Mac OS X Variant
-F
+### Gotchas
+* fattening
+* suid / sgid
+
+[bish-bosh]: https://github.com/raphaelcohn/bish-bosh  "bish-bosh on GitHub"
