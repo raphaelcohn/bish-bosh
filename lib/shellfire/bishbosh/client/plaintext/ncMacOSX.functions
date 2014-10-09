@@ -104,7 +104,7 @@ bishbosh_client_plaintext_ncMacOSX_start()
 		
 	esac
 	
-	if [ $core_init_verbosity -gt 0 ]; then
+	if [ $(core_init_verbosity) -gt 1 ]; then
 		core_variable_array_append options -v
 	fi
 
