@@ -104,8 +104,9 @@ ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a let
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-v, --verbose` | `[LEVEL]` | `core_init_verbosity` | `0` | Adjusts verbosity of output on standard out. `LEVEL` is optional; omitting causes a +1 increase in verbosity. May be specified multiple times, although levels greater than `2` have no effect currently. The only configuration setting that doesn't reflect convention naming (because it is inherited from [shellfire](https://github.com/shellfire-dev)) |
-| `--version` | | | | Version and license information in a GNU-like format |
+| `-v, --verbose` | `[LEVEL]` | `core_init_verbosity` | `0` | Adjusts verbosity of output on standard error (stderr). `LEVEL` is optional; omitting causes a +1 increase in verbosity. May be specified multiple times, although levels greater than `2` have no effect currently. The only configuration setting that doesn't reflect convention naming (because it is inherited from [shellfire](https://github.com/shellfire-dev)) |
+| `--version` | | | | Version and license information in a GNU-like format on standard error. |
+| `-h,--help` | | | | A very long help message recapping most of this document's information. |
 
 #### MQTT Big Hitters
 
