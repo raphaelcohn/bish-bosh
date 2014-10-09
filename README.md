@@ -3,7 +3,7 @@
 
 Additionally, it is also a command interpreter. Once installed in your `PATH`, it can be used to script [MQTT] sessions, eg
 
-    #!/usr/bin/env [bish-bosh]
+    #!/usr/bin/env bish-bosh
 	bishbosh_server=test.mosquitto.org
 	bishbosh_clientId=CLIENT_ID
 	
@@ -16,21 +16,21 @@ Additionally, it is also a command interpreter. Once installed in your `PATH`, i
 		cat "$messageFilePath"
 	}
 
-Making the above snippet executable (`chmod +x SNIPPET`) creates a fully-fledged [MQTT] driven program. Ideal for one-off testing, system administrators clearing out queues and simple message driven apps that can use the Unix/Linux ecosystem and philosphy. Also quite handy for small embedded systems without a compiler toolchain and initrd boot time configuration grabbing...
+Making the above snippet executable (`chmod +x SCRIPT`) creates a fully-fledged [MQTT] driven program. Ideal for one-off testing, system administrators clearing out queues and simple message driven apps that can use the Unix/Linux ecosystem and philosphy. Also quite handy for small embedded systems without a compiler toolchain and initrd boot time configuration grabbing...
 
 If there's interest, a more advanced version could function as interactive shell driven by ncurses...
 
 ## Download and Quick Start
-[bish-bosh] can be used simply by cloning from github. To clone into your home folder, type:-
+[bish-bosh] can be used simply by cloning from [GitHub]. To clone into your home folder, type:-
 
     cd "$HOME"
-	git clone https://github.com/raphaelcohn/[bish-bosh].git
+	git clone https://github.com/raphaelcohn/bish-bosh.git
 	git submodule update --init --recursive
 	cd -
 
 This will create a folder [bish-bosh] inside your `$HOME`. [bish-bosh] can then be used straightaway, eg
 
-    cd "$HOME"/[bish-bosh]
+    cd "$HOME"/bish-bosh
 	./bish-bosh --server test.mosquitto.org --client-id CLIENT_ID
 
 where `CLIENT_ID` is a client id you'd like to use. bosh-bosh will attempt to find its dependencies on the `PATH`, install any missing dependencies (with your permission) if it recognises your package manager, choose an optimum configuration and connect to the server (in this case, a commonly available test one).
@@ -43,7 +43,7 @@ Hopefully in the next few weeks [bish-bosh] will be available as a [Homebrew](ht
     brew install bish-bosh
 
 ### Installing into your `PATH` and Packaging
-You might want to install [bish-bosh] in your `PATH`, or package it. [bish-bosh] as checked into github _isn't standalone_: it needs to be _fattened_ using [shellfire]. shellfire is a set of common libraries for shell scripting which [bish-bosh] uses. _Fattening_ is the name the shellfire project uses for creating a standalone, self-contained shell binary (even one that can include templates, documents and tarballs) that can then reside anywhere.
+You might want to install [bish-bosh] in your `PATH`, or package it. [bish-bosh] as checked into [GitHub] _isn't standalone_: it needs to be _fattened_ using [shellfire]. shellfire is a set of common libraries for shell scripting which [bish-bosh] uses. _Fattening_ is the name the shellfire project uses for creating a standalone, self-contained shell binary (even one that can include templates, documents and tarballs) that can then reside anywhere.
 
 _Fattening_ is not currently supported, but is planned to be very soon.
 
@@ -191,13 +191,13 @@ Anything you can do with a command line switch, you can do as configuration. But
   * _Note: nothing stops these paths, or files in them, being symlinks, so allowing aliasing of server names and port numbers (eg to share secure and insecure settings)._
   * _Note: it is possible for a configuration file at `SERVER` or `PORT` level to set `bishbosh_clientId`, so influencing the search._
 
-The default clone from github is configured so that files placed in these folders will be ignored.
+The default clone from [GitHub] is configured so that files placed in these folders will be ignored.
 
 ## Dependencies
 [bish-bosh] tries to use as few dependencies as possible, but, since this is shell script, that's not always possible. It's compounded by the need to support the difference between major shells, too. It also does its best to work around differences in common binaries, by using feature detection, and where it can't do any better, by attempting to install using your package manager.
 
 ### Required Dependencies
-All of these should be present even on the most minimal system. Usage is restricted to those flags known to work.
+All of these should be present even on the most minimal system. Usage is restricted to those flags known to work across MacOSX, GNU, BusyBox and Toybox.
 
 * `mkdir`
 * `mkfifo`
@@ -207,10 +207,11 @@ All of these should be present even on the most minimal system. Usage is restric
 * `rmdir`
 * `tr`
 * `cat`
-* `sed`, any POSIX-compliant version. busybox has been tested against MacOSX sed, GNU sed and BusyBox sed.
-* `grep`, any POSIX-compliant version. busybox has been tested against MacOSX grep, GNU grep and BusyBox grep.
+* `kill`
+* `sed`
+* `grep`
 
-If cloning from github, then you'll also need to make sure you have `git`.
+If cloning from [GitHub], then you'll also need to make sure you have `git`.
 
 ### Either Or Dependencies (one is required)
 These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and feature detection to try to find an optimum dependency. Making some choices, however, influences others (eg `hexdump` and `od` preferences change when `stdbuf` is discovered, to try to use GNU `od`). Some choices are sub-optimal, and may cause operational irritation (mostly, bishbosh responds far more slowly to signals and socket disconnections).
@@ -288,14 +289,14 @@ All of these dependencies bar `nc-traditional` should already be installed on a 
 * `libc-bin`
 * `bash`
 * `nc-traditional`
-* `git`, if cloning from github
+* `git`, if cloning from [GitHub]
 
 In a terminal window running bash or dash, do:-
 
     sudo apt-get update
 	sudo apt-get install bash coreutils sed grep bsdmainutils libc-bin bash nc-traditional git
 	cd "$HOME"
-	git clone https://github.com/raphaelcohn/[bish-bosh].git
+	git clone https://github.com/raphaelcohn/bish-bosh.git
 	git submodule update --init --recursive
 	cd -
 
@@ -318,7 +319,7 @@ _Note: BusyBox configurations will work on Debian/Ubuntu, too, and so can be use
   * `coreutils`
   * `gnu-sed`
   * `grep`
-  * `git`, if cloning from github
+  * `git`, if cloning from [GitHub]
 
 In a terminal window running bash, do:-
 
@@ -333,7 +334,7 @@ As for the optimum configuration, but substituting `dash` for `bash` and `nc-ope
     sudo apt-get update
 	sudo apt-get install dash coreutils sed grep bsdmainutils libc-bin bash nc-openbsd git
 	cd "$HOME"
-	git clone https://github.com/raphaelcohn/[bish-bosh].git
+	git clone https://github.com/raphaelcohn/bish-bosh.git
 	git submodule update --init --recursive
 	cd -
 
@@ -405,6 +406,7 @@ In addition, there is the 'meta' backend, `nc`, which attempts to distinguish be
 
 [bish-bosh]: https://github.com/raphaelcohn/bish-bosh  "bish-bosh on GitHub"
 [shellfire]: https://github.com/shellfire-dev  "shellfire on GitHub"
+[GitHub]: https://github.com/ "GitHub Homepage"
 [MQTT]: http://mqtt.org/ "MQTT.org"
 [DASH]: http://gondor.apana.org.au/~herbert/dash/ "DASH Shell"
 [GNU Bash]: https://www.gnu.org/software/bash/bash.html "GNU Bash"
