@@ -14,8 +14,8 @@ bishbosh_connection_read_protocolError_ifRemainingLengthNot()
 {
 	local controlPacket="$1"
 	local expectedLength=$2
-	if [ $firstRemainingLengthByte -ne $expectedLength ]; then
-		bishbosh_connection_read_protocolError "$controlPacket" "Remaining length '$firstRemainingLengthByte' should be $expectedLength"
+	if [ $remainingLength -ne $expectedLength ]; then
+		bishbosh_connection_read_protocolError "$controlPacket" "Remaining length '$remainingLength' should be $expectedLength"
 	fi
 }
 

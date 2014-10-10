@@ -91,32 +91,38 @@ bishbosh_connection_background_processLoop()
 		bishbosh_connection_write_CONNECT
 		
 		local controlPacketByte
-		local firstRemainingLengthByte
 		local remainingLength
 		
 		bishbosh_connection_continue=true
 		
-		# Handle CONNACK
-		bishbosh_connection_read_byte_blocking controlPacketByte
-		if [ -z "$controlPacketByte" ]; then
-			core_exitError $core_commandLine_exitCode_IOERR "Read of controlPacketByte failed"
-		fi
-		if [ $controlPacketByte -ne 32 ]; then
-			bishbosh_connection_read_controlpacket_invalid
-		fi
-		bishbosh_connection_read_byte_blocking firstRemainingLengthByte
-		bishbosh_connection_read_controlpacket_CONNACK
-		
-		bishbosh_connection_continue=false
+		# Specialised CONNACK handling
 		while $bishbosh_connection_continue
 		do
 			# Will return empty if interrupted or non-blocking
+			controlPacketByte=''
 			bishbosh_connection_read_byte_blocking controlPacketByte
-			echo xxx $controlPacketByte xxx 1>&2
-			bishbosh_connection_read_byte_blocking firstRemainingLengthByte
-			echo xxx $controlPacketByte xxx 1>&2
-			remainingLength=$firstRemainingLengthByte
-			core_TODO "Handle longer messages"
+			if [ -z "$controlPacketByte" ]; then
+				continue
+			fi
+			break
+		done
+		if [ $controlPacketByte -ne 32 ]; then
+			bishbosh_connection_read_controlpacket_invalid
+		fi
+		bishbosh_connection_read_remainingLength CONNACK
+		bishbosh_connection_read_controlpacket_CONNACK
+		
+		# Main read loop
+		while $bishbosh_connection_continue
+		do
+			# Will return empty if interrupted or non-blocking
+			controlPacketByte=''
+			bishbosh_connection_read_byte_blocking controlPacketByte
+			if [ -z "$controlPacketByte" ]; then
+				continue
+			fi
+			
+			bishbosh_connection_read_remainingLength '$controlPacketByte'
 			bishbosh_connection_read_controlpacket_handle
 		done
 		

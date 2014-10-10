@@ -43,6 +43,37 @@ bishbosh_connection_read_initialise()
 	bishbosh_connection_read_byte_initialise
 }
 
+bishbosh_connection_read_remainingLength()
+{
+	local controlPacket="$1"
+	
+	local remainingLengthByte
+	bishbosh_connection_read_byte_blocking remainingLengthByte
+	if [ $remainingLengthByte -lt 128 ]; then
+		remainingLength=$remainingLengthByte
+		return 0
+	fi
+	remainingLength=$((remainingLengthByte-128))
+	bishbosh_connection_read_byte_blocking remainingLengthByte
+	if [ $remainingLengthByte -lt 128 ]; then
+		remainingLength=$((remainingLength+remainingLengthByte*128))
+		return 0
+	fi
+	remainingLength=$((remainingLength+(remainingLengthByte-128)*128))
+	bishbosh_connection_read_byte_blocking remainingLengthByte
+	if [ $remainingLengthByte -lt 128 ]; then
+		remainingLength=$((remainingLength+remainingLengthByte*128*128))
+		return 0
+	fi
+	remainingLength=$((remainingLength+(remainingLengthByte-128)*128*128))
+	bishbosh_connection_read_byte_blocking remainingLengthByte
+	if [ $remainingLengthByte -lt 128 ]; then
+		remainingLength=$((remainingLength+remainingLengthByte*128*128*128))
+		return 0
+	fi
+	bishbosh_connection_read_protocolError "$controlPacket" "Remaining length exceeds four bytes"
+}
+
 bishbosh_connection_read_packetIdentifier()
 {
 	local packetIdentifierMsb
