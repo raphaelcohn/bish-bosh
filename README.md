@@ -314,8 +314,7 @@ Anything you can do with a command line switch, you can do as configuration. But
   3. The file `servers/${bishbosh_server}/ports/${bishbosh_port}/rc` where `bishbosh_port` is a configuration setting or the switch [`--port`](#mqtt-big-hitters)‡
   4. Any files in the folder `servers/${bishbosh_server}/port/${bishbosh_port}/rc.d`‡
   5. The file `servers/${bishbosh_server}/ports/${bishbosh_port}/client-ids/${bishbosh_clientId}/rc` where `bishbosh_clientId` is a configuration setting or the switch [`--client-id`](#mqtt-big-hitters)
-  6. Any files in the folder ```bash
-servers/${bishbosh_server}/ports/${bishbosh_port}/client-ids/${bishbosh_clientId}/rc.d```
+  6. Any files in the folder `servers/${bishbosh_server}/ports/${bishbosh_port}/client-ids/${bishbosh_clientId}/rc.d` 
 
 \* An installation as a daemon using a service account would normally set `HOME` to something like `/var/lib/bishbosh`.
 
