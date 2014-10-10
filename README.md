@@ -26,7 +26,7 @@ If there's interest, a more advanced version could function as interactive shell
 [bish-bosh] can be used simply by cloning from [GitHub]. To clone into your home folder, type:-
 
 ```bash
-cd "$HOME"
+cd ~
 git clone https://github.com/raphaelcohn/bish-bosh.git
 git submodule update --init --recursive
 cd -
@@ -35,7 +35,7 @@ cd -
 This will create a folder [bish-bosh] inside your home folder. [bish-bosh] can then be used straightaway, eg
 
 ```bash
-cd "$HOME"/bish-bosh
+cd ~/bish-bosh
 ./bish-bosh --server test.mosquitto.org --client-id CLIENT_ID
 ```
 
