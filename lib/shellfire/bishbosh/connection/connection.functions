@@ -275,7 +275,6 @@ bishbosh_connection_makeClientConnection()
 	# Foreground <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo"
 	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_temporaryFolderPath/$bishbosh_connection_id'"
 	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
-	echo $?
 }
 
 old()
