@@ -135,7 +135,7 @@ These settings relate to [MQTT]'s **CONNACK** packet.
 
 | Configuration Setting | Values | Interpreted as if *unset* | Explanation |
 | --------------------- | ------ | ----------------------- | ----------- |
-| `bishbosh_connection_write_CONNECT_cleanSession` | 0 or 1 \* | 0 (ie persistent) | Clean Session flag |
+| ```bishbosh_connection_write_CONNECT_cleanSession``` | 0 or 1 \* | 0 (ie persistent) | Clean Session flag |
 | `bishbosh_connection_write_CONNECT_willTopic` | Any valid topic name | No will messages |  Will topic |
 | `bishbosh_connection_write_CONNECT_willQos` | 0 - 2 inclusive | 0 | Will QoS, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
 | `bishbosh_connection_write_CONNECT_willRetain` | 0 or 1 \* | 0 | Will Retain flag, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
