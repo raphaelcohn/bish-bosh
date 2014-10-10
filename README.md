@@ -145,7 +145,7 @@ These settings relate to [MQTT]'s **CONNACK** packet.
 | `bishbosh_connection_write_CONNECT_username` | Any valid UTF-8 string excluding ASCII NUL. May be empty | No username | Username. May be empty or *unset* (the latter meaning it is not sent) |
 | `bishbosh_connection_write_CONNECT_password` | Any sequence of bytes excluding ASCII NUL. May be empty | No password | Password. May be empty or *unset* (the latter meaning it is not sent) |
 
-\* technically, a boolean, which might also be `Y`, `YES`, `Yes`, `yes`, `T`, `TRUE`, `True`, `true`, `ON`, `On`, `on` for 1 and `N`, `NO`, `No`, `no`, `F`, `FALSE`, `False`, `false`, `OFF`, `Off` and `off` for 0, but best as a number.
+_\* Technically, a boolean, which might also be `Y`, `YES`, `Yes`, `yes`, `T`, `TRUE`, `True`, `true`, `ON`, `On`, `on` for 1 and `N`, `NO`, `No`, `no`, `F`, `FALSE`, `False`, `false`, `OFF`, `Off` and `off` for 0, but best as a number._
 
 #### Handling read events
 [bish-bosh] supports a number of callbacks, called handlers, whenever something interesting has been read and processed. The default implementations of these just do logging if `--verbose 2` is used.
@@ -245,20 +245,16 @@ _*TODO: Document control packet writers of interest*_
 | `-i`, `--client-id` | `ID` | `bishbosh_clientId` | *unset* | [MQTT] ClientId. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. |
 
 #### [Backends](#status-of-supported-backends)
-A backend is the strategy [bish-bosh] uses to connect to a [MQTT] server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. [bish-bosh] ships with a large number of [backends](#status-of-supported-backends) to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
-
-By default, [bish-bosh] has a list of [backends](#status-of-supported-backends) in preferred order, and tries to choose the first that looks like it will work. Of course, given the vagaries of your system, it might not get that right, so you might want to override it. Not all backends support all features; in particular, unix domain sockets, proxies and serial devices vary: this [list of backends](#status-of-supported-backends) gives more information.
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
 | `-b`, `--backends` | `A,B,...` | `bishbosh_backends` | `ncat,nc6,nc,bash,socat,tcpclient` | [Backends](#status-of-supported-backends) are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. |
 
-#### Configuration Tweaks
-Ordinarily, you should not need to change any of these settings.
+A backend is the strategy [bish-bosh] uses to connect to a [MQTT] server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. [bish-bosh] ships with a large number of [backends](#status-of-supported-backends) to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
 
-The `--client-path` controls where [bish-bosh] looks for script information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/bish-bosh/client`.
-The `--session-path` controls where [bish-bosh] looks for Clean Session = 0 information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/spool/bish-bosh/session`.
-The `--lock-path` controls where [bish-bosh] tries to create a lock for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/bish-bosh/lock`, which is not the [Linux FHS] default of `/var/lock` (but is used because that works out of the box on Mac OS X).
+By default, [bish-bosh] has a list of [backends](#status-of-supported-backends) in preferred order, and tries to choose the first that looks like it will work. Of course, given the vagaries of your system, it might not get that right, so you might want to override it. Not all backends support all features; in particular, unix domain sockets, proxies and serial devices vary: this [list of backends](#status-of-supported-backends) gives more information.
+
+#### Configuration Tweaks
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
@@ -267,9 +263,13 @@ The `--lock-path` controls where [bish-bosh] tries to create a lock for a partic
 | `-l`, `--lock-path` | `PATH` | `bishbosh_lockPath` | *See help output* | `PATH` to a location to screate a Mutex lock so only one instance connects per-server, per-port, per-client-id at a time. |
 | `--read-latency` | `MSECS` | `bishbosh_readLatency` | *See help output* | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak blocking read timeouts. blocking read timeouts are experimental and may not work properly in your shell. The value `0` may be interpreted differently by different shells and should be used with caution. |
 | `--lock-latency` | `MSECS` | `bishbosh_lockLatency` | *See help output* | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak lock acquisitions. Locking is currently done using `mkdir`, which is believed to be an atomic operation on most common filesystems. |
+Ordinarily, you should not need to change any of these settings.
+
+The `--client-path` controls where [bish-bosh] looks for script information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/bish-bosh/client`.
+The `--session-path` controls where [bish-bosh] looks for Clean Session = 0 information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/spool/bish-bosh/session`.
+The `--lock-path` controls where [bish-bosh] tries to create a lock for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/bish-bosh/lock`, which is not the [Linux FHS] default of `/var/lock` (but is used because that works out of the box on Mac OS X).
 
 #### Source-Routing Settings
-If you have a box with multiple NICs or IP addresses, broken IPv4 / IPv6 networking (or DNS resolution) or strange firewall policies that block certain source ports, you can control those as follows:-
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
@@ -277,10 +277,9 @@ If you have a box with multiple NICs or IP addresses, broken IPv4 / IPv6 network
 | `--source-address` | `S` | `bishbosh_sourceAddress` | *unset* | Connect using the NIC with the source address `S`. Results in packets being sent from this address. `S` may be a host name resolved using DNS, or an IPv4 or IPv6 address. If you disable DNS resolution of [MQTT] server names, it's likely that a backend will do likewise for `HOST`. If `S` is set to `''` (the empty string), then it is treated as if *unset*. This is to allow local users to override global configuration. Ignored if `TRANSPT` is `unix` or `serial`. |
 | `--source-port` | `PORT` | `bishbosh_sourcePort` | *unset* | Connect using the source port `PORT`. If `TRANSPT` is `unix` then this setting is invalid. Results in packets being sent from this port. If unset, then a random source port is chosen. If `PORT` is set to `''` (the empty string), then it is treated as if *unset*. This is to allow local users to override global configuration. Ignored if `TRANSPT` is `unix` or `serial`. |
 
-#### Proxy Settings
-Personally, I find proxies extremely irritating, and of very limited benefit (especially in these days of deep packet inspection abuse). But many organizations still use them, if simply because once they go in, they tend to stay in - they appeal to the control freak in all of us, I suppose. [bish-bosh] does its best to support SOCKS and HTTP proxies, but we're reliant on the rather limited support of backends.
+If you have a box with multiple NICs or IP addresses, broken IPv4 / IPv6 networking (or DNS resolution) or strange firewall policies that block certain source ports, you can control those as follows:-
 
-When using a proxy, you won't be able to use Unix domain sockets ([`--transport unix`](#source-routing-settings)) or serial devices ([`--transport serial`](#source-routing-settings)). Not every backend supports using a proxy (there's a [compatibility table](#status-of-supported-backends)). And those that do don't support every option:-
+#### Proxy Settings\*
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
@@ -290,7 +289,11 @@ When using a proxy, you won't be able to use Unix domain sockets ([`--transport 
 | `--proxy-username` | `UN` | `bishbosh_proxyUsername` | *unset* | Username `UN` to use. Please note that passing this as a switch is insecure. |
 | `--proxy-password` | `PWD` | `bishbosh_proxyPassword` | *unset* | Password `PWD` to use. Please note that passing this as a switch is insecure. Rarely supported. |
 
-_Note: Not running proxies myself, I can't test many of these settings combinations._
+Personally, I find proxies extremely irritating, and of very limited benefit (especially in these days of deep packet inspection abuse). But many organizations still use them, if simply because once they go in, they tend to stay in - they appeal to the control freak in all of us, I suppose. [bish-bosh] does its best to support SOCKS and HTTP proxies, but we're reliant on the rather limited support of backends.
+
+When using a proxy, you won't be able to use Unix domain sockets ([`--transport unix`](#source-routing-settings)) or serial devices ([`--transport serial`](#source-routing-settings)). Not every backend supports using a proxy (there's a [compatibility table](#status-of-supported-backends)). And those that do don't support every option:-
+
+_\* Not running proxies myself, I can't test many of these settings combinations._
 
 ## File Locations
 
@@ -316,13 +319,13 @@ Anything you can do with a command line switch, you can do as configuration. But
   5. The file `servers/${bishbosh_server}/ports/${bishbosh_port}/client-ids/${bishbosh_clientId}/rc` where `bishbosh_clientId` is a configuration setting or the switch [`--client-id`](#mqtt-big-hitters)
   6. Any files in the folder `servers/${bishbosh_server}/ports/${bishbosh_port}/client-ids/${bishbosh_clientId}/rc.d` 
 
-\* An installation as a daemon using a service account would normally set `HOME` to something like `/var/lib/bishbosh`.
-
-† it is possible for a configuration file here to set `bishbosh_port` (or even `bishbost_clientId`), so influencing the search in 3 - 6.
-
-‡ It is possible for a configuration file here to set `bishbost_clientId`, so influencing the search in 5 and 6.
-
 Nothing stops any of these paths, or files in them, being symlinks. This can be exploited to symlink together, say, port numbers 1883 and 8883, or client ids that share usernames and passwords, etc.
+
+_\* An installation as a daemon using a service account would normally set `HOME` to something like `/var/lib/bishbosh`._
+
+_† it is possible for a configuration file here to set `bishbosh_port` (or even `bishbost_clientId`), so influencing the search in 3 - 6._
+
+_‡ It is possible for a configuration file here to set `bishbost_clientId`, so influencing the search in 5 and 6.__
 
 ## Dependencies
 [bish-bosh] tries to use as few dependencies as possible, but, since this is shell script, that's not always possible. It's compounded by the need to support the difference between major shells, too. It also does its best to work around differences in common binaries, by using feature detection, and where it can't do any better, by attempting to install using your package manager.
@@ -558,8 +561,9 @@ The following shells are untested and unsupported:-
 | **tcpclient** | `tcpclient` | [ucspi-tcp](http://cr.yp.to/ucspi-tcp.html) | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes | Yes |
 | **bash** | `bash` | [GNU Bash] | MQTT | Barely Implemented | No | No | No | ? | No | No | No |
 
-\* Refers to the meta backend itself. A detected backend may not be.
-† Yes, if the detected variant of the backend does.
+_\* Refers to the meta backend itself. A detected backend may not be._
+
+_† Yes, if the detected variant of the backend does._
 
 ## Limitations
 
