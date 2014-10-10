@@ -11,7 +11,7 @@ Additionally, it is also a command interpreter. Once installed in your `PATH`, i
 	
 	bishbosh_connection_handler_PUBLISH()
 	{
-		# We've got a message. [bish-bosh] handles QoS 1 and 2 for us; we just need to use it.
+		# We've got a message. bish-bosh handles QoS 1 and 2 for us; we just need to use it.
 		printf '%s:' "$topicName"
 		cat "$messageFilePath"
 	}
@@ -236,9 +236,9 @@ The currently supported backends are listed in a section below.
 #### Configuration Tweaks
 Ordinarily, you should not need to change any of these settings.
 
-The `--client-path` controls where [bish-bosh] looks for script information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/[bish-bosh]/client`.
-The `--session-path` controls where [bish-bosh] looks for Clean Session = 0 information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/spool/[bish-bosh]/session`.
-The `--lock-path` controls where [bish-bosh] tries to create a lock for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/[bish-bosh]/lock`, which is not the [Linux FHS] default of `/var/lock` (but is used because that works out of the box on Mac OS X).
+The `--client-path` controls where [bish-bosh] looks for script information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/bish-bosh/client`.
+The `--session-path` controls where [bish-bosh] looks for Clean Session = 0 information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/spool/bish-bosh/session`.
+The `--lock-path` controls where [bish-bosh] tries to create a lock for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/bish-bosh/lock`, which is not the [Linux FHS] default of `/var/lock` (but is used because that works out of the box on Mac OS X).
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
