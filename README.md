@@ -295,7 +295,9 @@ Anything you can do with a command line switch, you can do as configuration. But
   6. Any files in the folder `servers/${bishbosh_server}/ports/${bishbosh_port}/client-ids/${bishbosh_clientId}/rc.d` 
 
 \* An installation as a daemon using a service account would normally set `HOME` to something like `/var/lib/bishbosh`.
+
 † it is possible for a configuration file here to set `bishbosh_port` (or even `bishbost_clientId`), so influencing the search in 3 - 6.
+
 ‡ It is possible for a configuration file here to set `bishbost_clientId`, so influencing the search in 5 and 6.
 
 Nothing stops any of these paths, or files in them, being symlinks. This can be exploited to symlink together, say, port numbers 1883 and 8883, or client ids that share usernames and passwords, etc.
