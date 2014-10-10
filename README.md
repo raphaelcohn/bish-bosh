@@ -503,7 +503,9 @@ The following shells are untested and unsupported:-
 
 ## Status of Supported Backends
 
-| Backend | Filename | Variant | Connectivity | Status | Force IPv4 `--transport inet6` | Force IPv6 `--transport inet6` | Unix domain sockets `--transport unix` | Serial Device `--transport serial` | Proxy Support | Source IP / Port |
+() or serial devices ([`--transport serial`](#source-routing-settings))
+
+| Backend | Filename | Variant | Connectivity | Status | [`--transport inet4`](#source-routing-settings) | [`--transport inet6`](#source-routing-settings) | [`--transport unix`](#source-routing-settings) | [`--transport serial`](#source-routing-settings) | Proxy Support | Source IP / Port |
 | ------- | -------- | ------- | ------------ | ------ | ---------- | ---------- | ------------------- | ------------- | ------------- | ---------------- |
 | **nc** | 'Meta' backend | Any **nc\*** backend | MQTT | Fully functional* | Yes† | Yes† | Yes† | Yes† | Yes† | Yes† |
 | **ncMacOSX** | `nc` | Mac OS X | MQTT | Fully functional | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes |
