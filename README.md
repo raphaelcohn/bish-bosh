@@ -41,7 +41,7 @@ cd ~/bish-bosh
 
 where `CLIENT_ID` is a client id you'd like to use. bosh-bosh will attempt to find its dependencies on the `PATH`, install any missing dependencies (with your permission) if it recognises your package manager, choose an optimum configuration and connect to the server (in this case, a commonly available test one).
 
-Of course, this might not work, and so you might need to install some [dependencies](#dependencies) or change your [backend](#backends).
+Of course, this might not work on your setup, and so you might need to install some [dependencies](#dependencies) or change your [backend](#backends).
 
 ### Getting it from [Homebrew](http://brew.sh/) for Mac OS X
 Hopefully in the next few weeks [bish-bosh] will be available as a [Homebrew](http://brew.sh/) recipe, so you should be able to do
