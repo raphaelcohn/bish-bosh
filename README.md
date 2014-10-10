@@ -280,24 +280,27 @@ Anything you can do with a command line switch, you can do as configuration. But
 1. Global (Per-machine)
   1. The file `INSTALL_PREFIX/etc/bish-bosh/rc`
   2. Any files in the folder `INSTALL_PREFIX/etc/bish-bosh/rc.d`
-2. Per User, where `HOME` is your home folder path
+2. Per User, where `HOME` is your home folder path\*
   1. The file `HOME/.bish-bosh/rc`
   2. Any files in the folder `HOME/.bish-bosh/rc.d`
-  * _Note: an installation as a daemon using a service account would normally set HOME to something like `/var/lib/bishbosh`._
 3. Per Environment
   1. The file in the environment variable `bishbosh_RC` (if the environment variable is set and the path is readable)
   2. Any files in the folder in the environment variable `bishbosh_RC_D` (if the environment variable is set and the path is searchable)
 4. In `SCRIPTLETS`
   * Scriptlets are parsed in order they are found on the command line (`bish-bosh -- [SCRIPTLETS]...`)
-5. Under `bishbosh_clientPath` (switch [`--client-path`](#configuration-tweaks))
-  1. The file `servers/SERVER/rc` where `SERVER` is `bishbosh_server` (`--server`)
-  2. Any files in the folder `servers/SERVER/rc.d`
-  3. The file `servers/SERVER/ports/PORT/rc` where `PORT` is `bishbosh_port` (`--port`)
-  4. Any files in the folder `servers/SERVER/port/PORT/rc.d` 
-  5. The file `servers/SERVER/ports/PORT/client-ids/CLIENT_ID/rc` where `CLIENT_ID` is `bishbosh_clientId` (`--client-id`)
-  6. Any files in the folder `servers/SERVER/ports/PORT/client-ids/CLIENT_ID/rc.d` 
-    * _Note: nothing stops these paths, or files in them, being symlinks, so allowing aliasing of server names and port numbers (eg to share secure and insecure settings)._
-    * _Note: it is possible for a configuration file at `SERVER` or `PORT` level to set `bishbosh_clientId`, so influencing the search._
+5. Under the configuration setting `bishbosh_clientPath` or switch [`--client-path`](#configuration-tweaks)
+  1. The file `servers/${bishbosh_server}/rc` where `bishbosh_server` is a configuration setting or the switch [`--server`](#mqtt-big-hitters)†
+  2. Any files in the folder `servers/${bishbosh_server}/rc.d`†
+  3. The file `servers/${bishbosh_server}/ports/${bishbosh_port}/rc` where `bishbosh_port` is a configuration setting or the switch [`--port`](#mqtt-big-hitters)‡
+  4. Any files in the folder `servers/${bishbosh_server}/port/${bishbosh_port}/rc.d`‡
+  5. The file `servers/${bishbosh_server}/ports/${bishbosh_port}/client-ids/${bishbosh_clientId}/rc` where `bishbosh_clientId` is a configuration setting or the switch [`--client-id`](#mqtt-big-hitters)
+  6. Any files in the folder `servers/${bishbosh_server}/ports/${bishbosh_port}/client-ids/${bishbosh_clientId}/rc.d` 
+
+\* An installation as a daemon using a service account would normally set `HOME` to something like `/var/lib/bishbosh`.
+† it is possible for a configuration file here to set `bishbosh_port` (or even `bishbost_clientId`), so influencing the search in 3 - 6.
+‡ It is possible for a configuration file here to set `bishbost_clientId`, so influencing the search in 5 and 6.
+
+Nothing stops any of these paths, or files in them, being symlinks. This can be exploited to symlink together, say, port numbers 1883 and 8883, or client ids that share usernames and passwords, etc.
 
 ## Dependencies
 [bish-bosh] tries to use as few dependencies as possible, but, since this is shell script, that's not always possible. It's compounded by the need to support the difference between major shells, too. It also does its best to work around differences in common binaries, by using feature detection, and where it can't do any better, by attempting to install using your package manager.
