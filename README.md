@@ -278,7 +278,7 @@ If you have a box with multiple NICs or IP addresses, broken IPv4 / IPv6 network
 | `--source-port` | `PORT` | `bishbosh_sourcePort` | *unset* | Connect using the source port `PORT`. If `TRANSPT` is `unix` then this setting is invalid. Results in packets being sent from this port. If unset, then a random source port is chosen. If `PORT` is set to `''` (the empty string), then it is treated as if *unset*. This is to allow local users to override global configuration. Ignored if `TRANSPT` is `unix` or `serial`. |
 
 #### Proxy Settings
-Personally, I find proxies extremely irritating, and of very limited benefit. But many organizations still use them, if simply because once they go in, they tend to stay in - they appeal to the control freak in all of us, I suppose. [bish-bosh] does its best to support SOCKS and HTTP proxies, but we're reliant on the rather limited support of backends. Many don't support them, not least because most FOSS is produced by developers who wouldn't use them - they're individuals, not power-mad network admins.
+Personally, I find proxies extremely irritating, and of very limited benefit (especially in these days of deep packet inspection abuse). But many organizations still use them, if simply because once they go in, they tend to stay in - they appeal to the control freak in all of us, I suppose. [bish-bosh] does its best to support SOCKS and HTTP proxies, but we're reliant on the rather limited support of backends.
 
 When using a proxy, you won't be able to use Unix domain sockets ([`--transport unix`](#source-routing-settings)) or serial devices ([`--transport serial`](#source-routing-settings)). Not every backend supports using a proxy (there's a [compatibility table](#status-of-supported-backends)). And those that do don't support every option:-
 
@@ -286,7 +286,7 @@ When using a proxy, you won't be able to use Unix domain sockets ([`--transport 
 | ------ | ----- | --------------------- | ------- | ------- |
 | `--proxy-kind` | `KIND` | `bishbosh_proxyKind` | *unset* | Use a particular `KIND` of proxy. `KIND` is one of `SOCKS4`, `SOCKS5`, `HTTP` or `none`. Using `none` disables the proxy; this is for when a global configuration has been set for a machine but a local user needs to run without it. |
 | `-proxy-server` | `HOST` | `bishbosh_proxyServer` | *unset* | Connect to a proxy server on a given `HOST`, which may be a name, an IPv4 or IPv6 address (in the case of the latter, you may need to surround it in `[]`, eg `[::1]`; backends vary and do not document IPv6 proxy address handling). If you disable DNS resolution of [MQTT] server names, it's likely that a backend will do likewise for `HOST`. |
-| `--proxy-port` | `PORT` | `bishbosh_proxyPort` | 1080 for `KIND` of `SOCKS4` or `SOCKS5`. 3128 for `HTTP`. unset for `none`. | Port the proxy server `HOST` is running on. |
+| `--proxy-port` | `PORT` | `bishbosh_proxyPort` | 1080 for `KIND` of `SOCKS4` or `SOCKS5`. 3128 for `HTTP`. *unset* for `none`. | Port the proxy server `HOST` is running on. |
 | `--proxy-username` | `UN` | `bishbosh_proxyUsername` | *unset* | Username `UN` to use. Please note that passing this as a switch is insecure. |
 | `--proxy-password` | `PWD` | `bishbosh_proxyPassword` | *unset* | Password `PWD` to use. Please note that passing this as a switch is insecure. Rarely supported. |
 
