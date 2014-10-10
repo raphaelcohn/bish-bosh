@@ -51,12 +51,12 @@ brew install bish-bosh
 ```
 
 ### Installing into your `PATH` and Packaging
-You might want to install [bish-bosh] in your `PATH`, or package it. [bish-bosh] as checked into [GitHub] _isn't standalone_: it needs to be _fattened_ using [shellfire]. shellfire is a set of common libraries for shell scripting which [bish-bosh] uses. _Fattening_ is the name the shellfire project uses for creating a standalone, self-contained shell binary (even one that can include templates, documents and tarballs) that can then reside anywhere.
+You might want to install [bish-bosh] in your `PATH`, or package it. [bish-bosh] as checked into [GitHub] _isn't standalone_: it needs to be _fattened_ using [shellfire]. [shellfire] is a set of common libraries for shell scripting which [bish-bosh] uses. _Fattening_ is the name the [shellfire] project uses for creating a standalone, self-contained shell binary (even one that can include templates, documents and tarballs) that can then reside anywhere.
 
 _Fattening_ is not currently supported, but is planned to be very soon.
 
 ## Switches and Configuring
-[bish-bosh] has a lot of switches! Most of them you'll hopefully never use: they're to deal with situations where network access isn't straightforward. Perhaps you've got multiple NICs or IP addresses, or a proxy is blocking you from connecting directly. And all of the switches, bar one, have sensible defaults. All of [bish-bosh]'s switches can be set using configuration (eg in `/etc`), or even in the scripts you run; the choice is yours. However, the basic invocation is very simple:-
+[bish-bosh] has a lot of switches! Most of them you'll hopefully never use: they're to deal with situations where network access isn't straightforward. Perhaps you've got multiple NICs or IP addresses, or a proxy is blocking you from connecting directly. And [all of the switches](#ok-back-to-switches) have sensible defaults. All of [bish-bosh]'s switches can be set using configuration (eg in `/etc`), or even in the scripts you run; the choice is yours. However, the basic invocation is very simple:-
 
 ```bash
 bish-bosh --server 'SERVER' --client-id 'CLIENT_ID'
