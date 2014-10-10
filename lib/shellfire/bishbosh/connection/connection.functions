@@ -2,43 +2,18 @@ core_usesIn bishbosh/connection read write handler
 core_usesIn core children
 
 core_dependency_requires '*' mkdir
-bishbosh_connection_mkdirTemporary()
-{
-	local folderName="$1"
-	if [ $# -eq 1 ]; then
-		local folderPath="$bishbosh_temporaryFolderPath"/"$bishbosh_connection_id"/"$folderName"
-	else
-		local folderPath="$2"
-	fi
-	mkdir -m 0700 -p "$folderPath"
-	printf '%s' "$folderPath"
-}
-
-core_dependency_requires '*' mkdir
-bishbosh_connection_mkdirPermanent()
-{
-	local folderName="$1"
-	if [ $# -eq 1 ]; then
-		local folderPath="$bishbosh_connection_clientServersPortsClientIdsPath"/"$folderName"
-	else
-		local folderPath="$2"
-	fi
-	mkdir -m 0755 -p "$folderPath"
-	printf '%s' "$folderPath"
-}
-
 bishbosh_connection_mkdir()
 {
 	local parentPath="$1"
 	local folderName="$2"
 
 	local folderPath="$parentPath"/"$folderName"
-	mkdir -m 0755 -p "$folderPath"
+	mkdir -m 0700 -p "$folderPath"
 	printf '%s' "$folderPath"
 }
 
 core_dependency_requires '*' mkfifo
-bishbosh_connection_mkfifoTemporary()
+bishbosh_connection_mkfifo()
 {
 	local fifoName="$1"
 	local fifoPath="$bishbosh_connection_fifoFolder"/"$fifoName"
@@ -211,18 +186,10 @@ bishbosh_connection_obtainLockForClientId()
 
 bishbosh_connection_createFifos()
 {
-	bishbosh_connection_fifoFolder="$(bishbosh_connection_mkdirTemporary fifo)"
-	bishbosh_connection_toServerFifo="$(bishbosh_connection_mkfifoTemporary to-server)"
-	bishbosh_connection_fromServerFifo="$(bishbosh_connection_mkfifoTemporary from-server)"
-	bishbosh_connection_fromHexConversionFifo="$(bishbosh_connection_mkfifoTemporary from-hex-conversion)"
-}
-
-bishbosh_connection_startConnectingProgramInBackground()
-{
-	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_temporaryFolderPath/$bishbosh_connection_id'"
-	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
-	bishbosh_connection_clientPid=$!
-	core_children_killOnExit $bishbosh_connection_clientPid
+	bishbosh_connection_fifoFolder="$(bishbosh_connection_mkdir "$bishbosh_temporaryFolderPath"/"$bishbosh_connection_id" fifo)"
+	bishbosh_connection_toServerFifo="$(bishbosh_connection_mkfifo to-server)"
+	bishbosh_connection_fromServerFifo="$(bishbosh_connection_mkfifo from-server)"
+	bishbosh_connection_fromHexConversionFifo="$(bishbosh_connection_mkfifo from-hex-conversion)"
 }
 
 core_dependency_requires '*' mkdir
@@ -256,24 +223,129 @@ bishbosh_connection_makeClientConnection()
 	
 	bishbosh_connection_read_initialise 'no'
 	bishbosh_connection_continue=true
-	set -x
-	bishbosh_connection_startConnectingProgramInBackground
-	set +x
-	exit 50
 	
 	# http://mywiki.wooledge.org/SignalTrap
 	# http://www.cons.org/cracauer/sigint.html
 	# Assumes we are in a blocking read
-	trap '' INT TERM
-	if [ "$core_init_preferredShell" = 'bash' ]; then
-		trap 'bishbosh_connection_continue=false; return 0' INT TERM
-	else
+	#trap '' INT TERM
+	#if [ "$core_init_preferredShell" = 'bash' ]; then
+	#	trap 'bishbosh_connection_continue=false; return 0' INT TERM
+	#else
 		# tested on dash
-		trap 'bishbosh_connection_continue=false' INT TERM
-	fi
+	#	trap 'bishbosh_connection_continue=false' INT TERM
+	#fi
 	
 	
-	$bishbosh_connection_read_loop
+	
+	
+	# We can not open for writing using a file descriptor or redirection operator (>) a FIFO unless someone is already reading from it; we will be blocked
+	# We can not open for reading using a file descriptor or redirection operator (<) a FIFO unless someone is already writing to it; we will be blocked
+	echo STARTING
+	
+	# Background >"$bishbosh_connection_toServerFifo" <"$bishbosh_connection_fromHexConversionFifo"
+	{
+		# ? could we get broken pipe ?
+		bishbosh_connection_write_CONNECT
+
+		local controlPacketByte
+		local firstRemainingLengthByte
+		local remainingLength
+	
+		# Handle CONNACK
+		$bishbosh_connection_read_byte_blocking controlPacketByte
+		if [ -z "$controlPacketByte" ]; then
+			core_exitError $core_commandLine_exitCode_IOERR "Read of controlPacketByte failed"
+		fi
+		if [ $controlPacketByte -ne 32 ]; then
+			bishbosh_connection_read_controlpacket_invalid
+		fi
+		$bishbosh_connection_read_byte_blocking firstRemainingLengthByte
+		bishbosh_connection_read_controlpacket_CONNACK
+		
+		# Regular processing
+		########################
+		
+		bishbosh_connection_write_DISCONNECT
+	} >"$bishbosh_connection_toServerFifo" 5<"$bishbosh_connection_fromHexConversionFifo" &
+	core_children_killOnExit $!
+	
+	# Background <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo"
+	gstdbuf   -i 0 -o 0 -e 0   god -A n -t u1 -w1 -v <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo" &
+	core_children_killOnExit $!
+	
+	
+	# Foreground <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo"
+	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_temporaryFolderPath/$bishbosh_connection_id'"
+	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
+	
+}
+
+old()
+{
+	
+
+	bishbosh_connection_startConnectingProgramInBackground()
+	{
+		core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_temporaryFolderPath/$bishbosh_connection_id'"
+		bishbosh_client_plaintext_${bishbosh_client_plaintext}_start &
+		bishbosh_connection_clientPid=$!
+		core_children_killOnExit $bishbosh_connection_clientPid
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	echo "NO CONNECTION"
+	sleep 10
+	# (3) Unblocks (2) and so unblocks (1)
+	{
+		# Now, do we see a connection made?
+	
+		echo "CONNECTION MADE ?"
+		sleep 100
+		exit 50
+	} 5<"$bishbosh_connection_fromHexConversionFifo"
+	
+	
+	
+	
+	
+	# Thus we need bishbosh_connection_startConnectingProgramInBackground   to be running in the background:-
+	#  - "$bishbosh_connection_toServerFifo" will be opened for reading, alleviating our problem, BUT NOT - 
+	#  - "$bishbosh_connection_fromServerFifo" will be BLOCKED from being opened, until someone starts reading from it
+	# (2) So this code ('nc') will be backgrounded, BLOCKED, until someone starts reading <"$bishbosh_connection_fromServerFifo"
+	
+	# This code will start reading <"$bishbosh_connection_fromServerFifo", so unblocking bishbosh_connection_startConnectingProgramInBackground
+	# bishbosh_connection_startConnectingProgramInBackground should now initiate a connection
+	echo 'check no connection yet'
+	sleep 10
+	core_children_killOnExit $!
+	# BUT DOESN'T - why?
+	echo 'check connection now (NOT WORKING)'
+	sleep 100
+	exit 50
+	
+	{
+		bishbosh_connection_write_CONNECT
+		
+		#$bishbosh_connection_read_loop
+	} >"$bishbosh_connection_toServerFifo" 5<"$bishbosh_connection_fromHexConversionFifo"
 }
 
 bishbosh_connection_incrementNextPacketIdentifier()

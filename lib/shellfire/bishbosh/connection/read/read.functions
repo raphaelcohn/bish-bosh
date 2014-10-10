@@ -4,7 +4,7 @@ core_usesIn bishbosh/connection/read/loop pipeStdbufOd pipeStdbufOdHomebrew pipe
 # https://stackoverflow.com/questions/4874993/bash-script-with-non-blocking-read !!
 bishbosh_connection_read_nonBlockingFeatureTest()
 {
-	local testFifoPath="$(bishbosh_connection_mkfifoTemporary 'non-blocking-read-feature-test')"
+	local testFifoPath="$(bishbosh_connection_mkfifo 'non-blocking-read-feature-test')"
 	exec 5<>"$testFifoPath"
 	printf '%s\n' 'test' >&5
 	
@@ -23,7 +23,7 @@ bishbosh_connection_read_nonBlockingFeatureTest()
 		bishbosh_connection_supportsNonBlockingRead=1
 	fi
 
-	local timeoutExitCodeFifoPath="$(bishbosh_connection_mkfifoTemporary 'non-blocking-read-timeout-exit-code-feature-test')"
+	local timeoutExitCodeFifoPath="$(bishbosh_connection_mkfifo 'non-blocking-read-timeout-exit-code-feature-test')"
 	exec 5<>"$testFifoPath"
 	local exitCodeForTimeout
 	set +e

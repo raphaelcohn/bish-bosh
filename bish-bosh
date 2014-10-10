@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env dash
 
 _program()
 {
@@ -147,13 +147,12 @@ _program_commandLine_helpMessage()
 May be used as a command interpreter in scripts starting #!/usr/bin/env ${_program_name}
 if on the PATH."
 	_program_commandLine_helpMessage_options="
-  -s, --server HOST         Server hostname, HOST, Unix domain socket path,
-                            IPv4 or IPv6 address.
-                            Unix domain socket paths must contain a '/' (ie
-                            they can not be in the present working directory).
-  -p, --port PORT           Server PORT. Ignored for Unix domain sockets.
-                            Use 'BACKEND' to let the backend choose.
-                            Defaults to 1883 or 8883 depending on backend
+  -s, --server HOST         Server hostname, HOST, is a hostname,
+                            IPv4 address, IPv6 address, unix domain socket
+                            path or serial character device path.
+  -p, --port PORT           Server PORT. Ignored for Unix domain sockets and
+                            serial devices.
+                            Defaults to 1883 or 8883 depending on backend.
   -i, --client-id ID        Specifies the client id to use. Any SCRITPLETS
                             found at --clients-path PATH/ID will then be
                             sourced. SCRIPTLETS control how a connection is
@@ -181,13 +180,14 @@ if on the PATH."
       --lock-latency MSECS  Maximum time to sleep for when trying to acquire a
                             lock in MSECS milliseconds between 0 and 1000
                             inclusive. Defaults to '${_program_default_lockLatency}'.
-      --transport TRANSPT   TRANSPT of inet, inet4, inet6 or unix.
+      --transport TRANSPT   TRANSPT of inet, inet4, inet6, unix or serial.
                             Defaults to 'inet'
       --source-address S    Bind to network interface with address S.
                             Should not normally be needed.
                             Turn off with ''.
                             Off by default.
-                            Does not work with transport 'unix'.
+                            Does not work with transports 'unix' or
+                            'serial'.
       --source-port PORT    Send packets from port PORT.
                             Should not normally be needed.
                             Turn off with ''.
@@ -197,27 +197,32 @@ if on the PATH."
                             KIND is 'SOCKS4','SOCKS5','HTTP' or 'none'.
                             Turn off with 'none'.
                             Off by default.
-                            Does not work with transport 'unix'.
+                            Does not work with transports 'unix' or
+                            'serial'.
                             Not all backends support this option.
       --proxy-server HOST   Connect to a proxy on a given HOST.
                             Turn off with ''.
                             Off by default.
-                            Does not work with transport 'unix'.
+                            Does not work with transports 'unix' or
+                            'serial'.
       --proxy-port PORT     Connect to a proxy on a given PORT.
                             Turn off with ''.
                             Off by default, but defaults to 1080
                             for SOCKS4 / SOCKS5 and 3128 for HTTP.
-                            Does not work with transport 'unix'.
+                            Does not work with transports 'unix' or
+                            'serial'.
       --proxy-username UN   Connect to a proxy using username UN.
                             Turn off with ''.
                             Off by default.
-                            Does not work with transport 'unix'.
+                            Does not work with transports 'unix' or
+                            'serial'.
                             Insecure - use configuration instead.
                             Not all proxies support this option.
       --proxy-password PWD  Connect to a proxy using password PWD.
                             Turn off with ''.
                             Off by default.
-                            Does not work with transport 'unix'.
+                            Does not work with transports 'unix' or
+                            'serial'.
                             Insecure - use configuration instead.
                             Not all proxies support this option."
     _program_commandLine_helpMessage_optionsSpacing='   '
@@ -656,7 +661,15 @@ _program_commandLine_validate()
 		bishbosh_validate_transport $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_transport' "$bishbosh_transport"
 		if [ "$bishbosh_transport" = unix ]; then
 			if [ ! core_validate_socketPathReadableAndWritable "$bishbosh_server" ]; then
-				core_exitError $codeServer "When $categoryTransport '$nameTransport' is 'unix' the $categoryServer '$nameServer' must be a path to a readable, writable domain socket ('$bishbosh_socket' is not)"
+				core_exitError $codeServer "When $categoryTransport '$nameTransport' is 'unix' the $categoryServer '$nameServer' must be a path to a readable, writable domain socket ('$bishbosh_server' is not)"
+			fi
+			_program_commandLine_validateTransportSetting bishbosh_sourceAddress '--source-address' 'source address' $_program_configurationSet_bishbosh_sourceAddress
+			_program_commandLine_validateTransportSetting bishbosh_sourcePort '--source-port' 'source port' $_program_configurationSet_bishbosh_sourcePort
+			_program_commandLine_validateTransportSetting bishbosh_port '-p/--port' 'destination port' $_program_configurationSet_bishbosh_port
+		fi
+		if [ "$bishbosh_transport" = serial ]; then
+			if [ ! core_validate_characterDeviceFileReadableAndWritable "$bishbosh_server" ]; then
+				core_exitError $codeServer "When $categoryTransport '$nameTransport' is 'serial' the $categoryServer '$nameServer' must be a path to a readable, writable character device file ('$bishbosh_server' is not)"
 			fi
 			_program_commandLine_validateTransportSetting bishbosh_sourceAddress '--source-address' 'source address' $_program_configurationSet_bishbosh_sourceAddress
 			_program_commandLine_validateTransportSetting bishbosh_sourcePort '--source-port' 'source port' $_program_configurationSet_bishbosh_sourcePort

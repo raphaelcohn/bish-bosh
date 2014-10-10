@@ -50,6 +50,10 @@ bishbosh_validate_transport()
 	
 	case "$value" in
 		
+		inet)
+			:
+		;;
+		
 		inet4)
 			:
 		;;
@@ -62,12 +66,12 @@ bishbosh_validate_transport()
 			:
 		;;
 		
-		inet)
+		serial)
 			:
 		;;
 		
 		*)
-			core_validate_exit "The $category '$name' specifies a transport '$value' which is not understood (valid values are 'inet4', for IPv4-only connections, 'inet6', for IPv6-only connections,  'unix', for an Unix Domain Socket, and 'inet', for OS-preferred v4/v6 connections)."
+			core_validate_exit "The $category '$name' specifies a transport '$value' which is not understood (valid values are 'inet' for OS-preferred v4/v6 connections, 'inet4', for IPv4-only connections, 'inet6', for IPv6-only connections,  'unix', for an Unix domain socket, and 'serial' for a character device)."
 		;;
 		
 	esac

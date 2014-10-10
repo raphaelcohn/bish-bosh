@@ -57,6 +57,10 @@ bishbosh_client_plaintext_ncMacOSX_start()
 	if core_variable_isSet bishbosh_transport; then
 		case "$bishbosh_transport" in
 			
+			inet)
+				:
+			;;
+			
 			inet4)
 				core_variable_array_appendAsOptionArg '-4'
 			;;
@@ -69,8 +73,8 @@ bishbosh_client_plaintext_ncMacOSX_start()
 				core_variable_array_appendAsOptionArg '-U'
 			;;
 			
-			inet)
-				:
+			serial)
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncMacOSX does not support 'serial' transports."
 			;;
 			
 			*)
@@ -111,6 +115,8 @@ bishbosh_client_plaintext_ncMacOSX_start()
 	core_variable_array_append options $bishbosh_server
 		
 	core_variable_array_append options $bishbosh_port
+	
+	core_variable_array_append options -v -v -v
 	
 	core_variable_array_passToFunctionAsArguments options nc <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo"
 }

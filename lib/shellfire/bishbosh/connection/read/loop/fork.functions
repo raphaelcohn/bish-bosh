@@ -1,8 +1,5 @@
 _bishbosh_connection_read_loop_fork()
-{
-	set -x
-	bishbosh_connection_write_CONNECT >"$bishbosh_connection_toServerFifo"
-	
+{	
 	local controlPacketByte
 	local firstRemainingLengthByte
 	local remainingLength
@@ -21,12 +18,10 @@ _bishbosh_connection_read_loop_fork()
 	#bishbosh_connection_writeLoopPid=$!
 	#core_children_killOnExit $bishbosh_connection_writeLoopPid
 
-	{
-		while $bishbosh_connection_continue
-		do
-			bishbosh_connection_read_body
-		done
-	} >"$bishbosh_connection_toServerFifo"
+	while $bishbosh_connection_continue
+	do
+		bishbosh_connection_read_body
+	done
 }
 
 bishbosh_connection_read_body()

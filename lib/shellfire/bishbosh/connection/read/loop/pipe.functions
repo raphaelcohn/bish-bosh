@@ -11,10 +11,10 @@ _bishbosh_connection_read_loop_pipe_initialise()
 
 _bishbosh_connection_read_loop_pipe()
 {
-	"$@" >"$bishbosh_connection_fromHexConversionFifo" &
-	core_children_killOnExit $!
+	{
 	
-	_bishbosh_connection_read_loop_fork 5<"$bishbosh_connection_fromHexConversionFifo"
+		_bishbosh_connection_read_loop_fork
+	}
 }
 
 _bishbosh_connection_read_loop_pipe_stdbufGnuOd()
