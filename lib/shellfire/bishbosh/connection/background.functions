@@ -98,9 +98,9 @@ bishbosh_connection_background_processLoop()
 		# Specialised CONNACK handling
 		while $bishbosh_connection_continue
 		do
-			# Will return empty if interrupted or non-blocking
+			# Will return empty if interrupted (SIGINT) or non-blocking
 			controlPacketByte=''
-			bishbosh_connection_read_byte_blocking controlPacketByte
+			bishbosh_connection_read_byte_nonBlocking controlPacketByte
 			if [ -z "$controlPacketByte" ]; then
 				continue
 			fi
@@ -115,10 +115,11 @@ bishbosh_connection_background_processLoop()
 		# Main read loop
 		while $bishbosh_connection_continue
 		do
-			# Will return empty if interrupted or non-blocking
+			# Will return empty if interrupted (SIGINT) or non-blocking
 			controlPacketByte=''
-			bishbosh_connection_read_byte_blocking controlPacketByte
+			bishbosh_connection_read_byte_nonBlocking controlPacketByte
 			if [ -z "$controlPacketByte" ]; then
+				bishbosh_connection_handler_noControlPacketsRead
 				continue
 			fi
 			

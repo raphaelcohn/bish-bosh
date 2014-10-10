@@ -23,9 +23,6 @@ bishbosh_connection_read_byte_initialise()
 		
 	else
 		# dash, pdksh, other sh
-		# the design problem here is that the read is non-atomic, as it's looking for a line - hence the timeout could cause a partially read line
-		# hence GNU coreutils / BusyBox / Toybox timeout isn't appropriate
-		# and also techniques like  http://www.linuxmisc.com/11-unix-aix/bed695a5c4783a08.htm  can result in a partial line being read
 		
 		bishbosh_connection_read_byte_blocking()
 		{
@@ -34,10 +31,14 @@ bishbosh_connection_read_byte_initialise()
 			# $? == 1 is EOF
 			set -e
 		}
-		
+
+		# the design problem here is that the read is non-atomic, as it's looking for a line - hence the timeout could cause a partially read line
+		# hence GNU coreutils / BusyBox / Toybox timeout isn't appropriate
+		# and also techniques like  http://www.linuxmisc.com/11-unix-aix/bed695a5c4783a08.htm  can result in a partial line being read
+		# some strange 'copy one byte to a file' techniques might work
 		bishbosh_connection_read_byte_nonBlocking()
 		{
-			core_exitError $core_commandLine_exitCode_SOFTWARE "Non-blocking reads are not supported by your shell"
+			bishbosh_connection_read_byte_blocking "$1"
 		}
 	fi
 }

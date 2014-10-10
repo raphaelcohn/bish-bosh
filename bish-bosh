@@ -290,6 +290,7 @@ the globals specified:-
   bishbosh_connection_handler_PUBREL()
   bishbosh_connection_handler_PUBCOMP()
   bishbosh_connection_handler_PINGRESP()
+  bishbosh_connection_handler_noControlPacketsRead()
 "
 	_program_commandLine_helpMessage_examples="
   ${_program_name} --server localhost --backends ncMacOSX,bash --client-id 12 -- /path/to/connection-details.scriptlet

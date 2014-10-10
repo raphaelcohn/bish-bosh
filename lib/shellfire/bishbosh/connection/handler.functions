@@ -50,3 +50,8 @@ bishbosh_connection_handler_PINGRESP()
 {
 	core_message DEBUG "bishbosh_connection_handler_PINGRESP()"
 }
+
+bishbosh_connection_handler_noControlPacketsRead()
+{
+	core_message DEBUG "bishbosh_connection_handler_noControlPacketsRead()"
+}
