@@ -218,9 +218,9 @@ _*TODO: Document control packet writers of interest*_
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-s`, `--server` | `HOST` | `bishbosh_server` | `localhost` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an [MQTT] server to connect to, or, if using Unix domain sockets (see `--transport` in [Source-Routing Settings](#source-routing-settings)) a file path to a readable Unix Domain Socket. |
+| `-s`, `--server` | `HOST` | `bishbosh_server` | `localhost` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an [MQTT] server to connect to, or, if using Unix domain sockets (see [`--transport`](#source-routing-settings)) a file path to a readable Unix Domain Socket. |
 | `-p`, `--port` | `PORT` | `bishbosh_port` | 1883 for most backends; 8883 if backend is secure | Port your [MQTT] `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix domain sockets. |
-| `-i`, `--client-id` | `ID` | `bishbosh_clientId` | unset | [MQTT] Client ID. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. |
+| `-i`, `--client-id` | `ID` | `bishbosh_clientId` | unset | [MQTT] ClientId. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. |
 
 #### Backends
 A backend is the strategy [bish-bosh] uses to connect to a [MQTT] server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. [bish-bosh] ships with a large number of backends to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
@@ -253,7 +253,10 @@ If you have a box with multiple NICs or IP addresses, broken IPv4 / IPv6 network
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `--transport` | `TRANSPT` | `bishbosh_transport` | `inet` | Use a particular socket transport `TRANSPT`. `TRANSPT` may be one of `inet`, `inet4`, `inet6` or `unix`. Using `inet` allows the backend to select either a IPv4 or IPv6 connection as appropriate after DNS resolution. `inet4` forces an IPv4 connection; `inet6` likewise forces an IPv6 connection. `unix` forces a Unix Domain Socket connection |
+| `--transport` | `TRANSPT` | `bishbosh_transport` | `inet` | Use a particular socket transport `TRANSPT`. `TRANSPT` may be one of `inet`, `inet4`, `inet6` or `unix`. 
+* inet
+* inet6
+Using `inet` allows the backend to select either a IPv4 or IPv6 connection as appropriate after DNS resolution. `inet4` forces an IPv4 connection; `inet6` likewise forces an IPv6 connection. `unix` forces a Unix Domain Socket connection |
 | `--source-address` | `S` | `bishbosh_sourceAddress` | unset | Connect using the NIC with the source address `S`. If `TRANSPT` is `unix` then `S` must reference an extant, accessible Unix Domain Socket file path. Results in packets being sent from this address. `S` may be a host name resolved using DNS, or an IPv4 or IPv6 address. If you disable DNS resolution of [MQTT] server names, it's likely that a backend will do likewise for `HOST`. If `S` is set to `''` (the empty string), then it is treated as if unset. This is to allow local users to override global configuration. |
 | `--source-port` | `PORT` | `bishbosh_sourcePort` | unset | Connect using the source port `PORT`. If `TRANSPT` is `unix` then this setting is invalid. Results in packets being sent from this port. If unset, then a random source port is chosen. If `PORT` is set to `''` (the empty string), then it is treated as if unset. This is to allow local users to override global configuration. |
 
