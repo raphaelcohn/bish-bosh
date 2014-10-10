@@ -25,15 +25,19 @@ If there's interest, a more advanced version could function as interactive shell
 ## Download and Quick Start
 [bish-bosh] can be used simply by cloning from [GitHub]. To clone into your home folder, type:-
 
-    cd "$HOME"
-	git clone https://github.com/raphaelcohn/bish-bosh.git
-	git submodule update --init --recursive
-	cd -
+```bash
+cd "$HOME"
+git clone https://github.com/raphaelcohn/bish-bosh.git
+git submodule update --init --recursive
+cd -
+```
 
 This will create a folder [bish-bosh] inside your `$HOME`. [bish-bosh] can then be used straightaway, eg
 
-    cd "$HOME"/bish-bosh
-	./bish-bosh --server test.mosquitto.org --client-id CLIENT_ID
+```bash
+cd "$HOME"/bish-bosh
+./bish-bosh --server test.mosquitto.org --client-id CLIENT_ID
+```
 
 where `CLIENT_ID` is a client id you'd like to use. bosh-bosh will attempt to find its dependencies on the `PATH`, install any missing dependencies (with your permission) if it recognises your package manager, choose an optimum configuration and connect to the server (in this case, a commonly available test one).
 
@@ -42,7 +46,9 @@ Of course, this might not work, and so you might need to install some [dependenc
 ### Getting it from [Homebrew](http://brew.sh/) for Mac OS X
 Hopefully in the next few weeks [bish-bosh] will be available as a [Homebrew](http://brew.sh/) recipe, so you should be able to do
 
-    brew install bish-bosh
+```
+brew install bish-bosh
+```
 
 ### Installing into your `PATH` and Packaging
 You might want to install [bish-bosh] in your `PATH`, or package it. [bish-bosh] as checked into [GitHub] _isn't standalone_: it needs to be _fattened_ using [shellfire]. shellfire is a set of common libraries for shell scripting which [bish-bosh] uses. _Fattening_ is the name the shellfire project uses for creating a standalone, self-contained shell binary (even one that can include templates, documents and tarballs) that can then reside anywhere.
