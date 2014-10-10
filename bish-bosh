@@ -3,7 +3,7 @@
 _program()
 {
 	core_usesIn core temporaryFiles
-	core_usesIn bishbosh validate client
+	core_usesIn bishbosh validate client filesize
 	
 	bishbosh()
 	{
@@ -72,7 +72,14 @@ _program_commandLine_parseInitialise()
 	else
 		_program_configurationSet_bishbosh_lockPath=1
 	fi
-
+	
+	_program_default_filesizeAlgorithm=ls
+	if core_variable_isSet bishbosh_filesizeAlgorithm; then
+		_program_configurationSet_bishbosh_filesizeAlgorithm=0
+	else
+		_program_configurationSet_bishbosh_filesizeAlgorithm=1
+	fi
+	
 	if [ "$core_init_preferredShell" = 'zsh' ]; then
 		_program_default_readLatency=0
 	else
@@ -171,6 +178,10 @@ if on the PATH."
   -l, --lock-path PATH      PATH to a parent folder for locking with a
                             Mutex; ensures only one copy runs at a time.
                             Defaults to '${_program_default_lockPath}'.
+      --filesize-algorithm  ALGO  Choose a different binary dependency to
+                            calculate file sizes. ALGO may be one of 'ls',
+                            'GNUAndBusyBoxStat', 'BSDStat', and 'ToyboxStat'
+                            Defaults to '${_program_default_filesizeAlgorithm}'.
       --read-latency MSECS  Maximum time to block for when reading in
                             MSECS milliseconds between 0 and 1000
                             inclusive. 0 has different meaning in
@@ -227,13 +238,16 @@ if on the PATH."
                             Not all proxies support this option."
     _program_commandLine_helpMessage_optionsSpacing='   '
 	_program_commandLine_helpMessage_configurationKeys="
-  bishbosh_backends       Equivalent to --backends
   bishbosh_server         Equivalent to --server
   bishbosh_port           Equivalent to --port
+  bishbosh_clientId       Equivalent to --client-id
+  bishbosh_backends       Equivalent to --backends
   bishbosh_clientPath     Equivalent to --clients-path
   bishbosh_sessionPath    Equivalent to --session-path
-  bishbosh_clientId       Equivalent to --client-id
+  bishbosh_lockPath       Equivalent to --lock-path
+  bishbosh_filesizeAlgorithm  Equivalent to --filesize-algorithm
   bishbosh_readLatency    Equivalent to --read-latency
+  bishbosh_lockLatency    Equivalent to --lock-latency
   bishbosh_transport      Equivalent to --transport
   bishbosh_sourceAddress  Equivalent to --source-address
   bishbosh_sourcePort     Equivalent to --source-port
@@ -311,6 +325,10 @@ _program_commandLine_optionExists()
 		;;
 		
 		l|lock-path)
+			echo 'yes-argumented'
+		;;
+		
+		filesize-algorithm)
 			echo 'yes-argumented'
 		;;
 		
@@ -402,6 +420,11 @@ _program_commandLine_processOptionWithArgument()
 		l|lock-path)
 			core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_lockPath="$optionValue"
+		;;
+		
+		filesize-algorithm)
+			bishbosh_validate_filesizeAlgorithm $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_filesizeAlgorithm="$optionValue"
 		;;
 		
 		read-latency)
@@ -615,6 +638,12 @@ _program_commandLine_validate()
 		core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--lock-path' "$bishbosh_lockPath"
 	else
 		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_lockPath' "$bishbosh_lockPath"
+	fi
+	
+	if core_variable_isUnset bishbosh_filesizeAlgorithm; then
+		bishbosh_filesizeAlgorithm="$_program_default_filesizeAlgorithm"
+	else
+		bishbosh_validate_filesizeAlgorithm $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_filesizeAlgorithm' "$bishbosh_filesizeAlgorithm"
 	fi
 	
 	if core_variable_isUnset bishbosh_clientId; then

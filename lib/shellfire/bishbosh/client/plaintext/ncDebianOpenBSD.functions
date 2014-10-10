@@ -12,6 +12,8 @@ bishbosh_client_plaintext_ncDebianOpenBSD_check()
 	return 1
 }
 
+core_dependency_requires '*' grep
+core_dependency_requires '*' head
 bishbosh_client_plaintext_ncDebianOpenBSD_checkIfNetcatVariant()
 {
 	# eg  'OpenBSD netcat (Debian patchlevel 1.105-7ubuntu1)'

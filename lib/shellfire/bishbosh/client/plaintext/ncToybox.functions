@@ -1,6 +1,7 @@
 core_usesIn core functions
 core_functions_register _bishbosh_client_plaintext_registration ncToybox
 
+core_dependency_requires '*' grep uname
 bishbosh_client_plaintext_ncToybox_check()
 {
 	local binary
@@ -19,6 +20,8 @@ bishbosh_client_plaintext_ncToybox_check()
 	return 1
 }
 
+core_dependency_requires '*' grep
+core_dependency_requires '*' head
 bishbosh_client_plaintext_ncToybox_checkIfNetcatVariant()
 {
 	# eg  'usage: netcat [-tu] [-lL COMMAND...] [-wpq #] [-s addr] {IPADDR PORTNUM|-f FILENAME}'

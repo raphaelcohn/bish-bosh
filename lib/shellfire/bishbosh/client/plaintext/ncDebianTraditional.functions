@@ -12,6 +12,9 @@ bishbosh_client_plaintext_ncDebianTraditional_check()
 	return 1
 }
 
+core_dependency_requires '*' grep
+core_dependency_requires '*' head
+core_dependency_requires '*' tail
 bishbosh_client_plaintext_ncDebianTraditional_checkIfNetcatVariant()
 {
 	# eg [v1.10-40] \n connect to somewhere:   nc [-options] hostname port[s] [ports] ...

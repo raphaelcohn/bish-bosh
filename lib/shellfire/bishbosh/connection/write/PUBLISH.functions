@@ -55,7 +55,7 @@ _bishbosh_connection_write_PUBLISH_validateArguments()
 			message=''
 			core_validate_filePathReadable $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_PUBLISH_messageFilePath "$bishbosh_connection_write_PUBLISH_messageFilePath"
 			messageFilePath="$bishbosh_connection_write_PUBLISH_messageFilePath"
-			message_fieldLength=$(stat -L -c '%s' "$messageFilePath")
+			message_fieldLength=$(bishbosh_filesize_${bishbosh_filesizeAlgorithm} "$messageFilePath")
 		fi
 	else
 		if core_variable_isSet bishbosh_connection_write_PUBLISH_messageFilePath; then

@@ -1,3 +1,4 @@
+core_usesIn bishbosh/connection/read protocolError
 core_dependency_requires '*' mv touch
 bishbosh_connection_read_controlpacket_PUBCOMP()
 {

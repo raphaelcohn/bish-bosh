@@ -1,0 +1,29 @@
+core_dependency_oneOf '*' ls stat
+
+bishbosh_filesize_ls()
+{
+	# dateBitsAndFileName are not portable
+	# permissions may have a '@' on the end if it is Mac OS X ls
+	local permissions links uid gid size dateBitsAndFileName
+	IFS=' ' read -r <<-EOF
+		$(ls -L -l -n "$1")
+	EOF
+}
+
+bishbosh_filesize_GNUAndBusyBoxStat()
+{
+	stat -L -c '%s' "$1"
+}
+
+bishbosh_filesize_BSDStat()
+{
+	# Note  stat -x "$1"  makes output similar to GNU  stat "$1"
+	stat -L -f '%z' "$1"
+}
+
+# Toybox stat is useless, because it doesn't have '-L' to resolve symlinks to actual files
+# and so reports symlink size
+bishbosh_filesize_ToyboxStat()
+{
+	stat -c '%s' "$1"
+}

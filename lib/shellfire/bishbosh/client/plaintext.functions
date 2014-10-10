@@ -1,9 +1,5 @@
 core_usesIn bishbosh/client/plaintext bash nc6 ncat nc ncBusyBox ncDebianOpenBSD ncDebianTraditional ncGNU ncMacOSX ncToybox socat tcpclient
 
-core_dependency_requires '*' uname
-core_dependency_requires '*' grep
-core_dependency_requires '*' head
-core_dependency_requires '*' tail
 bishbosh_client_plaintext_find()
 {
 	local originalIFS="$IFS"

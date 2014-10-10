@@ -39,14 +39,16 @@ bishbosh_connection_write_fieldLengthCheck()
 	local packetName="$1"
 	local variableName="$2"
 	
-	if [ $(core_variable_length "$variableName") -gt 65535 ]; then
+	local core_variable_indirectValue_result
+	core_variable_indirectValue "$variableName"
+	if [ ${#core_variable_indirectValue_result} -gt 65535 ]; then
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_${packetName}_${variableName}' can not be longer than 65,535 bytes"
 	fi
 }
 
 _bishbosh_connection_write_validateUtf8WithIconv_iconv()
 {
-	iconv -c -s -f utf-8 -t utf-8 <<-EOF
+	iconv -c -s -f utf-8 -t utf-8 1>/dev/null <<-EOF
 		$value
 	EOF
 }
@@ -68,7 +70,7 @@ bishbosh_connection_write_removeCharacters()
 	printf '%s' "$value" | tr -d "$strip"
 }
 
-core_dependency_requires '*' iconv
+core_dependency_oneOf '*' iconv
 bishbosh_connection_write_validateUtf8()
 {
 	local argument="$1"

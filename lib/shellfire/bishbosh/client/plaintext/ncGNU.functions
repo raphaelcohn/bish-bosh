@@ -7,6 +7,8 @@ bishbosh_client_plaintext_ncGNU_check()
 	bishbosh_client_plaintext_ncGNU_checkIfNetcatVariant
 }
 
+core_dependency_requires '*' grep
+core_dependency_requires '*' head
 bishbosh_client_plaintext_ncGNU_checkIfNetcatVariant()
 {
 	# eg  'GNU netcat 0.7.1, a rewrite of the famous networking tool.'

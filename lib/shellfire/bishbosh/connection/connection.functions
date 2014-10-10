@@ -267,17 +267,21 @@ bishbosh_connection_makeClientConnection()
 		
 		bishbosh_connection_write_DISCONNECT
 	} >"$bishbosh_connection_toServerFifo" 5<"$bishbosh_connection_fromHexConversionFifo" &
-	core_children_killOnExit $!
+	pid=$!
+	core_children_killOnExit $pid
+	echo $pid
 	
 	# Background <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo"
 	gstdbuf   -i 0 -o 0 -e 0   god -A n -t u1 -w1 -v <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo" &
-	core_children_killOnExit $!
-	
+	pid=$!
+	core_children_killOnExit $pid
+	echo $pid
 	
 	# Foreground <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo"
 	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_temporaryFolderPath/$bishbosh_connection_id'"
 	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
 	
+	sleep 500
 }
 
 old()

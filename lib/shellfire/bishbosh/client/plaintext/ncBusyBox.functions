@@ -14,6 +14,8 @@ bishbosh_client_plaintext_ncBusyBox_check()
 	return 1
 }
 
+core_dependency_requires '*' grep
+core_dependency_requires '*' head
 bishbosh_client_plaintext_ncBusyBox_checkIfNetcatVariant()
 {
 	# eg  'BusyBox v1.21.1 (Ubuntu 1:1.21.0-1ubuntu1) multi-call binary.'

@@ -28,6 +28,38 @@ bishbosh_validate_address()
 	local value="$4"
 }
 
+bishbosh_validate_filesizeAlgorithm()
+{
+	local code=$1
+	local category="$2"
+	local name="$3"
+	local value="$4"
+	
+	case "$value" in
+		
+		ls)
+			:
+		;;
+		
+		GNUAndBusyBoxStat)
+			:
+		;;
+		
+		BSDStat)
+			:
+		;;
+		
+		ToyboxStat)
+			:
+		;;
+		
+		*)
+			core_validate_exit "The $category '$name' specifies a filesize algorithm '$value' which is not understood (valid values are 'ls', 'GNUAndBusyBoxStat', 'BSDStat', and 'ToyboxStat')."
+		;;
+		
+	esac
+}
+
 bishbosh_validate_latency()
 {
 	local code=$1

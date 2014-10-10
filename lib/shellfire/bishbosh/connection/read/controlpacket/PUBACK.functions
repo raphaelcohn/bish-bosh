@@ -1,3 +1,4 @@
+core_usesIn bishbosh/connection/read protocolError
 bishbosh_connection_read_controlpacket_PUBACK()
 {
 	bishbosh_connection_read_protocolError_ifRemainingLengthNot PUBACK 2

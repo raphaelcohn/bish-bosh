@@ -261,6 +261,7 @@ By default, [bish-bosh] has a list of [backends](#status-of-supported-backends) 
 | `-c`, `--client-path` | `PATH` | `bishbosh_clientPath` | *See help output* | `PATH` to a location to configuration - scriptlets for a client-id on a per-server, per-port, per-client-id basis. See [Configuration Locations](#configuration-locations) |
 | `-t`, `--session-path` | `PATH` | `bishbosh_sessionPath` | *See help output* | `PATH` to a location to store session data for clients connecting with Clean Session = 0 |
 | `-l`, `--lock-path` | `PATH` | `bishbosh_lockPath` | *See help output* | `PATH` to a location to screate a Mutex lock so only one instance connects per-server, per-port, per-client-id at a time. |
+| `--filesize-algorithm` | `ALGO` | `bishbosh_filesizeAlgorithm` | `ls` | Specify a more efficient filesize algorithm `ALGO` if you have the `stat` program and know which one it is. Choices are `ls`, `GNUAndBusyBoxStat`, `BSDStat` and `ToyboxStat` (not recommended due to lack of a `-L` switch). |
 | `--read-latency` | `MSECS` | `bishbosh_readLatency` | *See help output* | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak blocking read timeouts. blocking read timeouts are experimental and may not work properly in your shell. The value `0` may be interpreted differently by different shells and should be used with caution. |
 | `--lock-latency` | `MSECS` | `bishbosh_lockLatency` | *See help output* | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak lock acquisitions. Locking is currently done using `mkdir`, which is believed to be an atomic operation on most common filesystems. |
 Ordinarily, you should not need to change any of these settings.
@@ -333,20 +334,20 @@ _‡ It is possible for a configuration file here to set `bishbost_clientId`, so
 ### Required Dependencies
 All of these should be present even on the most minimal system. Usage is restricted to those flags known to work across Mac OS X, GNU, BusyBox and Toybox.
 
+* `cat`
+* `grep`
+* `head`
+* `kill`
 * `mkdir`
 * `mkfifo`
 * `mktemp`
-* `touch`
-* `mv`
 * `rm`
 * `rmdir`
-* `tr`
-* `cat`
-* `kill`
-* `sleep`
-* `uname`
 * `sed`
-* `grep`
+* `sleep`
+* `tail`
+* `tr`
+* `uname`
 
 If cloning from [GitHub], then you'll also need to make sure you have `git`.
 
@@ -382,6 +383,12 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * `iconv`, from the GNU `glibc` package
   * `iconv`, BSD-derived
   * Nothing (validation not performed)
+* File sizes
+  * `ls`, any, used for file sizes (not efficient, but `ls -L -l -n FILE` is portable)
+  * `stat`, from GNU `coreutils` package
+  * `stat`, in [BusyBox]
+  * `stat`, BSD-derived
+  * `stat`, in [Toybox], but does not work with symbolic links (No `-L` option)
 * Random client-id generation
   * `openssl`
   * `dd` with access to either `/dev/urandom` or `/dev/random`
@@ -589,6 +596,7 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 * Non-blocking reads should cause re-evaluation of connection status
 
 ### Useful to do
+* nextPacketIdentifier, set at start, and calculate better
 * Publish messages from a handler that happens before / after read
 * Turning off DNS resolution
 * supporting inactivity timers

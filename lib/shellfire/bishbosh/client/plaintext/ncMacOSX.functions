@@ -1,6 +1,8 @@
 core_usesIn core functions
 core_functions_register _bishbosh_client_plaintext_registration ncMacOSX
 
+core_dependency_requires '*' grep
+core_dependency_requires '*' head
 bishbosh_client_plaintext_ncMacOSX_check()
 {
 	local binary
@@ -15,6 +17,8 @@ bishbosh_client_plaintext_ncMacOSX_check()
 	return 1
 }
 
+core_dependency_requires '*' grep
+core_dependency_requires '*' head
 bishbosh_client_plaintext_ncMacOSX_checkIfNetcatVariant()
 {
 	# eg  'usage: nc [-46AcCDdFhklnrtUuvz] [-K tc] [-b boundif] [-i interval] [-p source_port]'
@@ -108,15 +112,24 @@ bishbosh_client_plaintext_ncMacOSX_start()
 		
 	esac
 	
-	if [ $(core_init_verbosity) -gt 1 ]; then
-		core_variable_array_append options -v
-	fi
+	case $(core_init_verbosity) in
+		
+		0)
+		
+		;;
+		
+		1)
+			core_variable_array_append options -v
+		;;
+		
+		*)
+			core_variable_array_append options -v -v
+		;;
+	esac
 
 	core_variable_array_append options $bishbosh_server
 		
 	core_variable_array_append options $bishbosh_port
-	
-	core_variable_array_append options -v -v -v
 	
 	core_variable_array_passToFunctionAsArguments options nc <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo"
 }
