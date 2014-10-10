@@ -277,27 +277,27 @@ _Note: Not running proxies myself, I can't test many of these settings combinati
 ### Configuration Locations
 Anything you can do with a command line switch, you can do as configuration. But configuration can also be used with scripts. Indeed, the configuration syntax is simply shell script. Configuration files _should not_ be executable. This means that if you _really_ want to, you can override just about any feature or behaviour of [bish-bosh] - although that's not explicitly supported. Configuration can be in any number of locations. Configuration may be a single file, or a folder of files; in the latter case, every file in the folder is parsed in 'shell glob-expansion order' (typically ASCII sort order of file names). Locations are searched in order as follows:-
 
-* Global (Per-machine)
-  * The file `INSTALL_PREFIX/etc/bish-bosh/rc`
-  * Any files in the folder `INSTALL_PREFIX/etc/bish-bosh/rc.d`
-* Per User, where `HOME` is your home folder path
-  * The file `HOME/.bish-bosh/rc`
-  * Any files in the folder `HOME/.bish-bosh/rc.d`
+1. Global (Per-machine)
+  1. The file `INSTALL_PREFIX/etc/bish-bosh/rc`
+  2. Any files in the folder `INSTALL_PREFIX/etc/bish-bosh/rc.d`
+2. Per User, where `HOME` is your home folder path
+  1. The file `HOME/.bish-bosh/rc`
+  2. Any files in the folder `HOME/.bish-bosh/rc.d`
   * _Note: an installation as a daemon using a service account would normally set HOME to something like `/var/lib/bishbosh`._
-* Per Environment
-  * The file in the environment variable `bishbosh_RC` (if the environment variable is set and the path is readable)
-  * Any files in the folder in the environment variable `bishbosh_RC_D` (if the environment variable is set and the path is searchable)
-* In `SCRIPTLETS`
+3. Per Environment
+  1. The file in the environment variable `bishbosh_RC` (if the environment variable is set and the path is readable)
+  2. Any files in the folder in the environment variable `bishbosh_RC_D` (if the environment variable is set and the path is searchable)
+4. In `SCRIPTLETS`
   * Scriptlets are parsed in order they are found on the command line (`bish-bosh -- [SCRIPTLETS]...`)
-* Under `bishbosh_clientPath` (switch `--client-path`):-
-  * The file `servers/SERVER/rc` where `SERVER` is `bishbosh_server` (`--server`)
-  * Any files in the folder `servers/SERVER/rc.d`
-  * The file `servers/SERVER/ports/PORT/rc` where `PORT` is `bishbosh_port` (`--port`)
-  * Any files in the folder `servers/SERVER/port/PORT/rc.d` 
-  * The file `servers/SERVER/ports/PORT/client-ids/CLIENT_ID/rc` where `CLIENT_ID` is `bishbosh_clientId` (`--client-id`)
-  * Any files in the folder `servers/SERVER/ports/PORT/client-ids/CLIENT_ID/rc.d` 
-  * _Note: nothing stops these paths, or files in them, being symlinks, so allowing aliasing of server names and port numbers (eg to share secure and insecure settings)._
-  * _Note: it is possible for a configuration file at `SERVER` or `PORT` level to set `bishbosh_clientId`, so influencing the search._
+5. Under `bishbosh_clientPath` (switch `--client-path`):-
+  1. The file `servers/SERVER/rc` where `SERVER` is `bishbosh_server` (`--server`)
+  2. Any files in the folder `servers/SERVER/rc.d`
+  3. The file `servers/SERVER/ports/PORT/rc` where `PORT` is `bishbosh_port` (`--port`)
+  4. Any files in the folder `servers/SERVER/port/PORT/rc.d` 
+  5. The file `servers/SERVER/ports/PORT/client-ids/CLIENT_ID/rc` where `CLIENT_ID` is `bishbosh_clientId` (`--client-id`)
+  6. Any files in the folder `servers/SERVER/ports/PORT/client-ids/CLIENT_ID/rc.d` 
+    * _Note: nothing stops these paths, or files in them, being symlinks, so allowing aliasing of server names and port numbers (eg to share secure and insecure settings)._
+    * _Note: it is possible for a configuration file at `SERVER` or `PORT` level to set `bishbosh_clientId`, so influencing the search._
 
 ## Dependencies
 [bish-bosh] tries to use as few dependencies as possible, but, since this is shell script, that's not always possible. It's compounded by the need to support the difference between major shells, too. It also does its best to work around differences in common binaries, by using feature detection, and where it can't do any better, by attempting to install using your package manager.
