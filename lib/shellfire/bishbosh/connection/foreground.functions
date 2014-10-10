@@ -1,0 +1,33 @@
+core_dependency_requires '*' kill
+bishbosh_connection_foreground_monitorForChildExit()
+{
+	while true
+	do
+		# core_exitError $core_commandLine_exitCode_TEMPFAIL "Could not connect"
+		# bishbosh_client_* is dead, either because the connection wasn't established (so exitCode is usually 1), or the processLoop cleanly exited
+		if ! kill -0 $clientPid 2>/dev/null; then
+			set +e
+			wait $clientPid
+			local exitCode=$?
+			set -e
+			if [ $exitCode -ne 0 ]; then
+				core_exitError $core_commandLine_exitCode_TEMPFAIL "Could not connect to '$bishbosh_server'"
+			fi
+			break
+		fi
+	
+		# The processLoop has exited. If it exited non-cleanly (ie before DISCONNECT was fully piped), bishbosh_client_* runs forever (no EOF) 
+		if ! kill -0 $processLoopPid 2>/dev/null; then
+			set +e
+			wait $processLoopPid
+			local exitCode=$?
+			set -e
+			if [ $exitCode -ne 0 ]; then
+				core_exitError $exitCode "processLoop failed"
+			fi
+			break
+		fi
+	
+		sleep "$bishbosh_readLatency_inFractionalSeconds"
+	done
+}

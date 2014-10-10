@@ -1,4 +1,4 @@
-core_usesIn bishbosh/connection read write handler hexConversion
+core_usesIn bishbosh/connection read write handler background foreground
 core_usesIn core children
 
 core_dependency_requires '*' mkdir
@@ -192,8 +192,6 @@ bishbosh_connection_createFifos()
 	bishbosh_connection_fromHexConversionFifo="$(bishbosh_connection_mkfifo from-hex-conversion)"
 }
 
-core_dependency_requires '*' mkdir
-core_dependency_oneOf '*' hexdump od
 bishbosh_connection_makeClientConnection()
 {
 	if core_variable_isUnset bishbosh_connection_clientServersPath; then
@@ -234,103 +232,26 @@ bishbosh_connection_makeClientConnection()
 	#	trap 'bishbosh_connection_continue=false' INT TERM
 	#fi
 	
-	
-	
-	
 	# We can not open for writing using a file descriptor or redirection operator (>) a FIFO unless someone is already reading from it; we will be blocked
 	# We can not open for reading using a file descriptor or redirection operator (<) a FIFO unless someone is already writing to it; we will be blocked
 	
 	# Background >"$bishbosh_connection_toServerFifo" <"$bishbosh_connection_fromHexConversionFifo"
-	bishbosh_connection_processLoop &
+	bishbosh_connection_background_processLoop
 	local processLoopPid=$!
 	core_children_killOnExit $processLoopPid
 	
 	# Background <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo"
-	bishbosh_connection_hexConversion &
+	bishbosh_connection_background_hexConversion
 	local hexConversionPid=$!
 	core_children_killOnExit $hexConversionPid
 	
 	# Background <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo"
-	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_temporaryFolderPath/$bishbosh_connection_id'"
-	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start &
+	bishbosh_connection_background_client
 	local clientPid=$!
 	core_children_killOnExit $clientPid
 	
-	while true
-	do
-		# core_exitError $core_commandLine_exitCode_TEMPFAIL "Could not connect"
-		# bishbosh_client_* is dead, either because the connection wasn't established (so exitCode is usually 1), or the processLoop cleanly exited
-		if ! kill -0 $clientPid 2>/dev/null; then
-			set +e
-			wait $clientPid
-			local exitCode=$?
-			set -e
-			if [ $exitCode -ne 0 ]; then
-				core_exitError $core_commandLine_exitCode_TEMPFAIL "Could not connect to '$bishbosh_server'"
-			fi
-			break
-		fi
-		
-		# The processLoop has exited. If it exited non-cleanly (ie before DISCONNECT was fully piped), bishbosh_client_* runs forever (no EOF) 
-		if ! kill -0 $processLoopPid 2>/dev/null; then
-			set +e
-			wait $processLoopPid
-			local exitCode=$?
-			set -e
-			if [ $exitCode -ne 0 ]; then
-				core_exitError $exitCode "processLoop failed"
-			fi
-			break
-		fi
-		
-		sleep "$bishbosh_readLatency_inFractionalSeconds"
-	done
-}
-
-bishbosh_connection_processLoop()
-{	
-	{
-		bishbosh_connection_write_CONNECT
-		
-		local controlPacketByte
-		local firstRemainingLengthByte
-		local remainingLength
-		
-		bishbosh_connection_continue=true
-		
-		# Handle CONNACK
-		bishbosh_connection_read_byte_blocking controlPacketByte
-		if [ -z "$controlPacketByte" ]; then
-			core_exitError $core_commandLine_exitCode_IOERR "Read of controlPacketByte failed"
-		fi
-		if [ $controlPacketByte -ne 32 ]; then
-			bishbosh_connection_read_controlpacket_invalid
-		fi
-		bishbosh_connection_read_byte_blocking firstRemainingLengthByte
-		bishbosh_connection_read_controlpacket_CONNACK
-		
-		bishbosh_connection_continue=false
-		while $bishbosh_connection_continue
-		do
-			# Will return empty if interrupted or non-blocking
-			bishbosh_connection_read_byte_blocking controlPacketByte
-			echo xxx $controlPacketByte xxx 1>&2
-			bishbosh_connection_read_byte_blocking firstRemainingLengthByte
-			echo xxx $controlPacketByte xxx 1>&2
-			remainingLength=$firstRemainingLengthByte
-			core_TODO "Handle longer messages"
-			bishbosh_connection_read_controlpacket_handle
-		done
-		
-	
-		bishbosh_connection_write_DISCONNECT
-		
-	} >"$bishbosh_connection_toServerFifo" 5<"$bishbosh_connection_fromHexConversionFifo"
-}
-
-bishbosh_connection_hexConversionOLD()
-{
-	gstdbuf   -i 0 -o 0 -e 0   god -A n -t u1 -w1 -v <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo"
+	# Foreground process to monitor child processes for exit
+	bishbosh_connection_foreground_monitorForChildExit
 }
 
 bishbosh_connection_incrementNextPacketIdentifier()

@@ -1,5 +1,4 @@
-core_usesIn bishbosh/connection/read controlpacket
-core_usesIn bishbosh/connection/read/loop pipeStdbufOd pipeStdbufOdHomebrew pipeUnbufferOd forkHexdump forkOd
+core_usesIn bishbosh/connection/read controlpacket byte
 
 # https://stackoverflow.com/questions/4874993/bash-script-with-non-blocking-read !!
 bishbosh_connection_read_nonBlockingFeatureTest()

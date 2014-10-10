@@ -1,6 +1,6 @@
 core_dependency_requires '*' grep
 core_dependency_oneOf '*' stdbuf od hexdump dd
-bishbosh_connection_hexConversion()
+bishbosh_connection_background_hexConversion()
 {
 	# Not a loop; but setting varargs ($@) isn't something we can return from a method call
 	# Of course, in bash, once could use an array
@@ -58,12 +58,12 @@ bishbosh_connection_hexConversion()
 		fi
 		
 		if core_compatibility_whichNoOutput hexdump; then
-			set -- _bishbosh_connection_hexConversion_dd hexdump -e '"%u\d"'
+			set -- _bishbosh_connection_background_hexConversion_dd hexdump -e '"%u\d"'
 			break
 		fi
 		
 		if core_compatibility_whichNoOutput od; then
-			set -- _bishbosh_connection_hexConversion_dd od -A n -t u1
+			set -- _bishbosh_connection_background_hexConversion_dd od -A n -t u1
 			break
 		fi
 		
@@ -73,7 +73,7 @@ bishbosh_connection_hexConversion()
 	"$@" <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo" &
 }
 
-_bishbosh_connection_hexConversion_dd()
+_bishbosh_connection_background_hexConversion_dd()
 {
 	{
 		while true
@@ -81,4 +81,51 @@ _bishbosh_connection_hexConversion_dd()
 			dd bs=1 count=1 2>/dev/null | "$@"
 		done
 	}
+}
+
+bishbosh_connection_background_processLoop()
+{	
+	{
+		bishbosh_connection_write_CONNECT
+		
+		local controlPacketByte
+		local firstRemainingLengthByte
+		local remainingLength
+		
+		bishbosh_connection_continue=true
+		
+		# Handle CONNACK
+		bishbosh_connection_read_byte_blocking controlPacketByte
+		if [ -z "$controlPacketByte" ]; then
+			core_exitError $core_commandLine_exitCode_IOERR "Read of controlPacketByte failed"
+		fi
+		if [ $controlPacketByte -ne 32 ]; then
+			bishbosh_connection_read_controlpacket_invalid
+		fi
+		bishbosh_connection_read_byte_blocking firstRemainingLengthByte
+		bishbosh_connection_read_controlpacket_CONNACK
+		
+		bishbosh_connection_continue=false
+		while $bishbosh_connection_continue
+		do
+			# Will return empty if interrupted or non-blocking
+			bishbosh_connection_read_byte_blocking controlPacketByte
+			echo xxx $controlPacketByte xxx 1>&2
+			bishbosh_connection_read_byte_blocking firstRemainingLengthByte
+			echo xxx $controlPacketByte xxx 1>&2
+			remainingLength=$firstRemainingLengthByte
+			core_TODO "Handle longer messages"
+			bishbosh_connection_read_controlpacket_handle
+		done
+		
+	
+		bishbosh_connection_write_DISCONNECT
+		
+	} >"$bishbosh_connection_toServerFifo" 5<"$bishbosh_connection_fromHexConversionFifo" &
+}
+
+bishbosh_connection_background_client()
+{
+	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_temporaryFolderPath/$bishbosh_connection_id'"
+	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
 }
