@@ -3,18 +3,20 @@
 
 Additionally, it is also a command interpreter. Once installed in your `PATH`, it can be used to script [MQTT] sessions, eg
 
-    #!/usr/bin/env bish-bosh
-	bishbosh_server=test.mosquitto.org
-	bishbosh_clientId=CLIENT_ID
-	
-	...
-	
-	bishbosh_connection_handler_PUBLISH()
-	{
-		# We've got a message. bish-bosh handles QoS 1 and 2 for us; we just need to use it.
-		printf '%s:' "$topicName"
-		cat "$messageFilePath"
-	}
+```bash
+#!/usr/bin/env bish-bosh
+bishbosh_server=test.mosquitto.org
+bishbosh_clientId=CLIENT_ID
+
+...
+
+bishbosh_connection_handler_PUBLISH()
+{
+	# We've got a message. bish-bosh handles QoS 1 and 2 for us; we just need to use it.
+	printf '%s:' "$topicName"
+	cat "$messageFilePath"
+}
+```
 
 Making the above snippet executable (`chmod +x SCRIPT`) creates a fully-fledged [MQTT] driven program. Ideal for one-off testing, system administrators clearing out queues and simple message driven apps that can use the Unix/Linux ecosystem and philosphy. Also quite handy for small embedded systems without a compiler toolchain and initrd boot time configuration grabbing...
 
