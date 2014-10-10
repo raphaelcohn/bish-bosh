@@ -24,22 +24,3 @@ _bishbosh_connection_read_loop_fork()
 	done
 }
 
-bishbosh_connection_read_body()
-{
-	# Unfortunately, there's very little we can do about the blocking read
-	# - running 'timeout' (whether GNU coreutils, busybox or toybox) can cause an incomplete read
-	# - running a complex subshell in the background and signalling it can cause an incomplete read, too
-	# The only really, really effective way to do non-blocking reads would be to write to a file, not a FIFO, and
-	# Check if file size has changed (or have the child signal the parent that an entire controlpacket is available), then
-	# Every 128Kb or somesuch, restart the entire loop to truncate the file
-	# But, it seems like a lot of effort for little real gain
-	
-	# Will return empty if interrupted vs non-blocking
-	$bishbosh_connection_read_byte_blocking controlPacketByte
-	echo xxx $controlPacketByte xxx 1>&2
-	$bishbosh_connection_read_byte_blocking firstRemainingLengthByte
-	echo xxx $controlPacketByte xxx 1>&2
-	remainingLength=$firstRemainingLengthByte
-	core_TODO "Handle longer messages"
-	bishbosh_connection_read_controlpacket_handle
-}

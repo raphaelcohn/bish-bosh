@@ -83,7 +83,7 @@ _program_commandLine_parseInitialise()
 	if [ "$core_init_preferredShell" = 'zsh' ]; then
 		_program_default_readLatency=0
 	else
-		_program_default_readLatency=1
+		_program_default_readLatency=100
 	fi
 	if core_variable_isSet bishbosh_readLatency; then
 		_program_configurationSet_bishbosh_readLatency=0

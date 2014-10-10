@@ -4,7 +4,7 @@ bishbosh_connection_read_controlpacket_PUBACK()
 	bishbosh_connection_read_protocolError_ifRemainingLengthNot PUBACK 2
 	
 	local packetIdentifier
-	bishbosh_connection_readPacketIdentifier
+	bishbosh_connection_read_packetIdentifier
 	
 	local pendingSendQos1PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos1PendingSendPath"/"$packetIdentifier"
 	if [ -f "$pendingSendQos1PacketIdentifierPath" ]; then

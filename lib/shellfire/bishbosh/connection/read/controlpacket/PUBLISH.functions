@@ -82,7 +82,7 @@ _bishbosh_connection_read_PUBLISH()
 {
 	read topic name
 	local length
-	bishbosh_connection_readLength
+	bishbosh_connection_read_length
 	local topicLength=$length
 	
 	local topicName
@@ -96,7 +96,7 @@ _bishbosh_connection_read_PUBLISH()
 	done
 	
 	local packetIdentifier
-	bishbosh_connection_readPacketIdentifier
+	bishbosh_connection_read_packetIdentifier
 	
 	local messageLength=$((remainingLength-2-topicLength-2))
 	

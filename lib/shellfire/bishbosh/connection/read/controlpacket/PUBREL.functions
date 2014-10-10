@@ -5,7 +5,7 @@ bishbosh_connection_read_controlpacket_PUBREL()
 	bishbosh_connection_read_protocolError_ifRemainingLengthNot PUBREL 2
 	
 	local packetIdentifier
-	bishbosh_connection_readPacketIdentifier
+	bishbosh_connection_read_packetIdentifier
 	
 	local unknownPacketIdentifier
 	local pendingReceiveQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingReceivePath"/"$packetIdentifier"

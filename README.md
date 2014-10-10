@@ -337,7 +337,7 @@ All of these should be present even on the most minimal system. Usage is restric
 * `cat`
 * `grep`
 * `head`
-* `kill`
+* `kill` (only if not built in to shell)
 * `mkdir`
 * `mkfifo`
 * `mktemp`

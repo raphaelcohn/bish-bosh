@@ -5,7 +5,7 @@ bishbosh_connection_read_controlpacket_PUBREC()
 	bishbosh_connection_read_protocolError_ifRemainingLengthNot PUBREC 2
 	
 	local packetIdentifier
-	bishbosh_connection_readPacketIdentifier
+	bishbosh_connection_read_packetIdentifier
 
 	local pendingSendQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingSendPath"/"$packetIdentifier"
 	local pendingCompQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingCompPath"/"$packetIdentifier"

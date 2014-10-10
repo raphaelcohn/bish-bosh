@@ -59,3 +59,25 @@ bishbosh_connection_read_initialise()
 	
 	core_exitError "Can not find either hexdump or od on the path"
 }
+
+bishbosh_connection_read_packetIdentifier()
+{
+	local packetIdentifierMsb
+	local packetIdentifierLsb
+	$bishbosh_connection_read_byte_blocking packetIdentifierMsb
+	$bishbosh_connection_read_byte_blocking packetIdentifierLsb
+	
+	packetIdentifier=$((packetIdentifierMsb * 256 + packetIdentifierLsb))
+	
+	# We should now 'free' the packet identifier...
+}
+
+bishbosh_connection_read_length()
+{
+	local lengthMsb
+	local lengthLsb
+	$bishbosh_connection_read_byte_blocking lengthMsb
+	$bishbosh_connection_read_byte_blocking lengthLsb
+	
+	length=$((lengthMsb * 256 + lengthLsb))
+}
