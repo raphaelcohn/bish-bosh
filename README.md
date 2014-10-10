@@ -32,7 +32,7 @@ git submodule update --init --recursive
 cd -
 ```
 
-This will create a folder [bish-bosh] inside your `$HOME`. [bish-bosh] can then be used straightaway, eg
+This will create a folder [bish-bosh] inside your home folder. [bish-bosh] can then be used straightaway, eg
 
 ```bash
 cd "$HOME"/bish-bosh
