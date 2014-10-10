@@ -1,11 +1,11 @@
-bishbosh_connection_read_byte_pipe_initialise()
+bishbosh_connection_read_byte_initialise()
 {
 	# TMOUT works for ksh93, bash
 	# But works only for auto-logout in pdksh and Busybox's Ash
 		
 	if [ $bishbosh_connection_supportsNonBlockingRead -eq 1 ]; then
 
-		bishbosh_connection_read_byte_pipe_blocking()
+		bishbosh_connection_read_byte_blocking()
 		{
 			set +e
 			IFS=' ' read -r -u 5 $1
@@ -14,7 +14,7 @@ bishbosh_connection_read_byte_pipe_initialise()
 		}
 		
 		# ksh93, bash, mksh, zsh, Busybox's Ash
-		bishbosh_connection_read_byte_pipe_nonBlocking()
+		bishbosh_connection_read_byte_nonBlocking()
 		{
 			set +e
 			IFS=' ' read -r -u 5 -t $bishbosh_readLatency_inFractionalSeconds $1
@@ -27,7 +27,7 @@ bishbosh_connection_read_byte_pipe_initialise()
 		# hence GNU coreutils / BusyBox / Toybox timeout isn't appropriate
 		# and also techniques like  http://www.linuxmisc.com/11-unix-aix/bed695a5c4783a08.htm  can result in a partial line being read
 		
-		bishbosh_connection_read_byte_pipe_blocking()
+		bishbosh_connection_read_byte_blocking()
 		{
 			set +e
 			IFS=' ' read -r $1 <&5
@@ -35,9 +35,9 @@ bishbosh_connection_read_byte_pipe_initialise()
 			set -e
 		}
 		
-		bishbosh_connection_read_byte_pipe_nonBlocking()
+		bishbosh_connection_read_byte_nonBlocking()
 		{
-			core_exitError "Non-blocking reads are not supported by your shell"
+			core_exitError $core_commandLine_exitCode_SOFTWARE "Non-blocking reads are not supported by your shell"
 		}
 	fi
 }

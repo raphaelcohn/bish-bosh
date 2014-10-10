@@ -25,7 +25,7 @@ bishbosh_connection_read_controlpacket_SUBACK()
 	local recordFileQos
 	while [ $index -ne $returnCodeCount ]
 	do
-		$bishbosh_connection_read_byte_blocking returnCode
+		bishbosh_connection_read_byte_blocking returnCode
 		case $returnCode in
 		
 			0|1|2|128)

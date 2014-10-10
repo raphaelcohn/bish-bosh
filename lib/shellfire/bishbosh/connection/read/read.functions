@@ -40,32 +40,16 @@ bishbosh_connection_read_initialise()
 	local isServer="$1"
 	
 	bishbosh_connection_read_controlpacket_initialise "$isServer"
-	
 	bishbosh_connection_read_nonBlockingFeatureTest
-	
-	local loopKind
-	local checkFunction
-	local initialiseFunction
-	for loopKind in pipeStdbufOd pipeStdbufOdHomebrew pipeUnbufferHexdump pipeUnbufferOd forkHexdump forkOd
-	do
-		checkFunction=bishbosh_connection_read_loop_${loopKind}_check
-		if $checkFunction; then
-			bishbosh_connection_read_loop=bishbosh_connection_read_loop_${loopKind}
-			initialiseFunction=bishbosh_connection_read_loop_${loopKind}_initialise
-			$initialiseFunction
-			return 0
-		fi
-	done
-	
-	core_exitError "Can not find either hexdump or od on the path"
+	bishbosh_connection_read_byte_initialise
 }
 
 bishbosh_connection_read_packetIdentifier()
 {
 	local packetIdentifierMsb
 	local packetIdentifierLsb
-	$bishbosh_connection_read_byte_blocking packetIdentifierMsb
-	$bishbosh_connection_read_byte_blocking packetIdentifierLsb
+	bishbosh_connection_read_byte_blocking packetIdentifierMsb
+	bishbosh_connection_read_byte_blocking packetIdentifierLsb
 	
 	packetIdentifier=$((packetIdentifierMsb * 256 + packetIdentifierLsb))
 	
@@ -76,8 +60,8 @@ bishbosh_connection_read_length()
 {
 	local lengthMsb
 	local lengthLsb
-	$bishbosh_connection_read_byte_blocking lengthMsb
-	$bishbosh_connection_read_byte_blocking lengthLsb
+	bishbosh_connection_read_byte_blocking lengthMsb
+	bishbosh_connection_read_byte_blocking lengthLsb
 	
 	length=$((lengthMsb * 256 + lengthLsb))
 }

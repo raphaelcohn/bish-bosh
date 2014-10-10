@@ -1,0 +1,84 @@
+core_dependency_requires '*' grep
+core_dependency_oneOf '*' stdbuf od hexdump dd
+bishbosh_connection_hexConversion()
+{
+	# Not a loop; but setting varargs ($@) isn't something we can return from a method call
+	# Of course, in bash, once could use an array
+	while true
+	do
+		local unbufferingTool
+		for unbufferingTool in gstdbuf stdbuf
+		do
+			if ! core_compatibility_whichNoOutput "$unbufferingTool"; then
+				continue
+			fi
+		
+			# hexdump on Mac OS X doesn't seem to be compatible with stdbuf (probably because it uses a different libc)
+		
+			local odTool
+			for odTool in god od
+			do
+				if ! core_compatibility_whichNoOutput "$odTool"; then
+					continue
+				fi
+				if ! "$odTool" --version 2>&1 | grep -q '^od (GNU coreutils) '; then
+					continue
+				fi
+				core_message INFO "Using stdbuf ($unbufferingTool) with od ($odTool)"
+				set -- "$unbufferingTool" -i 0 -o 0 -e 0 "$odTool" -A n -t u1 -w1 -v
+				break
+			done
+		done
+
+		if core_compatibility_whichNoOutput unbuffer; then
+		
+			if core_compatibility_whichNoOutput hexdump; then
+
+				core_message INFO "Using unbuffer with hexdump"
+				set -- unbuffer hexdump -v -e '"%u\d"'
+				break
+			
+			else
+		
+				local odTool
+				for odTool in god od
+				do
+					if ! core_compatibility_whichNoOutput "$odTool"; then
+						continue
+					fi
+					if ! "$odTool" --version 2>&1 | grep -q '^od (GNU coreutils) '; then
+						continue
+					fi
+					core_message INFO "Using unbuffer with od ($odTool)"
+					# Only works with GNU od, because of the -w1 argument
+					set -- unbuffer "$odTool" -A n -t u1 -w1 -v
+					break
+				done
+			fi
+		fi
+		
+		if core_compatibility_whichNoOutput hexdump; then
+			set -- _bishbosh_connection_hexConversion_dd hexdump -e '"%u\d"'
+			break
+		fi
+		
+		if core_compatibility_whichNoOutput od; then
+			set -- _bishbosh_connection_hexConversion_dd od -A n -t u1
+			break
+		fi
+		
+		core_exitError $core_commandLine_exitCode_UNAVAILABLE "Could not find a means of doing Hex Conversion"
+	done
+	
+	"$@" <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo" &
+}
+
+_bishbosh_connection_hexConversion_dd()
+{
+	{
+		while true
+		do
+			dd bs=1 count=1 2>/dev/null | "$@"
+		done
+	}
+}

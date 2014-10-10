@@ -90,7 +90,7 @@ _bishbosh_connection_read_PUBLISH()
 	local byte
 	while [ $remainingTopicLength -ne 0 ]
 	do
-		$bishbosh_connection_read_byte_blocking byte
+		bishbosh_connection_read_byte_blocking byte
 		topicName="${topicName}$(bishbosh_connection_write_byte $byte)"
 		remainingTopicLength=$((remainingTopicLength-1))
 	done
@@ -109,7 +109,7 @@ _bishbosh_connection_read_PUBLISH()
 	while [ $remainingMessageLength -ne 0 ]
 	do
 		# Could we pipe stdin to dd and use a dirty converter?
-		$bishbosh_connection_read_byte_blocking byte
+		bishbosh_connection_read_byte_blocking byte
 		bishbosh_connection_write_byte $byte
 		remainingMessageLength=$((remainingMessageLength-1))
 	done >"$messageFilePath"
