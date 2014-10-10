@@ -113,7 +113,7 @@ ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a let
 #### Being specific about how a is made connection
 These settings relate to [MQTT]'s **CONNACK** packet.
 
-| Configuration Setting | Values | Interpreted as if unset | Explanation |
+| Configuration Setting | Values | Interpreted as if *unset* | Explanation |
 | --------------------- | ------ | ----------------------- | ----------- |
 | `bishbosh_connection_write_CONNECT_cleanSession` | 0 or 1 \* | 0 (ie persistent) | Clean Session flag |
 | `bishbosh_connection_write_CONNECT_willTopic` | Any valid topic name | No will messages |  Will topic |
@@ -122,8 +122,8 @@ These settings relate to [MQTT]'s **CONNACK** packet.
 | `bishbosh_connection_write_CONNECT_willMessage` | Any valid message, but ASCII NUL is not supported | invalid | Will message, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
 | `bishbosh_connection_write_CONNECT_keepAlive` | 0 to 65535 inclusive | 0 | Keep Alive for pings in seconds. A value of 0 disables keep alive handling |
 | `bishbosh_clientId` | Any valid UTF-8 string excluding ASCII NUL | invalid | Client id. Empty client ids, and random client ids, are not yet supported. Usually set on the command line with the switch `--client-id CLIENT_ID` |
-| `bishbosh_connection_write_CONNECT_username` | Any valid UTF-8 string excluding ASCII NUL. May be empty | No username | Username. May be empty or unset (the latter meaning it is not sent) |
-| `bishbosh_connection_write_CONNECT_password` | Any sequence of bytes excluding ASCII NUL. May be empty | No password | Password. May be empty or unset (the latter meaning it is not sent) |
+| `bishbosh_connection_write_CONNECT_username` | Any valid UTF-8 string excluding ASCII NUL. May be empty | No username | Username. May be empty or *unset* (the latter meaning it is not sent) |
+| `bishbosh_connection_write_CONNECT_password` | Any sequence of bytes excluding ASCII NUL. May be empty | No password | Password. May be empty or *unset* (the latter meaning it is not sent) |
 
 \* technically, a boolean, which might also be `Y`, `YES`, `Yes`, `yes`, `T`, `TRUE`, `True`, `true`, `ON`, `On`, `on` for 1 and `N`, `NO`, `No`, `no`, `F`, `FALSE`, `False`, `false`, `OFF`, `Off` and `off` for 0, but best as a number.
 
@@ -220,7 +220,7 @@ _*TODO: Document control packet writers of interest*_
 | ------ | ----- | --------------------- | ------- | ------- |
 | `-s`, `--server` | `HOST` | `bishbosh_server` | `localhost` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an [MQTT] server to connect to, or, if using Unix domain sockets (see [`--transport`](#source-routing-settings)) a file path to a readable Unix Domain Socket. |
 | `-p`, `--port` | `PORT` | `bishbosh_port` | 1883 for most backends; 8883 if backend is secure | Port your [MQTT] `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix domain sockets. |
-| `-i`, `--client-id` | `ID` | `bishbosh_clientId` | unset | [MQTT] ClientId. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. |
+| `-i`, `--client-id` | `ID` | `bishbosh_clientId` | *unset* | [MQTT] ClientId. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. |
 
 #### Backends
 A backend is the strategy [bish-bosh] uses to connect to a [MQTT] server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. [bish-bosh] ships with a large number of backends to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
@@ -242,11 +242,11 @@ The `--lock-path` controls where [bish-bosh] tries to create a lock for a partic
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-c`, `--client-path` | `PATH` | `bishbosh_clientPath` | See help output | `PATH` to a location to configuration - scriptlets for a client-id on a per-server, per-port, per-client-id basis. See [Configuration Locations](#configuration-locations) |
-| `-t`, `--session-path` | `PATH` | `bishbosh_sessionPath` | See help output | `PATH` to a location to store session data for clients connecting with Clean Session = 0 |
-| `-l`, `--lock-path` | `PATH` | `bishbosh_lockPath` | See help output | `PATH` to a location to screate a Mutex lock so only one instance connects per-server, per-port, per-client-id at a time. |
-| `--read-latency` | `MSECS` | `bishbosh_readLatency` | See help output | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak blocking read timeouts. blocking read timeouts are experimental and may not work properly in your shell. The value `0` may be interpreted differently by different shells and should be used with caution. |
-| `--lock-latency` | `MSECS` | `bishbosh_lockLatency` | See help output | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak lock acquisitions. Locking is currently done using `mkdir`, which is believed to be an atomic operation on most common filesystems. |
+| `-c`, `--client-path` | `PATH` | `bishbosh_clientPath` | *See help output* | `PATH` to a location to configuration - scriptlets for a client-id on a per-server, per-port, per-client-id basis. See [Configuration Locations](#configuration-locations) |
+| `-t`, `--session-path` | `PATH` | `bishbosh_sessionPath` | *See help output* | `PATH` to a location to store session data for clients connecting with Clean Session = 0 |
+| `-l`, `--lock-path` | `PATH` | `bishbosh_lockPath` | *See help output* | `PATH` to a location to screate a Mutex lock so only one instance connects per-server, per-port, per-client-id at a time. |
+| `--read-latency` | `MSECS` | `bishbosh_readLatency` | *See help output* | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak blocking read timeouts. blocking read timeouts are experimental and may not work properly in your shell. The value `0` may be interpreted differently by different shells and should be used with caution. |
+| `--lock-latency` | `MSECS` | `bishbosh_lockLatency` | *See help output* | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak lock acquisitions. Locking is currently done using `mkdir`, which is believed to be an atomic operation on most common filesystems. |
 
 #### Source-Routing Settings
 If you have a box with multiple NICs or IP addresses, broken IPv4 / IPv6 networking (or DNS resolution) or strange firewall policies that block certain source ports, you can control those as follows:-
@@ -254,8 +254,8 @@ If you have a box with multiple NICs or IP addresses, broken IPv4 / IPv6 network
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
 | `--transport` | `TRANSPT` | `bishbosh_transport` | `inet` | Use a particular socket transport `TRANSPT`. `TRANSPT` may be one of `inet`, `inet4`, `inet6` or `unix`. Using `inet` allows the backend to select either a IPv4 or IPv6 connection as appropriate after DNS resolution. `inet4` forces an IPv4 connection; `inet6` likewise forces an IPv6 connection. `unix` forces a Unix Domain Socket connection |
-| `--source-address` | `S` | `bishbosh_sourceAddress` | unset | Connect using the NIC with the source address `S`. If `TRANSPT` is `unix` then `S` must reference an extant, accessible Unix Domain Socket file path. Results in packets being sent from this address. `S` may be a host name resolved using DNS, or an IPv4 or IPv6 address. If you disable DNS resolution of [MQTT] server names, it's likely that a backend will do likewise for `HOST`. If `S` is set to `''` (the empty string), then it is treated as if unset. This is to allow local users to override global configuration. |
-| `--source-port` | `PORT` | `bishbosh_sourcePort` | unset | Connect using the source port `PORT`. If `TRANSPT` is `unix` then this setting is invalid. Results in packets being sent from this port. If unset, then a random source port is chosen. If `PORT` is set to `''` (the empty string), then it is treated as if unset. This is to allow local users to override global configuration. |
+| `--source-address` | `S` | `bishbosh_sourceAddress` | *unset* | Connect using the NIC with the source address `S`. If `TRANSPT` is `unix` then `S` must reference an extant, accessible Unix Domain Socket file path. Results in packets being sent from this address. `S` may be a host name resolved using DNS, or an IPv4 or IPv6 address. If you disable DNS resolution of [MQTT] server names, it's likely that a backend will do likewise for `HOST`. If `S` is set to `''` (the empty string), then it is treated as if *unset*. This is to allow local users to override global configuration. |
+| `--source-port` | `PORT` | `bishbosh_sourcePort` | *unset* | Connect using the source port `PORT`. If `TRANSPT` is `unix` then this setting is invalid. Results in packets being sent from this port. If unset, then a random source port is chosen. If `PORT` is set to `''` (the empty string), then it is treated as if *unset*. This is to allow local users to override global configuration. |
 
 #### Proxy Settings
 Personally, I find proxies extremely irritating, and of very limited benefit. But many organizations still use them, if simply because once they go in, they tend to stay in - they appeal to the control freak in all of us, I suppose. [bish-bosh] does its best to support SOCKS and HTTP proxies, but we're reliant on the rather limited support of backends. Many don't support them, not least because most FOSS is produced by developers who wouldn't use them - they're individuals, not power-mad network admins.
@@ -264,11 +264,11 @@ When using a proxy, you won't be able to use Unix domain sockets (`--transport u
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `--proxy-kind` | `KIND` | `bishbosh_proxyKind` | unset | Use a particular `KIND` of proxy. `KIND` is one of `SOCKS4`, `SOCKS5`, `HTTP` or `none`. Using `none` disables the proxy; this is for when a global configuration has been set for a machine but a local user needs to run without it. |
-| `-proxy-server` | `HOST` | `bishbosh_proxyServer` | unset | Connect to a proxy server on a given `HOST`, which may be a name, an IPv4 or IPv6 address (in the case of the latter, you may need to surround it in `[]`, eg `[::1]`; backends vary and do not document IPv6 proxy address handling). If you disable DNS resolution of [MQTT] server names, it's likely that a backend will do likewise for `HOST`. |
+| `--proxy-kind` | `KIND` | `bishbosh_proxyKind` | *unset* | Use a particular `KIND` of proxy. `KIND` is one of `SOCKS4`, `SOCKS5`, `HTTP` or `none`. Using `none` disables the proxy; this is for when a global configuration has been set for a machine but a local user needs to run without it. |
+| `-proxy-server` | `HOST` | `bishbosh_proxyServer` | *unset* | Connect to a proxy server on a given `HOST`, which may be a name, an IPv4 or IPv6 address (in the case of the latter, you may need to surround it in `[]`, eg `[::1]`; backends vary and do not document IPv6 proxy address handling). If you disable DNS resolution of [MQTT] server names, it's likely that a backend will do likewise for `HOST`. |
 | `--proxy-port` | `PORT` | `bishbosh_proxyPort` | 1080 for `KIND` of `SOCKS4` or `SOCKS5`. 3128 for `HTTP`. unset for `none`. | Port the proxy server `HOST` is running on. |
-| `--proxy-username` | `UN` | `bishbosh_proxyUsername` | unset | Username `UN` to use. Please note that passing this as a switch is insecure. |
-| `--proxy-password` | `PWD` | `bishbosh_proxyPassword` | unset | Password `PWD` to use. Please note that passing this as a switch is insecure. Rarely supported. |
+| `--proxy-username` | `UN` | `bishbosh_proxyUsername` | *unset* | Username `UN` to use. Please note that passing this as a switch is insecure. |
+| `--proxy-password` | `PWD` | `bishbosh_proxyPassword` | *unset* | Password `PWD` to use. Please note that passing this as a switch is insecure. Rarely supported. |
 
 _Note: Not running proxies myself, I can't test many of these settings combinations._
 
