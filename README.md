@@ -441,12 +441,14 @@ All of these dependencies bar `nc-traditional` should already be installed on a 
 
 In a terminal window running bash or dash, do:-
 
-    sudo apt-get update
-	sudo apt-get install bash coreutils sed grep bsdmainutils libc-bin bash nc-traditional git
-	cd "$HOME"
-	git clone https://github.com/raphaelcohn/bish-bosh.git
-	git submodule update --init --recursive
-	cd -
+```bash
+sudo apt-get update
+sudo apt-get install bash coreutils sed grep bsdmainutils libc-bin bash nc-traditional git
+cd "$HOME"
+git clone https://github.com/raphaelcohn/bish-bosh.git
+git submodule update --init --recursive
+cd -
+```
 
 #### For BusyBox Embedded Use (as of version 1.22.1)
 * BusyBox configured to use as builtins the list of required dependencies (above) and the following
@@ -470,21 +472,24 @@ _Note: BusyBox configurations will work on Debian/Ubuntu, too, and so can be use
   * `git`, if cloning from [GitHub]
 
 In a terminal window running bash, do:-
-
-    brew update
-	brew install bash coreutils gnu-sed grep git
+```bash
+brew update
+brew install bash coreutils gnu-sed grep git
+```
 
 ### Minimal Configurations
 
 #### For Debian 7, Ubuntu 12.04 LTS and 14.04 LTS
 As for the optimum configuration, but substituting `dash` for `bash` and `nc-openbsd` for `nc-traditional`. All of the dependencies should already be installed, but if not, in a terminal window do:-
 
-    sudo apt-get update
-	sudo apt-get install dash coreutils sed grep bsdmainutils libc-bin bash nc-openbsd git
-	cd "$HOME"
-	git clone https://github.com/raphaelcohn/bish-bosh.git
-	git submodule update --init --recursive
-	cd -
+```bash
+sudo apt-get update
+sudo apt-get install dash coreutils sed grep bsdmainutils libc-bin bash nc-openbsd git
+cd "$HOME"
+git clone https://github.com/raphaelcohn/bish-bosh.git
+git submodule update --init --recursive
+cd -
+```
 
 #### For BusyBox Embedded Use (as of version 1.22.1)
 * BusyBox configured to use as builtins the list of required dependencies (above) and the following
