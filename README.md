@@ -291,7 +291,7 @@ If you have a box with multiple NICs or IP addresses, broken IPv4 / IPv6 network
 
 Personally, I find proxies extremely irritating, and of very limited benefit (especially in these days of deep packet inspection abuse). But many organizations still use them, if simply because once they go in, they tend to stay in - they appeal to the control freak in all of us, I suppose. [bish-bosh] does its best to support SOCKS and HTTP proxies, but we're reliant on the rather limited support of backends.
 
-When using a proxy, you won't be able to use Unix domain sockets ([`--transport unix`](#source-routing-settings)) or serial devices ([`--transport serial`](#source-routing-settings)). Not every backend supports using a proxy (there's a [compatibility table](#status-of-supported-backends)). And those that do don't support every option:-
+When using a proxy, you won't be able to use Unix domain sockets ([`--transport unix`](#source-routing-settings)) or serial devices ([`--transport serial`](#source-routing-settings)). Not every backend supports using a proxy; even those that do don't support every option above (there's a [compatibility table](#status-of-supported-backends)).
 
 _\* Not running proxies myself, I can't test many of these settings combinations._
 
