@@ -135,8 +135,7 @@ These settings relate to [MQTT]'s **CONNACK** packet.
 
 | Configuration Setting | Values | Interpreted as if *unset* | Explanation |
 | --------------------- | ------ | ----------------------- | ----------- |
-| ```bash
-bishbosh_connection_write_CONNECT_cleanSession``` | 0 or 1 \* | 0 (ie persistent) | Clean Session flag |
+| `bishbosh_connection_write_CONNECT_cleanSession` | 0 or 1 \* | 0 (ie persistent) | Clean Session flag |
 | `bishbosh_connection_write_CONNECT_willTopic` | Any valid topic name | No will messages |  Will topic |
 | `bishbosh_connection_write_CONNECT_willQos` | 0 - 2 inclusive | 0 | Will QoS, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
 | `bishbosh_connection_write_CONNECT_willRetain` | 0 or 1 \* | 0 | Will Retain flag, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
@@ -153,19 +152,20 @@ bishbosh_connection_write_CONNECT_cleanSession``` | 0 or 1 \* | 0 (ie persistent
 
 To override a handler, you just write a shell function definition:-
 
-    bishbosh_connection_handler_PUBLISH()
-	{
-		printf '%s' "Received a message on topic ${topicName} which was ${messageLength} byte(s) long and is in the file ${messageFilePath}" 1>&2
-		
-		# Run a parser?
-		# Write a reply?
-		# Move or Hardlink to another location (perhaps an inotify-based process)?
-		# Or something else? You could even embed your entire program logic here, if it's shell script
-		
-		# Make sure we clean up
-		rm "${messageFilePath}"
-	}
-
+```bash
+bishbosh_connection_handler_PUBLISH()
+{
+	printf '%s' "Received a message on topic ${topicName} which was ${messageLength} byte(s) long and is in the file ${messageFilePath}" 1>&2
+	
+	# Run a parser?
+	# Write a reply?
+	# Move or Hardlink to another location (perhaps an inotify-based process)?
+	# Or something else? You could even embed your entire program logic here, if it's shell script
+	
+	# Make sure we clean up
+	rm "${messageFilePath}"
+}
+```
 You need to be careful if using `printf` or `echo` - by default, all data written to standard out goes to the [MQTT] server! BTW, [bish-bosh] handles all the publication, subscription and unscribe acknowledgments. You don't have to do anything apart from have a handler (`bishbosh_connection_handler_PUBLISH`) to read your messages. But if you do:-
 
 | Handler | Control Packet Received | Local Variables in Scope | Notes |
