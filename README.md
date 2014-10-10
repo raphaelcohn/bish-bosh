@@ -425,9 +425,9 @@ Unfortunately, there are a lot of [GNU Bash] versions that are still in common u
 
 #### `/var`
 We use a `/var` folder underneath where we're installed. If you've just cloned [bish-bosh] from [GitHub], then this is _within_ the clone.
-* `/var/lib/bish-bosh/client` must be searchable for the user running `bish-bosh`. This `PATH` be changed with the [`--client-path PATH`](#configuration-tweaks) option or `bishbosh_clientPath='PATH'` [configuration setting](#configuration-tweaks). Ordinarily, it needs to be writable _unless_ you've created the entire servers, ports and client-ids structure in advance.
-* `/var/spool/bish-bosh/session` must be searchable and writable for the user running `bish-bosh`. This `PATH` be changed with the [`--session-path PATH`](#configuration-tweaks) option or `bishbosh_sessionPath='PATH'` [configuration setting](#configuration-tweaks).
-* `/var/run/bish-bosh/lock` must be searchable and writable for the user running `bish-bosh`. This `PATH` be changed with the [`--lock-path PATH`](#configuration-tweaks) option or `bishbosh_lockPath='PATH'` [configuration setting](#configuration-tweaks). You may want to change this location to `/var/lock` on Linux, or mount this path with a temporary file system.
+* `/var/lib/bish-bosh/client` must be searchable for the user running `bish-bosh`. This `PATH` be changed with the [`--client-path PATH`](#configuration-tweaks) option or [`bishbosh_clientPath='PATH'`](#configuration-tweaks) configuration setting. Ordinarily, it needs to be writable _unless_ you've created the entire servers, ports and client-ids structure in advance.
+* `/var/spool/bish-bosh/session` must be searchable and writable for the user running `bish-bosh`. This `PATH` be changed with the [`--session-path PATH`](#configuration-tweaks) option or [`bishbosh_sessionPath='PATH'`](#configuration-tweaks) configuration setting.
+* `/var/run/bish-bosh/lock` must be searchable and writable for the user running `bish-bosh`. This `PATH` be changed with the [`--lock-path PATH`](#configuration-tweaks) option or [`bishbosh_lockPath='PATH'`](#configuration-tweaks) configuration setting. You may want to change this location to `/var/lock` on Linux, or mount this path with a temporary file system.
 
 #### `/etc`
 We use a `/etc` folder underneath where we're installed. If you've just cloned [bish-bosh] from [GitHub], then this is _within_ the clone.
