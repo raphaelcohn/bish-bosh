@@ -111,7 +111,7 @@ ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a let
 ### But the really interesting scriptable stuff is done with configuration files or scriptlets
 
 #### Being specific about how a is made connection
-These settings relate to [MQTT]'s *CONNACK* packet.
+These settings relate to [MQTT]'s **CONNACK** packet.
 
 | Configuration Setting | Values | Interpreted as if unset | Explanation |
 | --------------------- | ------ | ----------------------- | ----------- |
@@ -149,20 +149,20 @@ You need to be careful if using `printf` or `echo` - by default, all data writte
 
 | Handler | Control Packet Received | Local Variables in Scope | Notes |
 | ------- | --------------- | ------------------------ | ----- |
-| `bishbosh_connection_handler_CONNACK` | *CONNACK* | `bishbosh_connection_sessionPresent` | Invalid packets and non-zero CONNACK codes are handled for you |
-| `bishbosh_connection_handler_SUBACK` | *SUBACK* | `packetIdentifier`, `returnCodeCount`, `$@` which is a list of return codes | Invalid and unexpected packets are handled for you; active sessions are tracked on your behalf |
-| `bishbosh_connection_handler_UNSUBACK` | *UNSUBACK* | `packetIdentifier` | Invalid and unexpected packets are handled for you; active sessions are tracked on your behalf |
-| `bishbosh_connection_handler_PUBLISH` | *PUBLISH* | `packetIdentifier`, `retain`, `dup`, `qos`, `topicLength`, `topicName`, `messageLength`, `messageFilePath` | Invalid and unexpected packets and duplicates are handled appropriately. Publication acknowledgments (*PUBACK*, *PUBCOMP*) likewise are handled. The only thing you need to do is `rm "$messageFilePath"` if you want |
-| `bishbosh_connection_handler_PUBLISH_again` | *PUBLISH* | `packetIdentifier`, `retain`, `dup`, `qos`, `topicLength`, `topicName`, `messageLength`, `messageFilePath` | Called when a QoS 2 message is redelivered |
-| `bishbosh_connection_handler_PUBLISH_again` | *PUBLISH* | `packetIdentifier`, `retain`, `dup`, `qos`, `topicLength`, `topicName`, `messageLength`, `messageFilePath` | Called when a QoS 2 message is redelivered |
-| `bishbosh_connection_handler_PUBACK` | *PUBACK* |  `packetIdentifier` | Invalid and unexpected packets are handled for you. Acknowledgments likewise. |
-| `bishbosh_connection_handler_PUBREC` | *PUBREC* |  `packetIdentifier` | Invalid and unexpected packets are handled for you. Acknowledgments likewise. |
-| `bishbosh_connection_handler_PUBREL` | *PUBREL* |  `packetIdentifier` | Invalid and unexpected packets are handled for you. |
-| `bishbosh_connection_handler_PUBCOMP` | *PUBCOMP* |  `packetIdentifier` | Invalid and unexpected packets are handled for you. |
-| `bishbosh_connection_handler_PINGRESP` | *PINGRESP* |  | Nothing much to say. |
+| `bishbosh_connection_handler_CONNACK` | **CONNACK** | `bishbosh_connection_sessionPresent` | Invalid packets and non-zero **CONNACK** codes are handled for you |
+| `bishbosh_connection_handler_SUBACK` | **SUBACK** | `packetIdentifier`, `returnCodeCount`, `$@` which is a list of return codes | Invalid and unexpected packets are handled for you; active sessions are tracked on your behalf |
+| `bishbosh_connection_handler_UNSUBACK` | **UNSUBACK** | `packetIdentifier` | Invalid and unexpected packets are handled for you; active sessions are tracked on your behalf |
+| `bishbosh_connection_handler_PUBLISH` | **PUBLISH** | `packetIdentifier`, `retain`, `dup`, `qos`, `topicLength`, `topicName`, `messageLength`, `messageFilePath` | Invalid and unexpected packets and duplicates are handled appropriately. Publication acknowledgments (***PUBACK***, ***PUBCOMP***) likewise are handled. The only thing you need to do is `rm "$messageFilePath"` if you want |
+| `bishbosh_connection_handler_PUBLISH_again` | **PUBLISH** | `packetIdentifier`, `retain`, `dup`, `qos`, `topicLength`, `topicName`, `messageLength`, `messageFilePath` | Called when a QoS 2 message is redelivered |
+| `bishbosh_connection_handler_PUBLISH_again` | **PUBLISH** | `packetIdentifier`, `retain`, `dup`, `qos`, `topicLength`, `topicName`, `messageLength`, `messageFilePath` | Called when a QoS 2 message is redelivered |
+| `bishbosh_connection_handler_PUBACK` | ***PUBACK*** |  `packetIdentifier` | Invalid and unexpected packets are handled for you. Acknowledgments likewise. |
+| `bishbosh_connection_handler_PUBREC` | ***PUBREC*** |  `packetIdentifier` | Invalid and unexpected packets are handled for you. Acknowledgments likewise. |
+| `bishbosh_connection_handler_PUBREL` | **PUBREL** |  `packetIdentifier` | Invalid and unexpected packets are handled for you. |
+| `bishbosh_connection_handler_PUBCOMP` | ***PUBCOMP*** |  `packetIdentifier` | Invalid and unexpected packets are handled for you. |
+| `bishbosh_connection_handler_PINGRESP` | **PINGRESP** |  | Nothing much to say. |
 
 #### Writing control packets
-Inside any of [bish-bosh]'s handlers, you can publish a message, make a subscription request, etc. Indeed, you can do it yourself - anything sent to standard out goes to the server - but it's probably better to use our built in writers. For example once connected (you received *CONNACK* control packet), you might want to subscribe and send some messages:-
+Inside any of [bish-bosh]'s handlers, you can publish a message, make a subscription request, etc. Indeed, you can do it yourself - anything sent to standard out goes to the server - but it's probably better to use our built in writers. For example once connected (you received **CONNACK** control packet), you might want to subscribe and send some messages:-
 
     bishbosh_connection_handler_CONNACK()
 	{
@@ -502,20 +502,20 @@ The following shells are untested and unsupported:-
 
 | Backend | Filename | Variant | Connectivity | Status | Force IPv4 | Force IPv6 | Unix domain sockets | Serial Device | Proxy Support | Source IP / Port |
 | ------- | -------- | ------- | ------------ | ------ | ---------- | ---------- | ------------------- | ------------- | ------------- | ---------------- |
-| *nc* | 'Meta' backend | Any *nc\** backend | MQTT | Fully functional* | Yes† | Yes† | Yes† | Yes† | Yes† | Yes† |
-| *ncMacOSX* | `nc` | Mac OS X | MQTT | Fully functional | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes |
-| *ncGNU* | `nc` | [GNU](http://netcat.sourceforge.net/) | MQTT | Barely Implemented | Yes | Yes | Yes | No | No | Yes |
-| *ncDebianTraditional* | `nc.openbsd` | [Debian OpenBSD](https://packages.debian.org/wheezy/netcat-openbsd) | MQTT | Barely Implemented | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. Usernames supported. | Yes |
-| *ncDebianOpenBSD* | `nc.traditional` | [Debian Traditional](https://packages.debian.org/wheezy/netcat-traditional) / Hobbit | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes |
-| *ncBusyBox* | `nc` / `busybox nc` | [BusyBox] | MQTT | Barely Implemented | No | No | No | Yes | No | Yes |
-| *ncToybox* | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] | MQTT | Barely Implemented | No | No | No | Yes | No | Source Port only |
+| **nc** | 'Meta' backend | Any **nc\*** backend | MQTT | Fully functional* | Yes† | Yes† | Yes† | Yes† | Yes† | Yes† |
+| **ncMacOSX** | `nc` | Mac OS X | MQTT | Fully functional | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes |
+| **ncGNU** | `nc` | [GNU](http://netcat.sourceforge.net/) | MQTT | Barely Implemented | Yes | Yes | Yes | No | No | Yes |
+| **ncDebianTraditional** | `nc.openbsd` | [Debian OpenBSD](https://packages.debian.org/wheezy/netcat-openbsd) | MQTT | Barely Implemented | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. Usernames supported. | Yes |
+| **ncDebianOpenBSD** | `nc.traditional` | [Debian Traditional](https://packages.debian.org/wheezy/netcat-traditional) / Hobbit | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes |
+| **ncBusyBox** | `nc` / `busybox nc` | [BusyBox] | MQTT | Barely Implemented | No | No | No | Yes | No | Yes |
+| **ncToybox** | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] | MQTT | Barely Implemented | No | No | No | Yes | No | Source Port only |
 | *nc6* | `nc6` | [netcat6](http://www.deepspace6.net/projects/netcat6.html) | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes |
-| *ncat* | `ncat`| [Nmap ncat](http://nmap.org/ncat/) | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. Usernames and passwords supported for HTTP, usernames only for SOCKS. | Yes |
-| *socat* | `socat` | [socat](http://www.dest-unreach.org/socat/) | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | ? | ? | ? |
-| *tcpclient* | `tcpclient` | [ucspi-tcp](http://cr.yp.to/ucspi-tcp.html) | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes |
-| *bash* | `bash` | [GNU Bash] | MQTT | Barely Implemented | No | No | No | ? | No | No |
+| **ncat** | `ncat`| [Nmap ncat](http://nmap.org/ncat/) | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. Usernames and passwords supported for HTTP, usernames only for SOCKS. | Yes |
+| **socat** | `socat` | [socat](http://www.dest-unreach.org/socat/) | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | ? | ? | ? |
+| **tcpclient** | `tcpclient` | [ucspi-tcp](http://cr.yp.to/ucspi-tcp.html) | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes |
+| **bash** | `bash` | [GNU Bash] | MQTT | Barely Implemented | No | No | No | ? | No | No |
 
-\* Refers to the meta backend. A detected backend may not be.
+\* Refers to the meta backend itself. A detected backend may not be.
 † Yes, if the detected variant of the backend does.
 
 ## Limitations
@@ -534,7 +534,7 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 * Since client-ids are used as part of file system paths, they may not be empty even when `bishbosh_connection_write_CONNECT_cleanSession` is 0. This might be fixed in a future version.
 
 ### Broken but Fixable
-* Keep Alive handling does not correctly support values other than 0, and *PINGREQ* packets are not sent (and *PINGRESP* packets are discarded)
+* Keep Alive handling does not correctly support values other than 0, and *PINGREQ* packets are not sent (and **PINGRESP** packets are discarded)
 * Unsubscribe handling is broken
 * Connection tear down is very brittle, and state can be easily corrupted
 * State transitions are nothing like as close to atomic as they could be
