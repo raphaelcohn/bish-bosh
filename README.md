@@ -351,11 +351,11 @@ If cloning from [GitHub], then you'll also need to make sure you have `git`.
 These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and feature detection to try to find an optimum dependency. Making some choices, however, influences others (eg `hexdump` and `od` preferences change when `stdbuf` is discovered, to try to use GNU `od`). Some choices are sub-optimal, and may cause operational irritation (mostly, bishbosh responds far more slowly to signals and socket disconnections).
 
 * Binary to Hexadecimal conversion
-  * `hexdump`, BSD-derived (part of the `bsdmainutils` packages in Debian/Ubuntu; usually installed by default)
-  * `hexdump`, in BusyBox
+  * `hexdump`, BSD-derived (part of the `bsdmainutils` package in Debian/Ubuntu; usually installed by default)
+  * `hexdump`, in [BusyBox]
   * `hexdump`, in [Toybox]
   * `od`, from GNU `coreutils` package
-  * `od`, in BusyBox
+  * `od`, in [BusyBox]
   * `od`, in [Toybox]
   * `od`, BSD-derived
 * Turning off buffering of hexadecimal conversion
@@ -370,8 +370,8 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * `nc`, Debian OpenBSD variant (available as the `netcat-openbsd` package on Debian/Ubuntu; usually installed by default)
   * `nc`, Mac OS X
   * `nc`, GNU (last known version 0.7.1 from 2004 tested)
-  * `nc`, BusyBox
-  * `nc`, Toybox
+  * `nc`, [BusyBox]
+  * `nc`, [Toybox]
   * `bash` (if compiled with socket support; this is true for Mac OS X Snow Leopard+, Mac OS X + Homebrew, RHEL 6+, Centos 6+, Debian 6+, and Ubuntu 10.04 LTS +)
   * `socat`
   * `tcpclient`, part of D J Bernstein's [`ucspi-tcp`](http://cr.yp.to/ucspi-tcp.html) package (available as `ucspi-tcp` on Debian/Ubuntu and Mac OS X + Homebrew)
@@ -383,8 +383,8 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * `openssl`
   * `dd` with access to either `/dev/urandom` or `/dev/random`
   * `gpg`
-  * `awk`, any POSIX compliant-version, but using it is not cryptographically robust
-  * Nothing, if the shell has a RANDOM psuedo-environment variable: not cryptographically robust
+  * The shell's RANDOM psuedo-environment variable: not cryptographically robust
+  * `awk` (any POSIX compliant-version): not cryptographically robust
   * Nothing, if random client-ids are not needed
 
 
