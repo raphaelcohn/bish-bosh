@@ -506,8 +506,7 @@ The following shells are untested and unsupported:-
 | ncMacOSX | `nc` | Mac OS X | MQTT | Fully functional | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes |
 | ncGNU | `nc` | [GNU](http://netcat.sourceforge.net/) | MQTT | Barely Implemented | Yes | Yes | Yes | No | No | Yes |
 | ncDebianTraditional | `nc.openbsd` | [Debian OpenBSD](https://packages.debian.org/wheezy/netcat-openbsd) | MQTT | Barely Implemented | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. Usernames supported. | Yes |
-
-| ncDebianOpenBSD | `nc.traditional` | [Debian Traditional](https://packages.debian.org/wheezy/netcat-traditional) / Hobbit | MQTT | Barely Implemented | Yes | Yes | No | No | Yes |
+| ncDebianOpenBSD | `nc.traditional` | [Debian Traditional](https://packages.debian.org/wheezy/netcat-traditional) / Hobbit | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes |
 | ncBusyBox | `nc` / `busybox nc` | [BusyBox] | MQTT | Barely Implemented | No | No | No | Yes | No | Yes |
 | ncToybox | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] | MQTT | Barely Implemented | No | No | No | Yes | No | Source Port only |
 | nc6 | `nc6` | [netcat6](http://www.deepspace6.net/projects/netcat6.html) | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes |
@@ -516,7 +515,7 @@ The following shells are untested and unsupported:-
 | tcpclient | `tcpclient` | [ucspi-tcp](http://cr.yp.to/ucspi-tcp.html) | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes |
 | bash | `bash` | [GNU Bash] | MQTT | Barely Implemented | No | No | No | ? | No | No |
 
-* Yes, if the detected variant of the backend does
+\* Yes, if the detected variant of the backend does
 
 In addition, there is the 'meta' backend, `nc`, which attempts to distinguish between `ncMacOSX`, `ncGNU`, `ncDebianTraditional`, `ncDebianOpenBSD`, `ncToybox` and `ncBusyBox`.
 
