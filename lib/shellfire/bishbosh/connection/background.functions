@@ -88,6 +88,8 @@ _bishbosh_connection_background_hexConversion_dd()
 bishbosh_connection_background_processLoop()
 {	
 	{
+		bishbosh_connection_read_byte_nonBlockingInitialise
+		
 		bishbosh_connection_write_CONNECT
 		
 		local controlPacketByte
@@ -130,6 +132,24 @@ bishbosh_connection_background_processLoop()
 		bishbosh_connection_write_DISCONNECT
 		
 	} >"$bishbosh_connection_toServerFifo" 5<"$bishbosh_connection_fromHexConversionFifo" &
+}
+
+# Only needed for dash, pdksh
+core_dependency_requires '*' sleep kill
+bishbosh_connection_background_processingLoopReadInterrupter()
+{
+	if [ $bishbosh_connection_supportsNonBlockingRead -eq 0 ]; then
+		{
+			while true
+			do
+				sleep $bishbosh_readLatency_inFractionalSeconds
+				kill -HUP $processLoopPid 2>/dev/null || exit 0
+			done
+		} 1>/dev/null </dev/null &
+		local processingLoopReadInterrupterPid=$!
+		core_children_killOnExit $processingLoopReadInterrupterPid
+		core_message DEBUG "processingLoopReadInterrupterPid PID is $processingLoopReadInterrupterPid"
+	fi
 }
 
 bishbosh_connection_background_client()

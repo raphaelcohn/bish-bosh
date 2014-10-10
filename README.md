@@ -180,7 +180,7 @@ You need to be careful if using `printf` or `echo` - by default, all data writte
 | `bishbosh_connection_handler_PUBREL` | **PUBREL** |  `packetIdentifier` | Invalid and unexpected packets are handled for you. |
 | `bishbosh_connection_handler_PUBCOMP` | ***PUBCOMP*** |  `packetIdentifier` | Invalid and unexpected packets are handled for you. |
 | `bishbosh_connection_handler_PINGRESP` | **PINGRESP** |  | Nothing much to say. |
-| `bishbosh_connection_handler_noControlPacketsRead` | *none* | Occurs when a for a control packet timed out. Does not get called in `dash`, `pdksh` (unles someone can work out how to read timeouts that are atomic for those shells) |
+| `bishbosh_connection_handler_noControlPacketsRead` | *none* | Occurs when a read for a control packet timed out. |
 
 #### Writing control packets
 Inside any of [bish-bosh]'s handlers, you can publish a message, make a subscription request, etc. Indeed, you can do it yourself - anything sent to standard out goes to the server - but it's probably better to use our built in writers. For example once connected (you received **CONNACK** control packet), you might want to subscribe and send some messages:-

@@ -230,16 +230,22 @@ bishbosh_connection_makeClientConnection()
 	bishbosh_connection_background_hexConversion
 	local hexConversionPid=$!
 	core_children_killOnExit $hexConversionPid
+	core_message DEBUG "hexConversionPid PID is $hexConversionPid"
 	
 	# Background >"$bishbosh_connection_toServerFifo" <"$bishbosh_connection_fromHexConversionFifo"
 	bishbosh_connection_background_processLoop
 	local processLoopPid=$!
 	core_children_killOnExit $processLoopPid
+	core_message DEBUG "processLoop PID is $processLoopPid"
 	
 	# Background <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo"
 	bishbosh_connection_background_client
 	local clientPid=$!
 	core_children_killOnExit $clientPid
+	core_message DEBUG "clientPid PID is $clientPid"
+	
+	# Background process, if required, to interrupt processingLoopRead
+	bishbosh_connection_background_processingLoopReadInterrupter
 	
 	# Foreground process to monitor child processes for exit
 	bishbosh_connection_foreground_monitorForChildExit

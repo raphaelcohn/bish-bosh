@@ -21,6 +21,11 @@ bishbosh_connection_read_byte_initialise()
 			set -e
 		}
 		
+		bishbosh_connection_read_byte_nonBlockingInitialise()
+		{
+			:
+		}
+		
 	else
 		# dash, pdksh, other sh
 		
@@ -32,13 +37,19 @@ bishbosh_connection_read_byte_initialise()
 			set -e
 		}
 
-		# the design problem here is that the read is non-atomic, as it's looking for a line - hence the timeout could cause a partially read line
-		# hence GNU coreutils / BusyBox / Toybox timeout isn't appropriate
-		# and also techniques like  http://www.linuxmisc.com/11-unix-aix/bed695a5c4783a08.htm  can result in a partial line being read
-		# some strange 'copy one byte to a file' techniques might work
+		# Relies on bishbosh_connection_background_processingLoopReadInterrupter, which fires HUP on a timer
 		bishbosh_connection_read_byte_nonBlocking()
 		{
-			bishbosh_connection_read_byte_blocking "$1"
+			trap 'true' HUP
+			set +e
+			IFS=' ' read -r $1 <&5
+			set -e
+			trap '' HUP
+		}
+		
+		bishbosh_connection_read_byte_nonBlockingInitialise()
+		{
+			trap '' HUP
 		}
 	fi
 }
