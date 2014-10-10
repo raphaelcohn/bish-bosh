@@ -421,7 +421,7 @@ Unfortunately, there are a lot of [GNU Bash] versions that are still in common u
 * If using serial devices with [`--transport serial`](#source-routing-settings) then the character device file `DEVICE` you specify to [`--server DEVICE`](#mqtt-big-hitters) must exist on the file system and be readable/writable.
 
 #### Unix domain sockets
-* If using unix domain sockets with [`--transport unix`](#source-routing-settings) then the unix domain socket file `SOCKET` specify to [`--server SOCKET`](#mqtt-big-hitters) must exist on the file system and be readable/writable.
+* If using unix domain sockets with [`--transport unix`](#source-routing-settings) then the unix domain socket file `SOCKET` you specify to [`--server SOCKET`](#mqtt-big-hitters) must exist on the file system and be readable/writable.
 
 #### `/var`
 We use a `/var` folder underneath where we're installed. If you've just cloned [bish-bosh] from [GitHub], then this is _within_ the clone.
