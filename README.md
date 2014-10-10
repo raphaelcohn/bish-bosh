@@ -289,7 +289,7 @@ Anything you can do with a command line switch, you can do as configuration. But
   2. Any files in the folder in the environment variable `bishbosh_RC_D` (if the environment variable is set and the path is searchable)
 4. In `SCRIPTLETS`
   * Scriptlets are parsed in order they are found on the command line (`bish-bosh -- [SCRIPTLETS]...`)
-5. Under `bishbosh_clientPath` (switch `--client-path`):-
+5. Under `bishbosh_clientPath` (switch [`--client-path`](#configuration-tweaks))
   1. The file `servers/SERVER/rc` where `SERVER` is `bishbosh_server` (`--server`)
   2. Any files in the folder `servers/SERVER/rc.d`
   3. The file `servers/SERVER/ports/PORT/rc` where `PORT` is `bishbosh_port` (`--port`)
