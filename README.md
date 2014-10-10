@@ -210,17 +210,17 @@ _*TODO: Document control packet writers of interest*_
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-v, --verbose` | `[LEVEL]` | `bishbosh_verbose` | `0` | Adjusts verbosity of output on standard error (stderr). `LEVEL` is optional; omitting causes a +1 increase in verbosity. May be specified multiple times, although levels greater than `2` have no effect currently. `LEVEL` must be an unsigned integer. |
+| `-v`, `--verbose` | `[LEVEL]` | `bishbosh_verbose` | `0` | Adjusts verbosity of output on standard error (stderr). `LEVEL` is optional; omitting causes a +1 increase in verbosity. May be specified multiple times, although levels greater than `2` have no effect currently. `LEVEL` must be an unsigned integer. |
 | `--version` | | | | Version and license information in a GNU-like format on standard error. |
-| `-h,--help` | | | | A very long help message recapping most of this document's information. |
+| `-h`, `--help` | | | | A very long help message recapping most of this document's information. |
 
 #### [MQTT] Big Hitters
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-s, --server` | `HOST` | `bishbosh_server` | `localhost` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an [MQTT] server to connect to, or, if using Unix domain sockets (see `--transport` in [Source-Routing Settings](#source-routing-settings)) a file path to a readable Unix Domain Socket. |
-| `-p, --port` | `PORT` | `bishbosh_port` | 1883 for most backends; 8883 if backend is secure | Port your [MQTT] `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix domain sockets. |
-| `-i, --client-id` | `ID` | `bishbosh_clientId` | unset | [MQTT] Client ID. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. |
+| `-s`, `--server` | `HOST` | `bishbosh_server` | `localhost` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an [MQTT] server to connect to, or, if using Unix domain sockets (see `--transport` in [Source-Routing Settings](#source-routing-settings)) a file path to a readable Unix Domain Socket. |
+| `-p`, `--port` | `PORT` | `bishbosh_port` | 1883 for most backends; 8883 if backend is secure | Port your [MQTT] `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix domain sockets. |
+| `-i`, `--client-id` | `ID` | `bishbosh_clientId` | unset | [MQTT] Client ID. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. |
 
 #### Backends
 A backend is the strategy [bish-bosh] uses to connect to a [MQTT] server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. [bish-bosh] ships with a large number of backends to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
@@ -231,7 +231,7 @@ The currently supported backends and their status are [listed here](#status-of-s
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-b, --backends` | `A,B,...` | `bishbosh_backends` | `ncat,nc6,nc,bash,socat,tcpclient` | Backends are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. |
+| `-b`, `--backends` | `A,B,...` | `bishbosh_backends` | `ncat,nc6,nc,bash,socat,tcpclient` | Backends are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. |
 
 #### Configuration Tweaks
 Ordinarily, you should not need to change any of these settings.
@@ -242,9 +242,9 @@ The `--lock-path` controls where [bish-bosh] tries to create a lock for a partic
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-c, --client-path` | `PATH` | `bishbosh_clientPath` | See help output | `PATH` to a location to configuration - scriptlets for a client-id on a per-server, per-port, per-client-id basis. See [Configuration Locations](#configuration-locations) |
-| `-t, --session-path` | `PATH` | `bishbosh_sessionPath` | See help output | `PATH` to a location to store session data for clients connecting with Clean Session = 0 |
-| `-l, --lock-path` | `PATH` | `bishbosh_lockPath` | See help output | `PATH` to a location to screate a Mutex lock so only one instance connects per-server, per-port, per-client-id at a time. |
+| `-c`, `--client-path` | `PATH` | `bishbosh_clientPath` | See help output | `PATH` to a location to configuration - scriptlets for a client-id on a per-server, per-port, per-client-id basis. See [Configuration Locations](#configuration-locations) |
+| `-t`, `--session-path` | `PATH` | `bishbosh_sessionPath` | See help output | `PATH` to a location to store session data for clients connecting with Clean Session = 0 |
+| `-l`, `--lock-path` | `PATH` | `bishbosh_lockPath` | See help output | `PATH` to a location to screate a Mutex lock so only one instance connects per-server, per-port, per-client-id at a time. |
 | `--read-latency` | `MSECS` | `bishbosh_readLatency` | See help output | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak blocking read timeouts. blocking read timeouts are experimental and may not work properly in your shell. The value `0` may be interpreted differently by different shells and should be used with caution. |
 | `--lock-latency` | `MSECS` | `bishbosh_lockLatency` | See help output | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak lock acquisitions. Locking is currently done using `mkdir`, which is believed to be an atomic operation on most common filesystems. |
 
