@@ -235,15 +235,15 @@ bishbosh_connection_makeClientConnection()
 	# We can not open for writing using a file descriptor or redirection operator (>) a FIFO unless someone is already reading from it; we will be blocked
 	# We can not open for reading using a file descriptor or redirection operator (<) a FIFO unless someone is already writing to it; we will be blocked
 	
-	# Background >"$bishbosh_connection_toServerFifo" <"$bishbosh_connection_fromHexConversionFifo"
-	bishbosh_connection_background_processLoop
-	local processLoopPid=$!
-	core_children_killOnExit $processLoopPid
-	
 	# Background <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo"
 	bishbosh_connection_background_hexConversion
 	local hexConversionPid=$!
 	core_children_killOnExit $hexConversionPid
+	
+	# Background >"$bishbosh_connection_toServerFifo" <"$bishbosh_connection_fromHexConversionFifo"
+	bishbosh_connection_background_processLoop
+	local processLoopPid=$!
+	core_children_killOnExit $processLoopPid
 	
 	# Background <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo"
 	bishbosh_connection_background_client
