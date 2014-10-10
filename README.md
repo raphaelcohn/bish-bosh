@@ -298,7 +298,7 @@ _Note: Not running proxies myself, I can't test many of these settings combinati
 Anything you can do with a command line switch, you can do as configuration. But configuration can also be used with scripts. Indeed, the configuration syntax is simply shell script. Configuration files _should not_ be executable. This means that if you _really_ want to, you can override just about any feature or behaviour of [bish-bosh] - although that's not explicitly supported. Configuration can be in any number of locations. Configuration may be a single file, or a folder of files; in the latter case, every file in the folder is parsed in 'shell glob-expansion order' (typically ASCII sort order of file names). Locations are searched in order as follows:-
 
 1. Global (Per-machine)
-  1. The file `INSTALL_PREFIX/etc/bish-bosh/rc`
+  1. The file `INSTALL_PREFIX/etc/bish-bosh/rc` where `INSTALL_PREFIX` is where [bish-bosh] has been installed.
   2. Any files in the folder `INSTALL_PREFIX/etc/bish-bosh/rc.d`
 2. Per User, where `HOME` is your home folder path\*
   1. The file `HOME/.bish-bosh/rc`
@@ -410,17 +410,30 @@ Unfortunately, there are a lot of [GNU Bash] versions that are still in common u
 ### File System Requirements
 
 #### Temporary Files
-There must be a writable temporary folder (eg `/tmp`; we use whatever `mktemp` does), ideally mounted on an in-memory file system (eg tmpfs). Every client connection will create a very small amount of data in the temporary structure (mostly FIFOs and folders). Additionally, clients connecting with Clean Session = 1 will store all their data inside temporary folders; if messages are large, then this will consume more data.
+* There must be a writable temporary folder (eg `/tmp`; we use whatever `mktemp` does), ideally mounted on an in-memory file system (eg tmpfs).
+* Every client connection will create a very small amount of data in the temporary structure (mostly FIFOs and folders).
+* Additionally, clients connecting with Clean Session = 1 will store all their data inside temporary folders; if messages are large, then this will consume more data.
+* If so desired, other paths below can be symlinked to temporary folders.
 
 #### Devices
 * `/dev/null` must be present and permission available for writing to (we do not read from it).
 * one of `/dev/urandom` or `/dev/random` may be required if generating random ids (only used if `openssl` is not available)
+* If using serial devices with [`--transport serial`](#source-routing-settings) then the character device file `DEVICE` you specify to [`--server DEVICE`](#mqtt-big-hitters) must exist on the file system and be readable/writable.
+
+#### Unix domain sockets
+* If using unix domain sockets with [`--transport unix`](#source-routing-settings) then the unix domain socket file `SOCKET` specify to [`--server SOCKET`](#mqtt-big-hitters) must exist on the file system and be readable/writable.
 
 #### `/var`
 We use a `/var` folder underneath where we're installed. If you've just cloned [bish-bosh] from [GitHub], then this is _within_ the clone.
-* `/var/lib/bish-bosh/client` must be searchable and writable for the user running `bish-bosh`. This `PATH` be changed with the `--client-path PATH` option or `bishbosh_clientPath='PATH'` [configuration setting](#configuration-tweaks).
+* `/var/lib/bish-bosh/client` must be searchable for the user running `bish-bosh`. This `PATH` be changed with the `--client-path PATH` option or `bishbosh_clientPath='PATH'` [configuration setting](#configuration-tweaks). Ordinarily, it needs to be writable _unless_ you've created the entire servers, ports and client-ids structure in advance.
 * `/var/spool/bish-bosh/session` must be searchable and writable for the user running `bish-bosh`. This `PATH` be changed with the `--session-path PATH` option or `bishbosh_sessionPath='PATH'` [configuration setting](#configuration-tweaks).
-* `/var/run/bish-bosh/lock` must be searchable and writable for the user running `bish-bosh`. This `PATH` be changed with the `--lock-path PATH` option or `bishbosh_lockPath='PATH'` [configuration setting](#configuration-tweaks).
+* `/var/run/bish-bosh/lock` must be searchable and writable for the user running `bish-bosh`. This `PATH` be changed with the `--lock-path PATH` option or `bishbosh_lockPath='PATH'` [configuration setting](#configuration-tweaks). You may want to change this location to `/var/lock` on Linux, or mount this path with a temporary file system.
+
+#### `/etc`
+We use a `/etc` folder underneath where we're installed. If you've just cloned [bish-bosh] from [GitHub], then this is _within_ the clone.
+* `/etc/bish-bosh/paths.d` is optional, but must be a readable and searchable folder if present.
+* `/etc/bish-bosh/rc.d` is optional, but must be a readable and searchable folder if present.
+* `/etc/bish-bosh/rc` is optional, but must be readable, non-empty file if present.
 
 ## Configurations
 The widely varying list of dependencies and preferences can be confusing, so here's a little guidance.
