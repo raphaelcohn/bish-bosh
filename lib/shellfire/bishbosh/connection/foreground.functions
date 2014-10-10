@@ -5,6 +5,7 @@ bishbosh_connection_foreground_monitorForChildExit()
 	do
 		# core_exitError $core_commandLine_exitCode_TEMPFAIL "Could not connect"
 		# bishbosh_client_* is dead, either because the connection wasn't established (so exitCode is usually 1), or the processLoop cleanly exited
+		# Seems if server closes connection, exit code is 0 for nc.
 		if ! kill -0 $clientPid 2>/dev/null; then
 			set +e
 			wait $clientPid

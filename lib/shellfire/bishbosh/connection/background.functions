@@ -26,16 +26,28 @@ bishbosh_connection_background_hexConversion()
 				fi
 				core_message INFO "Using stdbuf ($unbufferingTool) with od ($odTool)"
 				set -- "$unbufferingTool" -i 0 -o 0 -e 0 "$odTool" -A n -t u1 -w1 -v
-				break
+				break 3
 			done
 		done
-
+		
+		
+		if core_compatibility_whichNoOutput hexdump; then
+			set -- _bishbosh_connection_background_hexConversion_dd hexdump -e '"%u\n"'
+			break
+		fi
+		
+		if core_compatibility_whichNoOutput od; then
+			set -- _bishbosh_connection_background_hexConversion_dd od -A n -t u1
+			break
+		fi
+		
+		# This DOES NOT SEEM TO WORK
 		if core_compatibility_whichNoOutput unbuffer; then
 		
 			if core_compatibility_whichNoOutput hexdump; then
 
 				core_message INFO "Using unbuffer with hexdump"
-				set -- unbuffer hexdump -v -e '"%u\d"'
+				set -- unbuffer hexdump -v -e '"%u\n"'
 				break
 			
 			else
@@ -52,19 +64,9 @@ bishbosh_connection_background_hexConversion()
 					core_message INFO "Using unbuffer with od ($odTool)"
 					# Only works with GNU od, because of the -w1 argument
 					set -- unbuffer "$odTool" -A n -t u1 -w1 -v
-					break
+					break 2
 				done
 			fi
-		fi
-		
-		if core_compatibility_whichNoOutput hexdump; then
-			set -- _bishbosh_connection_background_hexConversion_dd hexdump -e '"%u\d"'
-			break
-		fi
-		
-		if core_compatibility_whichNoOutput od; then
-			set -- _bishbosh_connection_background_hexConversion_dd od -A n -t u1
-			break
 		fi
 		
 		core_exitError $core_commandLine_exitCode_UNAVAILABLE "Could not find a means of doing Hex Conversion"
@@ -118,7 +120,6 @@ bishbosh_connection_background_processLoop()
 			bishbosh_connection_read_controlpacket_handle
 		done
 		
-	
 		bishbosh_connection_write_DISCONNECT
 		
 	} >"$bishbosh_connection_toServerFifo" 5<"$bishbosh_connection_fromHexConversionFifo" &

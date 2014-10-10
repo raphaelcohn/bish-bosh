@@ -250,6 +250,7 @@ bishbosh_connection_makeClientConnection()
 	local clientPid=$!
 	core_children_killOnExit $clientPid
 	
+	set +x
 	# Foreground process to monitor child processes for exit
 	bishbosh_connection_foreground_monitorForChildExit
 }
