@@ -58,40 +58,49 @@ _Fattening_ is not currently supported, but is planned to be very soon.
 ## Switches and Configuring
 [bish-bosh] has a lot of switches! Most of them you'll hopefully never use: they're to deal with situations where network access isn't straightforward. Perhaps you've got multiple NICs or IP addresses, or a proxy is blocking you from connecting directly. And all of the switches, bar one, have sensible defaults. All of [bish-bosh]'s switches can be set using configuration (eg in `/etc`), or even in the scripts you run; the choice is yours. However, the basic invocation is very simple:-
 
-    bish-bosh --server SERVER --client-id CLIENT_ID
-	
-	# or, if you prefer short options
-	
-	bish-bosh -s SERVER -c CLIENT_ID
+```bash
+bish-bosh --server SERVER --client-id CLIENT_ID
+
+# or, if you prefer short options
+
+bish-bosh -s SERVER -c CLIENT_ID
+```
 
 If you don't specify `SERVER`, it defaults to `localhost`. `CLIENT_ID` is a [MQTT] client id. (We have partial support for random client ids, so eventually you'll not even need to specify this).
 
 If your [MQTT] server isn't running on port `1883`, you can specify it:-
 
-    bish-bosh --server SERVER --client-id CLIENT_ID --port PORT
-	
-	# or, if you prefer short options
-	
-	bish-bosh -s SERVER -c CLIENT_ID -p PORT
+```bash
+bish-bosh --server SERVER --client-id CLIENT_ID --port PORT
+
+# or, if you prefer short options
+
+bish-bosh -s SERVER -c CLIENT_ID -p PORT
+```
 
 where `PORT` is a port between 1 and 65535.
 
 ### Hang on a minute, where do I put the [MQTT] username / password / other connect stuff?
 Well, it's quite straightforward. Rather than use _even more_ switches (and place sensitive data in the command line where any user with `ps` can see it), you can specify configuration scripts. For example, we could have the script snippet:-
 
-    # Save as script.bishbosh
-	bishbosh_connection_write_CONNECT_username='raphcohn'
-	bishbosh_connection_write_CONNECT_password='whatever you like'
+```bash
+bishbosh_connection_write_CONNECT_username='raphcohn'
+bishbosh_connection_write_CONNECT_password='whatever you like'
+```
 
-saved as `file.bishbosh` and use it as
+saved as `script.bishbosh` and use it as
 
-    bish-bosh --server SERVER --client-id CLIENT_ID -- script.bishbosh
+```bash
+bish-bosh --server SERVER --client-id CLIENT_ID -- script.bishbosh
+```
 
 The `--` isn't strictly necessary, but it's good practice - just in case you name something `--silly-file-name`, it stops [bish-bosh] getting confused.
 
 Of course, you can have more than one script, eg
 
-    bish-bosh --server SERVER --client-id CLIENT_ID -- script.bishbosh another-script.bishbosh
+```bash
+bish-bosh --server SERVER --client-id CLIENT_ID -- script.bishbosh another-script.bishbosh
+```
 
 So you could keep sensitive data (eg a password) in one file, and everything else in another - a good approach which would let you check all your scripts into source control bar the one with the password, and so do simple production deployments and devops-stuff.
 
@@ -99,21 +108,24 @@ As an added convenience, you can also store configuration scripts on a per-clien
 
 There's quite a lot of things than can be configured this way. If a setting is missing, [bish-bosh] applies a default. For things like QoS, we got for the lowest; for usernames and passwords and wills, we omit them. So it you've got a [MQTT] server that doesn't need passwords (a bit odd, but possible), then you can just not set it. Please note that not set isn't the same thing as empty:-
 
-    bishbosh_connection_write_CONNECT_username=''
-	# is not the same as
-	unset bishbosh_connection_write_CONNECT_username
+```bash
+bishbosh_connection_write_CONNECT_username=''
+# is not the same as
+unset bishbosh_connection_write_CONNECT_username
+```
 
 ### All switches can be set as configuration
 Everything you specify as a long-option switch can be specified in configuration. By convention, the naming in configuration matches the switches, eg
 
-    --server test.mosquitto.org
-	--client-path /var/lib/bish-bosh/client
-
+```bash
+--server test.mosquitto.org
+--client-path /var/lib/bish-bosh/client
+```
 is configured as
-
-    bishbosh_server='test.mosquitto.org'
-	bishbosh_clientPath='/var/lib/bish-bosh/client'
-
+```bash
+bishbosh_server='test.mosquitto.org'
+bishbosh_clientPath='/var/lib/bish-bosh/client'
+```
 ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a letter, remove the `-` and make the letter capitalized.
 
 ### But the really interesting scriptable stuff is done with configuration files or scriptlets
