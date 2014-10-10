@@ -8,8 +8,6 @@ Additionally, it is also a command interpreter. Once installed in your `PATH`, i
 bishbosh_server='test.mosquitto.org'
 bishbosh_clientId='my-client-id'
 
-...
-
 bishbosh_connection_handler_PUBLISH()
 {
 	# We've got a message
