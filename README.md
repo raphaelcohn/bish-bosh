@@ -5,16 +5,17 @@ Additionally, it is also a command interpreter. Once installed in your `PATH`, i
 
 ```bash
 #!/usr/bin/env bish-bosh
-bishbosh_server=test.mosquitto.org
-bishbosh_clientId=CLIENT_ID
+bishbosh_server='test.mosquitto.org'
+bishbosh_clientId='my-client-id'
 
 ...
 
 bishbosh_connection_handler_PUBLISH()
 {
-	# We've got a message. bish-bosh handles QoS 1 and 2 for us; we just need to use it.
-	printf '%s:' "$topicName"
-	cat "$messageFilePath"
+	# We've got a message
+	# bish-bosh handles QoS 1 and 2 for us, and redirects stdout so we can write to the MQTT server
+	printf '%s:' "$topicName" 1>&2
+	cat "$messageFilePath" 1>&2
 }
 ```
 
