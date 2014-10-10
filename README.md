@@ -36,7 +36,7 @@ This will create a folder [bish-bosh] inside your home folder. [bish-bosh] can t
 
 ```bash
 cd ~/bish-bosh
-./bish-bosh --server test.mosquitto.org --client-id CLIENT_ID
+./bish-bosh --server 'test.mosquitto.org' --client-id 'CLIENT_ID'
 ```
 
 where `CLIENT_ID` is a client id you'd like to use. bosh-bosh will attempt to find its dependencies on the `PATH`, install any missing dependencies (with your permission) if it recognises your package manager, choose an optimum configuration and connect to the server (in this case, a commonly available test one).
@@ -59,11 +59,11 @@ _Fattening_ is not currently supported, but is planned to be very soon.
 [bish-bosh] has a lot of switches! Most of them you'll hopefully never use: they're to deal with situations where network access isn't straightforward. Perhaps you've got multiple NICs or IP addresses, or a proxy is blocking you from connecting directly. And all of the switches, bar one, have sensible defaults. All of [bish-bosh]'s switches can be set using configuration (eg in `/etc`), or even in the scripts you run; the choice is yours. However, the basic invocation is very simple:-
 
 ```bash
-bish-bosh --server SERVER --client-id CLIENT_ID
+bish-bosh --server 'SERVER' --client-id 'CLIENT_ID'
 
 # or, if you prefer short options
 
-bish-bosh -s SERVER -c CLIENT_ID
+bish-bosh -s 'SERVER' -c 'CLIENT_ID'
 ```
 
 If you don't specify `SERVER`, it defaults to `localhost`. `CLIENT_ID` is a [MQTT] client id. (We have partial support for random client ids, so eventually you'll not even need to specify this).
@@ -71,11 +71,11 @@ If you don't specify `SERVER`, it defaults to `localhost`. `CLIENT_ID` is a [MQT
 If your [MQTT] server isn't running on port `1883`, you can specify it:-
 
 ```bash
-bish-bosh --server SERVER --client-id CLIENT_ID --port PORT
+bish-bosh --server 'SERVER' --client-id 'CLIENT_ID' --port 'PORT'
 
 # or, if you prefer short options
 
-bish-bosh -s SERVER -c CLIENT_ID -p PORT
+bish-bosh -s 'SERVER' -c 'CLIENT_ID' -p 'PORT'
 ```
 
 where `PORT` is a port between 1 and 65535.
@@ -91,7 +91,7 @@ bishbosh_connection_write_CONNECT_password='whatever you like'
 saved as `script.bishbosh` and use it as
 
 ```bash
-bish-bosh --server SERVER --client-id CLIENT_ID -- script.bishbosh
+bish-bosh --server 'SERVER' --client-id 'CLIENT_ID' -- 'script.bishbosh'
 ```
 
 The `--` isn't strictly necessary, but it's good practice - just in case you name something `--silly-file-name`, it stops [bish-bosh] getting confused.
@@ -99,7 +99,7 @@ The `--` isn't strictly necessary, but it's good practice - just in case you nam
 Of course, you can have more than one script, eg
 
 ```bash
-bish-bosh --server SERVER --client-id CLIENT_ID -- script.bishbosh another-script.bishbosh
+bish-bosh --server 'SERVER' --client-id 'CLIENT_ID' -- 'script.bishbosh' 'another-script.bishbosh'
 ```
 
 So you could keep sensitive data (eg a password) in one file, and everything else in another - a good approach which would let you check all your scripts into source control bar the one with the password, and so do simple production deployments and devops-stuff.
@@ -118,8 +118,8 @@ unset bishbosh_connection_write_CONNECT_username
 Everything you specify as a long-option switch can be specified in configuration. By convention, the naming in configuration matches the switches, eg
 
 ```bash
---server test.mosquitto.org
---client-path /var/lib/bish-bosh/client
+--server 'test.mosquitto.org'
+--client-path '/var/lib/bish-bosh/client'
 ```
 is configured as
 ```bash
