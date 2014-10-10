@@ -506,7 +506,7 @@ The following shells are untested and unsupported:-
 () or serial devices ([`--transport serial`](#source-routing-settings))
 
 | Backend | Filename | Variant | Connectivity | Status | [`--transport inet4`](#source-routing-settings) | [`--transport inet6`](#source-routing-settings) | [`--transport unix`](#source-routing-settings) | [`--transport serial`](#source-routing-settings) | Proxy Support | [`--proxy-server HOST`](#proxy-settings) | [`--proxy-port PORT`](#proxy-settings) |
-| ------- | -------- | ------- | ------------ | ------ | ---------- | ---------- | ------------------- | ------------- | ------------- | ---------------- |
+| ------- | -------- | ------- | ------------ | ------ | ---------- | ---------- | ------------------- | ------------- | ------------- | ---------------- | - |
 | **nc** | 'Meta' backend | Any **nc\*** backend | MQTT | Fully functional* | Yes† | Yes† | Yes† | Yes† | Yes† | Yes† | Yes† |
 | **ncMacOSX** | `nc` | Mac OS X | MQTT | Fully functional | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes | Yes |
 | **ncGNU** | `nc` | [GNU](http://netcat.sourceforge.net/) | MQTT | Barely Implemented | Yes | Yes | Yes | No | No | Yes | Yes |
