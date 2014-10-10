@@ -1,5 +1,5 @@
 core_dependency_requires '*' grep
-core_dependency_oneOf '*' stdbuf od hexdump dd
+core_dependency_oneOf '*' stdbuf od hexdump dd unbuffer
 bishbosh_connection_background_hexConversion()
 {
 	# Not a loop; but setting varargs ($@) isn't something we can return from a method call
