@@ -299,9 +299,6 @@ Anything you can do with a command line switch, you can do as configuration. But
   * _Note: nothing stops these paths, or files in them, being symlinks, so allowing aliasing of server names and port numbers (eg to share secure and insecure settings)._
   * _Note: it is possible for a configuration file at `SERVER` or `PORT` level to set `bishbosh_clientId`, so influencing the search._
 
-### Session Location
-MQTT clients have 'state', which is known as their 'session'. Even clients that are ephmeral need a working area. Ordinarily
-
 ## Dependencies
 [bish-bosh] tries to use as few dependencies as possible, but, since this is shell script, that's not always possible. It's compounded by the need to support the difference between major shells, too. It also does its best to work around differences in common binaries, by using feature detection, and where it can't do any better, by attempting to install using your package manager.
 
