@@ -35,7 +35,7 @@ This will create a folder [bish-bosh] inside your `$HOME`. [bish-bosh] can then 
 
 where `CLIENT_ID` is a client id you'd like to use. bosh-bosh will attempt to find its dependencies on the `PATH`, install any missing dependencies (with your permission) if it recognises your package manager, choose an optimum configuration and connect to the server (in this case, a commonly available test one).
 
-Of course, this might not work, and so you might need to install [some dependencies](#dependencies) or change your backend (see Switched and Configuration, below).
+Of course, this might not work, and so you might need to install some [dependencies](#dependencies) or change your [backend](#backends).
 
 ### Getting it from [Homebrew](http://brew.sh/) for Mac OS X
 Hopefully in the next few weeks [bish-bosh] will be available as a [Homebrew](http://brew.sh/) recipe, so you should be able to do
@@ -218,8 +218,8 @@ _*TODO: Document control packet writers of interest*_
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-s, --server` | `HOST` | `bishbosh_server` | `localhost` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an [MQTT] server to connect to, or, if using Unix Domain Sockets (see `--transport` in Source-Routing Settings, below) a file path to a readable Unix Domain Socket. |
-| `-p, --port` | `PORT` | `bishbosh_port` | 1883 for most backends; 8883 if backend is secure | Port your [MQTT] `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix Domain Sockets. |
+| `-s, --server` | `HOST` | `bishbosh_server` | `localhost` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an [MQTT] server to connect to, or, if using Unix domain sockets (see `--transport` in [Source-Routing Settings](#source-routing-settings)) a file path to a readable Unix Domain Socket. |
+| `-p, --port` | `PORT` | `bishbosh_port` | 1883 for most backends; 8883 if backend is secure | Port your [MQTT] `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix domain sockets. |
 | `-i, --client-id` | `ID` | `bishbosh_clientId` | unset | [MQTT] Client ID. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. |
 
 #### Backends
@@ -227,7 +227,7 @@ A backend is the strategy [bish-bosh] uses to connect to a [MQTT] server. It inc
 
 By default, [bish-bosh] has a list of backends in preferred order, and tries to choose the first that looks like it will work. Of course, given the vagaries of your system, it might not get that right, so you might want to override it.
 
-The currently supported backends are listed in a section below.
+The currently supported backends and their status are [listed here](#status-of-supported-backends).
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
@@ -242,7 +242,7 @@ The `--lock-path` controls where [bish-bosh] tries to create a lock for a partic
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-c, --client-path` | `PATH` | `bishbosh_clientPath` | See help output | `PATH` to a location to configuration - scriptlets for a client-id on a per-server, per-port, per-client-id basis. See Configuration Locations below |
+| `-c, --client-path` | `PATH` | `bishbosh_clientPath` | See help output | `PATH` to a location to configuration - scriptlets for a client-id on a per-server, per-port, per-client-id basis. See [Configuration Locations](#configuration-locations) |
 | `-t, --session-path` | `PATH` | `bishbosh_sessionPath` | See help output | `PATH` to a location to store session data for clients connecting with Clean Session = 0 |
 | `-l, --lock-path` | `PATH` | `bishbosh_lockPath` | See help output | `PATH` to a location to screate a Mutex lock so only one instance connects per-server, per-port, per-client-id at a time. |
 | `--read-latency` | `MSECS` | `bishbosh_readLatency` | See help output | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak blocking read timeouts. blocking read timeouts are experimental and may not work properly in your shell. The value `0` may be interpreted differently by different shells and should be used with caution. |
@@ -260,7 +260,7 @@ If you have a box with multiple NICs or IP addresses, broken IPv4 / IPv6 network
 #### Proxy Settings
 Personally, I find proxies extremely irritating, and of very limited benefit. But many organizations still use them, if simply because once they go in, they tend to stay in - they appeal to the control freak in all of us, I suppose. [bish-bosh] does its best to support SOCKS and HTTP proxies, but we're reliant on the rather limited support of backends. Many don't support them, not least because most FOSS is produced by developers who wouldn't use them - they're individuals, not power-mad network admins.
 
-When using a proxy, you won't be able to use Unix domain sockets (eg `--transport unix`). Not every backend supports using a proxy (there's a compatibility table below). And those that do don't support every option:-
+When using a proxy, you won't be able to use Unix domain sockets (`--transport unix`). Not every backend supports using a proxy (there's a [compatibility table](#status-of-supported-backends)). And those that do don't support every option:-
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
@@ -303,10 +303,11 @@ Anything you can do with a command line switch, you can do as configuration. But
 [bish-bosh] tries to use as few dependencies as possible, but, since this is shell script, that's not always possible. It's compounded by the need to support the difference between major shells, too. It also does its best to work around differences in common binaries, by using feature detection, and where it can't do any better, by attempting to install using your package manager.
 
 ### Required Dependencies
-All of these should be present even on the most minimal system. Usage is restricted to those flags known to work across MacOSX, GNU, BusyBox and Toybox.
+All of these should be present even on the most minimal system. Usage is restricted to those flags known to work across Mac OS X, GNU, BusyBox and Toybox.
 
 * `mkdir`
 * `mkfifo`
+* `mktemp`
 * `touch`
 * `mv`
 * `rm`
@@ -315,6 +316,7 @@ All of these should be present even on the most minimal system. Usage is restric
 * `cat`
 * `kill`
 * `sleep`
+* `uname`
 * `sed`
 * `grep`
 
@@ -339,11 +341,13 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
 * Network Connections (can be configured with the `--backends` option to use a different preference order)
   * `ncat`, part of the `nmap` package (available as `nmap` on Debian/Ubuntu and Mac OS X + Homebrew)
   * `nc6`, a predecessor of `ncat` (available as `nc6` on Debian/Ubuntu and Mac OS X + Homebrew)
-  ncDebianTraditional ncDebianOpenBSD ncMacOSX ncGNU ncToybox ncBusyBox
-  * `nc`, Debian Traditional variant (available as `netcat-traditional` on Debian/Ubuntu)
-  * `nc`, Debian OpenBSD variant (available as `netcat-openbsd` on Debian/Ubuntu; usually installed by default)
+  * `nc`, Debian Traditional variant (available as the `netcat-traditional` package on Debian/Ubuntu)
+  * `nc`, Debian OpenBSD variant (available as the `netcat-openbsd` package on Debian/Ubuntu; usually installed by default)
   * `nc`, Mac OS X
-  * `bash` (if compiled with socket support; this is true for Mac OS X, Mac OS X + Homebrew, RHEL 6+, Centos 6+, Debian 6+, and Ubuntu 10.04 LTS +)
+  * `nc`, GNU (last known version 0.7.1 from 2004 tested)
+  * `nc`, BusyBox
+  * `nc`, Toybox
+  * `bash` (if compiled with socket support; this is true for Mac OS X Snow Leopard+, Mac OS X + Homebrew, RHEL 6+, Centos 6+, Debian 6+, and Ubuntu 10.04 LTS +)
   * `socat`
   * `tcpclient`, part of D J Bernstein's [`ucspi-tcp`](http://cr.yp.to/ucspi-tcp.html) package (available as `ucspi-tcp` on Debian/Ubuntu and Mac OS X + Homebrew)
 * Validating UTF-8 strings
@@ -359,7 +363,7 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * Nothing, if random client-ids are not needed
 
 
-### [GNU Bash] versions
+### A word on [GNU Bash] versions
 Unfortunately, there are a lot of [GNU Bash] versions that are still in common use. Versions 3 and 4 of Bash differ in their support of key features (such as associative arrays). Even then, Bash 4.1 is arguably not particularly useful with associative arrays, though, as its declare syntax lacks the `-g` global setting. [bish-bosh] tries to maintain compatibility with `bash` as at version 3.1/3.2, even though it's obsolescent, because it occurs on two common platforms. A quick guide to common bash version occurrence is below.
 
 * bash 3.1+
@@ -379,7 +383,19 @@ Unfortunately, there are a lot of [GNU Bash] versions that are still in common u
   * Mac OS X + Homebrew
 
 ### File System Requirements
-There must be a writable temporary folder (eg `/tmp`), ideally mounted on an in-memory file system (eg tmpfs). `/dev/null` must be present and permission available for writing to (we do not read from it). Incoming messages and session state are by default stored in `/var/lib`; this can be changed (most easily by a symlink, see below). If generating random client ids, then one of `/dev/urandom` or `/dev/random` may be required (if not using `openssl`).
+
+#### Temporary Files
+There must be a writable temporary folder (eg `/tmp`; we use whatever `mktemp` does), ideally mounted on an in-memory file system (eg tmpfs). Every client connection will create a very small amount of data in the temporary structure (mostly FIFOs and folders). Additionally, clients connecting with Clean Session = 1 will store all their data inside temporary folders; if messages are large, then this will consume more data.
+
+#### Devices
+* `/dev/null` must be present and permission available for writing to (we do not read from it).
+* one of `/dev/urandom` or `/dev/random` may be required if generating random ids (only used if `openssl` is not available)
+
+#### `/var`
+We use a `/var` folder underneath where we're installed. If you've just cloned [bish-bosh] from [GitHub], then this is _within_ the clone.
+* `/var/lib/bish-bosh/client` must be searchable and writable for the user running `bish-bosh`. This `PATH` be changed with the `--client-path PATH` option or `bishbosh_clientPath='PATH'` [configuration setting](#configuration-tweaks).
+* `/var/spool/bish-bosh/session` must be searchable and writable for the user running `bish-bosh`. This `PATH` be changed with the `--session-path PATH` option or `bishbosh_sessionPath='PATH'` [configuration setting](#configuration-tweaks).
+* `/var/run/bish-bosh/lock` must be searchable and writable for the user running `bish-bosh`. This `PATH` be changed with the `--lock-path PATH` option or `bishbosh_lockPath='PATH'` [configuration setting](#configuration-tweaks).
 
 ## Configurations
 The widely varying list of dependencies and preferences can be confusing, so here's a little guidance.
@@ -484,18 +500,23 @@ The following shells are untested and unsupported:-
 
 ## Status of Supported Backends
 
-| Backend | Filename | Variant | Connectivity | Status | Force IPv4 | Force IPv6 | Unix Domain Sockets Support | Proxy Support | Source IP / Port |
-| ------- | -------- | ------- | ------------ | ------ | ---------- | ---------- | --------------------------- | ------------- | ---------------- |
-| ncMacOSX | `nc` | Mac OS X | MQTT | Fully functional | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes |
-| ncGNU | `nc` | GNU | MQTT | Barely Implemented | Yes | Yes | Yes | No | Yes |
-| ncDebianTraditional | `nc.openbsd` | Debian OpenBSD | MQTT | Barely Implemented | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. Usernames supported. | Yes |
-| ncDebianOpenBSD | `nc.traditional` | Debian Traditional / Hobbit | MQTT | Barely Implemented | Yes | Yes | No | No | Yes |
-| ncToybox | `nc` / `busybox nc` | BusyBox | MQTT | Barely Implemented | No | No | No, although serial device files are supported | No | Yes |
-| ncBusyBox | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] | MQTT | Barely Implemented | No | No | No, although serial device files are supported | No | Source Port only |
-| nc6 | `nc6` | netcat6, nc6 | MQTT | Barely Implemented | Yes | Yes | No | No | Yes |
-| ncat | `ncat`| Nmap ncat | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. Usernames and passwords supported for HTTP, usernames only for SOCKS. | Yes |
-| socat | `socat` | socat | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | ? | ? |
-| tcpclient | `tcpclient` | tcpclient | MQTT | Barely Implemented | Yes | Yes | No | No | Yes |
+| Backend | Filename | Variant | Connectivity | Status | Force IPv4 | Force IPv6 | Unix domain sockets | Serial Device | Proxy Support | Source IP / Port |
+| ------- | -------- | ------- | ------------ | ------ | ---------- | ---------- | ------------------- | ------------- | ------------- | ---------------- |
+| nc | 'Meta' backend | Any nc | MQTT | Fully functional | Yes* | Yes* | Yes* | Yes* | Yes* | Yes* |
+| ncMacOSX | `nc` | Mac OS X | MQTT | Fully functional | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes |
+| ncGNU | `nc` | [GNU](http://netcat.sourceforge.net/) | MQTT | Barely Implemented | Yes | Yes | Yes | No | No | Yes |
+| ncDebianTraditional | `nc.openbsd` | [Debian OpenBSD](https://packages.debian.org/wheezy/netcat-openbsd) | MQTT | Barely Implemented | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. Usernames supported. | Yes |
+
+| ncDebianOpenBSD | `nc.traditional` | [Debian Traditional](https://packages.debian.org/wheezy/netcat-traditional) / Hobbit | MQTT | Barely Implemented | Yes | Yes | No | No | Yes |
+| ncBusyBox | `nc` / `busybox nc` | [BusyBox] | MQTT | Barely Implemented | No | No | No | Yes | No | Yes |
+| ncToybox | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] | MQTT | Barely Implemented | No | No | No | Yes | No | Source Port only |
+| nc6 | `nc6` | [netcat6](http://www.deepspace6.net/projects/netcat6.html) | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes |
+| ncat | `ncat`| [Nmap ncat](http://nmap.org/ncat/) | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | SOCKS4, SOCKS5 and HTTP. Usernames and passwords supported for HTTP, usernames only for SOCKS. | Yes |
+| socat | `socat` | [socat](http://www.dest-unreach.org/socat/) | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | ? | ? | ? |
+| tcpclient | `tcpclient` | [ucspi-tcp](http://cr.yp.to/ucspi-tcp.html) | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes |
+| bash | `bash` | [GNU Bash] | MQTT | Barely Implemented | No | No | No | ? | No | No |
+
+* Yes, if the detected variant of the backend does
 
 In addition, there is the 'meta' backend, `nc`, which attempts to distinguish between `ncMacOSX`, `ncGNU`, `ncDebianTraditional`, `ncDebianOpenBSD`, `ncToybox` and `ncBusyBox`.
 
@@ -529,8 +550,11 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 * [MQTT]S using openssl, socat, gnutls, ncat and others
 * [MQTT] over SSH
 * [MQTT] over WebSockets
+* [MQTT] over cryptcat
 * Investigate suckless tools
 * Investigate supporting empty client ids for clean session = 1
+* Investigate proxy support, eg corkscrew
+* Investigate [Debian uscpi-tcp-ipv6](https://packages.debian.org/wheezy/ucspi-tcp-ipv6)
 
 [bish-bosh]: https://github.com/raphaelcohn/bish-bosh  "bish-bosh on GitHub"
 [shellfire]: https://github.com/shellfire-dev  "shellfire on GitHub"
