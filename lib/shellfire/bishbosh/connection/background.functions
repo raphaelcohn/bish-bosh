@@ -87,7 +87,7 @@ _bishbosh_connection_background_hexConversion_dd()
 	}
 }
 
-_bishbosh_connection_background_processLoop_trapHandlerTERMfunction()
+_bishbosh_connection_background_processLoop_trapHandlerTERM()
 {
 	bishbosh_connection_continue=false
 	core_message INFO 'processLoop terminating because of signal'
@@ -98,7 +98,7 @@ bishbosh_connection_background_processLoop()
 	{
 		trap '' TERM INT HUP ABRT QUIT
 		bishbosh_connection_continue=true
-		trap _bishbosh_connection_background_processLoop_trapHandlerTERMfunction TERM
+		trap _bishbosh_connection_background_processLoop_trapHandlerTERM TERM
 		
 		bishbosh_connection_read_byte_nonBlockingInitialise
 		
