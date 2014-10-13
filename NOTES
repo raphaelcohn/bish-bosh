@@ -1,29 +1,3 @@
-Major TODO
-- reading remaining length if > 127
-- password can contain embedded ASCII NUL
-- password should be loadable from a file separate to anything else, so allowing production deployments
-- UNSUBSCRIBE / UNSUBACK is not implemented to record subscription state
-- PING request / response using a timer (SECONDS) is not implemented
-  - best done for shells which support 'SECONDS'
-  - if not, refuse to allow a keep-alive which is non-zero
-  - need to reject keep alives below about 5 seconds, as we'll not be able to satisfy them
-- Need a simple way to send messages from disk on start
-- Need to automatically re-subscribe on start
-- Need to support connecting more than once (ie connection recycling) so that we can script clean-session resets
-- Clean Session = 1 should delete all saved state on start
-- bash backend: exec 3<>/dev/tcp/"$bishbosh_server"/"$bishbosh_port"
-
-Ideas
-- byobu vs tmux vs screen for multiple viewing (or support all 3 in a complex manner [byobu requires newt])
-- newt (whiptail) vs dialog: both in Centos 6.4 default, ? only whiptail in Ubuntu minimal
-- auth backends - ldap, ?pam, local users file
-- generic SOCKS handling via tsocks or proxychains-ng
-- .netrc for proxy password details?
-- .curlrc for proxy details?
-- .wgetrc for proxy details?
-- proxy env variables (originated in wget)
-  - typical values are http_proxy=https://USER@PASSWORD:ADDRESS:PORT/
-  - would need to parse no_proxy="localhost,127.0.0.1,localaddress,.localdomain.com" and https_proxy, too.
 	
 Useful Info
 # reverse bash shell http://www.gnucitizen.org/blog/reverse-shell-with-bash/

@@ -51,6 +51,13 @@ _program_commandLine_parseInitialise()
 	else
 		_program_configurationSet_bishbosh_port=1
 	fi
+	
+	_program_default_bishbosh_randomClientId=0
+	if core_variable_isSet bishbosh_randomClientId; then
+		_program_configurationSet_bishbosh_randomClientId=0
+	else
+		_program_configurationSet_bishbosh_randomClientId=1
+	fi
 
 	_program_default_pingTimeout=30
 	if core_variable_isSet bishbosh_pingTimeout; then
@@ -167,12 +174,16 @@ if on the PATH."
   -p, --port PORT           Server PORT. Ignored for Unix domain sockets and
                             serial devices.
                             Defaults to 1883 or 8883 depending on backend.
-  -i, --client-id ID        Specifies the client id to use. Any SCRITPLETS
+  -i, --client-id ID        Specifies the client id ID to use. Any SCRITPLETS
                             found at --clients-path PATH/ID will then be
                             sourced. SCRIPTLETS control how a connection is
-                            managed. ${_program_name} does not generate
-                            random IDs, although a SCRIPTLET or configuration
-                            is entitled to.
+                            managed. If this option is not used, then an
+                            empty ID is used if Clean Session is 1 (unless
+                            the switch --random-client-id is used, below).
+  -r, --random-client-id    Specify this to force a random client-id instead
+                            of an empty one if Clean Session is 1 and
+                            --client-id isn't specified. Invalid if
+                            Clean Session is 0.
   -t, --ping-timeout SECS   Maximum time to wait in SECS seconds for a
                             PINGRESP packet if keep-alive is non-zero.
                             Defaults to '${_program_default_pingTimeout}'
@@ -251,6 +262,7 @@ if on the PATH."
   bishbosh_server         Equivalent to --server
   bishbosh_port           Equivalent to --port
   bishbosh_clientId       Equivalent to --client-id
+  bishbosh_randomClientId Equivalent to --random-client-id
   bishbosh_pingTimeout    Equivalent to --ping-timeout
   bishbosh_backends       Equivalent to --backends
   bishbosh_clientPath     Equivalent to --clients-path
@@ -322,6 +334,10 @@ _program_commandLine_optionExists()
 		
 		i|client-id)
 			echo 'yes-argumented'
+		;;
+		
+		r|random-client-id)
+			echo 'no'
 		;;
 		
 		t|ping-timeout)
@@ -416,6 +432,10 @@ _program_commandLine_processOptionWithArgument()
 		
 		i|client-id)
 			bishbosh_clientId="$optionValue"
+		;;
+		
+		r|random-client-id)
+			bishbosh_randomClientId=1
 		;;
 		
 		t|ping-timeout)
@@ -638,6 +658,12 @@ _program_commandLine_validate()
 		bishbosh_server="$_program_default_server"
 	else
 		bishbosh_validate_address $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_server' "$bishbosh_server"
+	fi
+	
+	if core_variable_isUnset bishbosh_randomClientId; then
+		bishbosh_randomClientId=1
+	else
+		bishbosh_validate_boolean $core_commandLine_exitCode_USAGE 'configuration setting' 'bishbosh_randomClientId' "$bishbosh_randomClientId"
 	fi
 	
 	if core_variable_isUnset bishbosh_pingTimeout; then

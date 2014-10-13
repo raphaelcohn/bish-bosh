@@ -1,5 +1,4 @@
 core_dependency_oneOf '*' hexdump od openssl gpg awk
-
 random_generateBetween0To255_hexdump()
 {
 	printf '%s' "$(hexdump -e '/1 "%u"' -n 1 "$_random_generateBetween0To255_randomFile")"

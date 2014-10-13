@@ -85,6 +85,20 @@ bishbosh_connection_write_validateUtf8()
 	fi
 }
 
+bishbosh_connection_write_validateClientId()
+{
+	bishbosh_connection_write_validateUtf8 bishbosh_clientId "$bishbosh_clientId"
+	
+	if [ ${#bishbosh_clientId} -gt 23 ]; then
+		core_message WARN "Not all MQTT servers support a ClientId of more than 23 encoded bytes."
+	fi
+	
+	local stripped="$(printf '%s' "$bishbosh_clientId" | tr -d -C '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')"
+	if [ ${#stripped} -ne ${#bishbosh_clientId} ]; then
+		core_message WARN "Not all MQTT servers support a ClientId with non non-alphanumeric characters."
+	fi
+}
+
 bishbosh_connection_write_validateTopicName()
 {
 	local argument="$1"

@@ -1,0 +1,109 @@
+bishbosh_connection_clientId_validateAndDefault()
+{
+	if core_variable_isSet bishbosh_clientId; then
+		if [ ${#bishbosh_clientId} -gt 254 ]; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The option -i,--client-id or configuration setting bishbosh_clientId '$bishbosh_clientId' is longer than 254 bytes. ${_program_name} can not support this."
+		fi
+		if [ ${#bishbosh_clientId} -gt 23 ]; then
+			core_message WARN "The option -i,--client-id or configuration setting bishbosh_clientId '$bishbosh_clientId' is longer than 23 bytes. Some servers do not support this."
+		fi
+	fi
+	
+	if core_variable_isUnset bishbosh_connection_write_CONNECT_cleanSession; then
+		core_exitError $core_commandLine_exitCode_CONFIG "Clean Session is 0 and the option -i,--client-id or configuration setting bishbosh_clientId isn't set, either in configuration, SCRIPTLETS or any path under '$bishbosh_clientPath'."
+	else
+		core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'configuration setting' bishbosh_connection_write_CONNECT_cleanSession "$bishbosh_connection_write_CONNECT_cleanSession"
+		if core_variable_isFalse "$bishbosh_connection_write_CONNECT_cleanSession"; then
+			core_exitError $core_commandLine_exitCode_CONFIG "Clean Session is 0 and the option -i,--client-id or configuration setting bishbosh_clientId isn't set, either in configuration, SCRIPTLETS or any path under '$bishbosh_clientPath'."
+		fi
+	fi
+	
+	if core_variable_isTrue bishbosh_randomClientId; then
+		bishbosh_connection_clientId_random
+	else
+		core_message WARN "Clean Session is 1 and the client id is unset; defaulting to empty (''). This may be rejected by some MQTT servers."
+		bishbosh_clientId=''
+	fi
+}
+
+core_usesIn core/connection write
+
+core_dependency_oneOf '*' openssl gpg base64 dd tr awk
+
+bishbosh_connection_clientId_random()
+{
+	local potentialClientId
+	local reducedClientId
+	while true
+	do
+		potentialClientId="$(bishbosh_connection_clientId_randomBytesBase64EncodedALike 16)"
+		reducedClientId="$(bishbosh_connection_write_removeCharacters '+/' "$potentialClientId")"
+		
+		if [ ${#reducedClientId} = ${#potentialClientId}]; then
+			bishbosh_clientId="$potentialClientId"
+			return 0
+		fi
+	done
+}
+
+bishbosh_connection_clientId_randomBytesBase64EncodedALike()
+{
+	local count=$1
+
+	# We use base64.
+	# base85 / Ascii85 encoding would be more efficient but support is uncommon and requires non-MQTT safe characters
+	
+	if core_compatibility_whichNoOutput openssl; then
+		openssl -base64 $count
+		return 0
+	fi
+	
+	if core_compatibility_whichNoOutput gpg; then
+		gpg --armor --gen-random 1 $count
+		return 0
+	fi
+	
+	if ! core_compatibility_whichNoOutput base64; then
+		core_exitError "base64 does not exist"
+	fi
+
+	# GNU base64 inserts line breaks, hence the use of tr -d '\n'.
+	# This can be disabled in GNU base64, but the switches with Mac OS X base64 differ.
+	
+	local randomFilePath
+	for randomFilePath in /dev/urandom /dev/random
+	do
+		if [ -r "$randomFilePath" ]; then
+			if core_compatibility_whichNoOutput dd; then
+				dd bs=1 count=$count if="$randomFilePath" | base64 | tr -d '\n='
+				break
+			fi
+		fi
+	done
+
+	if core_variable_isSet RANDOM; then
+		{
+			local index
+			local randomReduced
+			while [ $index -lt $count ]; then
+			do
+				printf "\\$(printf '%o' $((RANDOM%256)))"
+				index=$((index+1))
+			done
+		} | base64 | tr -d '\n='
+	fi
+	
+	if core_compatibility_whichNoOutput awk; then
+		{
+			local index
+			while [ $index -lt $count ]; then
+			do
+				echo | awk -v ORS='' '{ srand(); print int((rand()*1000000)%256)} '
+				index=$((index+1))
+			done
+		} | base64 | tr -d '\n='
+	fi
+	
+	core_message WARN "Clean Session is 1, the client id is unset and there are not sources of randomness; defaulting to empty (''). This may be rejected by some MQTT servers."
+	bishbosh_clientId=''
+}

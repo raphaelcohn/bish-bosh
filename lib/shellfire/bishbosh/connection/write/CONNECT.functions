@@ -81,7 +81,7 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_clientId' can not be empty (blank) if the argument 'bishbosh_connection_write_CONNECT_cleanSession' is 0"
 		fi
 	else
-		bishbosh_connection_write_validateUtf8 bishbosh_clientId "$bishbosh_clientId"
+		bishbosh_connection_write_validateClientId
 		clientId="$bishbosh_clientId"
 	fi
 	

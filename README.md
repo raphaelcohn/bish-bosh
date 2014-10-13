@@ -242,8 +242,11 @@ _*TODO: Document control packet writers of interest*_
 | ------ | ----- | --------------------- | ------- | ------- |
 | `-s`, `--server` | `HOST` | `bishbosh_server` | `localhost` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an [MQTT] server to connect to. If using Unix domain sockets (see [`--transport`](#source-routing-settings)) it is a file path to a readable Unix domain socket. If using serial devices it a file path to a readable serial device file. |
 | `-p`, `--port` | `PORT` | `bishbosh_port` | 1883 for most backends; 8883 if backend is secure | Port your [MQTT] `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix domain sockets or serial device files (see [`--transport`](#source-routing-settings)). |
-| `-i`, `--client-id` | `ID` | `bishbosh_clientId` | *unset* | [MQTT] ClientId. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. If *unset*, and [`bishbosh_connection_write_CONNECT_cleanSession`](#being-specific-about-how-a-is-made-connection) is 1, then forced to empty (`''`), which MAY NOT work with some MQTT servers. |
-| `-t`, `--ping-timeout` | `SECS` `bishbosh_pingTimeout` | `30` | When the client's Keep Alive value is not 0, this is the 'reasonable time' in `SECS` seconds that the client will wait to receive a **PINGRESP** packet. |
+| `-i`, `--client-id` | `ID` | `bishbosh_clientId` | *unset* | [MQTT] ClientId. When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. If *unset*, and [`bishbosh_connection_write_CONNECT_cleanSession`](#being-specific-about-how-a-is-made-connection) is 1, then forced to empty (`''`), which MAY NOT work with some MQTT servers. |
+| `-r`, `--random-client-id` | | `bishbosh_randomClientId`\* | `0` | When specified, `--client-id` isn't and Clean Session is 1, then a random client-id of 16 bytes, base64-encoded, is used, instead of an empty client id. This should work with most MQTT servers. To be compatible with servers that only use a restricted alphanumeric range, the base64 trailing `=` is discarded. Random client-ids with `+` and `/` are discarded and another client id generated. This alogrithm gives similar, but not quite as random, results as using a Type 4 UUID. |
+| `-t`, `--ping-timeout` | `SECS` `bishbosh_pingTimeout` | `30` | When the client's Keep Alive value is not `0`, this is the 'reasonable time' in `SECS` seconds that the client will wait to receive a **PINGRESP** packet. |
+
+_ \* This value is a boolean. Use `0` for false, `1` for true ._
 
 #### [Backends](#status-of-supported-backends)
 
@@ -351,7 +354,7 @@ We use a `/etc` folder underneath where we're installed. If you've just cloned [
 
 ### `/dev`: Devices
 * `/dev/null` must be present and permission available for reading and writing to.
-* one of `/dev/urandom` or `/dev/random` may be required if generating random ids (only used if `openssl` is not available)
+* one of `/dev/urandom` or `/dev/random` may be required if generating random ids (only used if `openssl` or `gnupg` is not available)
 * If using serial devices with [`--transport serial`](#source-routing-settings) then the character device file `DEVICE` you specify to [`--server DEVICE`](#mqtt-big-hitters) must exist on the file system and be readable/writable.
 
 ### Unix domain sockets
@@ -425,8 +428,8 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * `stat`, in [Toybox], but does not work with symbolic links (No `-L` option)
 * Random client-id generation
   * `openssl`
-  * `dd` with access to either `/dev/urandom` or `/dev/random`
   * `gpg`
+  * `dd` with access to either `/dev/urandom` or `/dev/random`
   * The shell's RANDOM psuedo-environment variable: not cryptographically robust
   * `awk` (any POSIX compliant-version): not cryptographically robust
   * Nothing, if random client-ids are not needed
@@ -607,7 +610,6 @@ Apart from [zsh], no shell can either have variables with Unicode NUL (aka ASCII
 * Connection tear down is very brittle, and state can be easily corrupted
 * State transitions are nothing like as close to atomic as they could be
 * We do not handle SIGTERM et al cleanly
-* Non-blocking reads should cause re-evaluation of connection status
 
 ### Useful to do
 * nextPacketIdentifier, set at start, and calculate better
@@ -615,11 +617,30 @@ Apart from [zsh], no shell can either have variables with Unicode NUL (aka ASCII
 * [MQTT]S using openssl, socat, gnutls, ncat and others
 * [MQTT] over SSH
 * [MQTT] over WebSockets
-* [MQTT] over cryptcat
-* Investigate suckless tools
-* Investigate supporting empty client ids for clean session = 1
-* Investigate proxy support, eg corkscrew
-* Investigate [Debian uscpi-tcp-ipv6](https://packages.debian.org/wheezy/ucspi-tcp-ipv6)
+* More tools
+	* [MQTT] over cryptcat
+	* Investigate suckless tools
+	* Investigate proxy support, eg corkscrew
+	* Investigate [Debian uscpi-tcp-ipv6](https://packages.debian.org/wheezy/ucspi-tcp-ipv6)
+* Password embedded NULs
+* Will message embedded NULs
+* Need a simple way to send messages from disk on start
+* Need to automatically re-subscribe on start
+* Need to support connecting more than once (ie connection recycling) so that we can script clean-session resets
+* bash backend: exec 3<>/dev/tcp/"$bishbosh_server"/"$bishbosh_port"
+* Fattening and Travis
+
+### Ideas
+* byobu vs tmux vs screen for multiple viewing (or support all 3 in a complex manner [byobu requires newt])
+* newt (whiptail) vs dialog: both in Centos 6.4 default, ? only whiptail in Ubuntu minimal
+* auth backends * ldap, ?pam, local users file
+* generic SOCKS handling via tsocks or proxychains*ng
+* .netrc for proxy password details?
+* .curlrc for proxy details?
+* .wgetrc for proxy details?
+* proxy env variables (originated in wget)
+  * typical values are http_proxy=https://USER@PASSWORD:ADDRESS:PORT/
+  * would need to parse no_proxy="localhost,127.0.0.1,localaddress,.localdomain.com" and https_proxy, too.
 
 [bish-bosh]: https://github.com/raphaelcohn/bish-bosh  "bish-bosh on GitHub"
 [shellfire]: https://github.com/shellfire-dev  "shellfire on GitHub"
