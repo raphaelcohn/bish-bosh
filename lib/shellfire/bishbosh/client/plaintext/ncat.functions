@@ -11,3 +11,128 @@ bishbosh_client_plaintext_ncat_check()
 	fi
 	return 1
 }
+
+_bishbosh_client_plaintext_ncat_start_addProxy()
+{
+	local proxyValue="$1"
+	
+	local proxyAddress
+	if core_variable_isSet bishbosh_proxyPort; then
+		proxyAddress="${proxyAddress}:${bishbosh_proxyPort}"
+	else
+		proxyAddres="$bishbosh_proxyAddress"
+	fi
+	core_variable_array_append options --proxy "$proxyAddress"
+	
+	core_variable_array_append options --proxy-type "$proxyValue"
+	
+	if core_variable_isSet bishbosh_proxyUsername; then
+		
+		local proxyAuth
+		
+		case "$proxyValue" in
+			
+			http)
+				if core_variable_isUnset bishbosh_proxyPassword; then
+					core_exitError $core_commandLine_exitCode_CONFIG "The backend ncat requires a --proxy-password when using a HTTP proxy-kind"
+				fi
+				proxyAuth="${bishbosh_proxyUsername}:${bishbosh_proxyPassword}"
+			;;
+			
+			*)
+				if core_variable_isSet bishbosh_proxyPassword; then
+					core_message WARN "The backend nc does not support specifing the proxy password for SOCKS proxies"
+				fi
+				proxyAuth="$bishbosh_proxyUsername"
+			;;
+			
+		esac
+
+		core_variable_array_append options --proxy-auth "$proxyAuth"
+	fi
+}
+
+# Also -K tclass and -F options are in the commandline help (but not the man page)!
+core_usesIn core variable variable/array
+bishbosh_client_plaintext_ncat_start()
+{
+	local options
+	
+	if core_variable_isSet bishbosh_transport; then
+		case "$bishbosh_transport" in
+			
+			inet)
+				:
+			;;
+			
+			inet4)
+				core_variable_array_appendAsOptionArg '-4'
+			;;
+			
+			inet6)
+				core_variable_array_appendAsOptionArg '-6'
+			;;
+			
+			unix)
+				core_variable_array_appendAsOptionArg '-U'
+			;;
+			
+			serial)
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncat does not support the 'serial' transport."
+			;;
+			
+			*)
+				core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
+			;;
+			
+		esac
+	fi
+	
+	if core_variable_isSet bishbosh_sourceAddress; then
+		bishbosh_client_addOptionWithEmptyMeaningNo '-s' "$bishbosh_sourceAddress"
+	fi
+	
+	if core_variable_isSet bishbosh_sourcePort; then
+		bishbosh_client_addOptionWithEmptyMeaningNo '-p' "$bishbosh_sourcePort"
+	fi
+	
+	case "$bishbosh_proxyKind" in
+		
+		SOCKS4)
+			_bishbosh_client_plaintext_ncat_start_addProxy 'socks4'
+		;;
+		
+		SOCKS5)
+			_bishbosh_client_plaintext_ncat_start_addProxy 'socks5'
+		;;
+		
+		HTTP)
+			_bishbosh_client_plaintext_ncat_start_addProxy 'http'
+		;;
+		
+	esac
+	
+	#Disable DNS  core_variable_array_append -n
+	#Connect Timeout  core_variable_array_append options -w 30
+	
+	case $(core_init_verbosity) in
+		
+		0)
+			:
+		;;
+		
+		1)
+			core_variable_array_append options -v
+		;;
+		
+		*)
+			core_variable_array_append options -v -v
+		;;
+	esac
+
+	core_variable_array_append options $bishbosh_server
+		
+	core_variable_array_append options $bishbosh_port
+	
+	core_variable_array_passToFunctionAsArguments options ncat <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+}
