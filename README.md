@@ -66,7 +66,7 @@ bish-bosh --server 'SERVER' --client-id 'CLIENT_ID'
 bish-bosh -s 'SERVER' -c 'CLIENT_ID'
 ```
 
-If you don't specify `SERVER`, it defaults to `localhost`. `CLIENT_ID` is a [MQTT] client id. (We have partial support for random client ids, so eventually you'll not even need to specify this).
+If you don't specify `SERVER`, it defaults to `test.mosquitto.org`. `CLIENT_ID` is a [MQTT] client id. (We have partial support for random client ids, so eventually you'll not even need to specify this).
 
 If your [MQTT] server isn't running on port `1883`, you can specify it:-
 
@@ -244,7 +244,7 @@ _*TODO: Document control packet writers of interest*_
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-s`, `--server` | `HOST` | `bishbosh_server` | `localhost` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an [MQTT] server to connect to. If using Unix domain sockets (see [`--transport`](#source-routing-settings)) it is a file path to a readable Unix domain socket. If using serial devices it a file path to a readable serial device file. |
+| `-s`, `--server` | `HOST` | `bishbosh_server` | `test.mosquitto.org` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an [MQTT] server to connect to. If using Unix domain sockets (see [`--transport`](#source-routing-settings)) it is a file path to a readable Unix domain socket. If using serial devices it a file path to a readable serial device file. |
 | `-p`, `--port` | `PORT` | `bishbosh_port` | 1883 for most backends; 8883 if backend is secure | Port your [MQTT] `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix domain sockets or serial device files (see [`--transport`](#source-routing-settings)). |
 | `-i`, `--client-id` | `ID` | `bishbosh_clientId` | *unset* | [MQTT] ClientId. When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. If *unset*, and [`bishbosh_connection_write_CONNECT_cleanSession`](#being-specific-about-how-a-is-made-connection) is 1, then forced to empty (`''`), which MAY NOT work with some MQTT servers. |
 | `-r`, `--random-client-id` | | `bishbosh_randomClientId`\* | `0` | When specified, `--client-id` isn't and Clean Session is 1, then a random client-id of 16 bytes, base64-encoded, is used, instead of an empty client id. This should work with most MQTT servers. To be compatible with servers that only use a restricted alphanumeric range, the base64 trailing `=` is discarded. Random client-ids with `+` and `/` are discarded and another client id generated. This alogrithm gives similar, but not quite as random, results as using a Type 4 UUID. |
@@ -664,7 +664,7 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 * .wgetrc for proxy details?
 * proxy env variables (originated in wget)
   * typical values are http_proxy=https://USER@PASSWORD:ADDRESS:PORT/
-  * would need to parse no_proxy="localhost,127.0.0.1,localaddress,.localdomain.com" and https_proxy, too.
+  * would need to parse no_proxy="test.mosquitto.org,127.0.0.1,localaddress,.localdomain.com" and https_proxy, too.
 
 [bish-bosh]: https://github.com/raphaelcohn/bish-bosh  "bish-bosh on GitHub"
 [shellfire]: https://github.com/shellfire-dev  "shellfire on GitHub"
