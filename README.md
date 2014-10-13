@@ -28,7 +28,7 @@ If there's interest, a more advanced version could function as interactive shell
 ```bash
 cd ~
 git clone 'https://github.com/raphaelcohn/bish-bosh.git'
-git submodule update --init --recursive bish-bosh
+(cd bish-bosh; git submodule update --init --recursive)
 cd -
 ```
 
