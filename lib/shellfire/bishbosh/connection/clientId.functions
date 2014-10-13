@@ -1,12 +1,9 @@
+core_usesIn core/connection write
+
 bishbosh_connection_clientId_validateAndDefault()
 {
 	if core_variable_isSet bishbosh_clientId; then
-		if [ ${#bishbosh_clientId} -gt 254 ]; then
-			core_exitError $core_commandLine_exitCode_CONFIG "The option -i,--client-id or configuration setting bishbosh_clientId '$bishbosh_clientId' is longer than 254 bytes. ${_program_name} can not support this."
-		fi
-		if [ ${#bishbosh_clientId} -gt 23 ]; then
-			core_message WARN "The option -i,--client-id or configuration setting bishbosh_clientId '$bishbosh_clientId' is longer than 23 bytes. Some servers do not support this."
-		fi
+		bishbosh_connection_write_validateClientId
 	fi
 	
 	if core_variable_isUnset bishbosh_connection_write_CONNECT_cleanSession; then
@@ -25,8 +22,6 @@ bishbosh_connection_clientId_validateAndDefault()
 		bishbosh_clientId=''
 	fi
 }
-
-core_usesIn core/connection write
 
 core_dependency_oneOf '*' openssl gpg base64 dd tr awk
 

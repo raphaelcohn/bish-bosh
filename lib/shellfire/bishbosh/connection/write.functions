@@ -88,6 +88,10 @@ bishbosh_connection_write_validateUtf8()
 bishbosh_connection_write_validateClientId()
 {
 	bishbosh_connection_write_validateUtf8 bishbosh_clientId "$bishbosh_clientId"
+
+	if [ ${#bishbosh_clientId} -gt 254 ]; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The option -i,--client-id or configuration setting bishbosh_clientId '$bishbosh_clientId' is longer than 254 bytes. ${_program_name} can not support this."
+	fi
 	
 	if [ ${#bishbosh_clientId} -gt 23 ]; then
 		core_message WARN "Not all MQTT servers support a ClientId of more than 23 encoded bytes."
