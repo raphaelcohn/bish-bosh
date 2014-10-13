@@ -96,5 +96,5 @@ bishbosh_client_plaintext_nc6_start()
 	core_variable_array_append options $bishbosh_port
 	
 	# Problem: SIGINT is ignored!
-	core_variable_array_passToFunctionAsArguments options nc6 <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

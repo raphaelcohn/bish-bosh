@@ -94,5 +94,5 @@ bishbosh_client_plaintext_ncBusyBox_start()
 		esac
 	fi
 	
-	core_variable_array_passToFunctionAsArguments options busybox <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

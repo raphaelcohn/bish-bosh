@@ -134,5 +134,5 @@ bishbosh_client_plaintext_ncat_start()
 		
 	core_variable_array_append options $bishbosh_port
 	
-	core_variable_array_passToFunctionAsArguments options ncat <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }
