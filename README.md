@@ -598,7 +598,7 @@ The following shells are untested and unsupported:-
 | **ncMacOSX** | `nc` | Mac OS X | MQTT | Fully functional | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes | Yes |
 | **ncGNU** | `nc` | [GNU](http://netcat.sourceforge.net/) | MQTT | Fully functional | No | No | No | No | No | Yes | Yes |
 | **ncDebianTraditional** | `nc.traditional` | [Debian Traditional](https://packages.debian.org/wheezy/netcat-traditional) / Hobbit | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes | Yes |
-| **ncDebianOpenBSD** | `nc.openbsd` | [Debian OpenBSD](https://packages.debian.org/wheezy/netcat-openbsd) | MQTT | Barely Implemented | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames only for `HTTP`. | Yes | Yes |
+| **ncDebianOpenBSD** | `nc.openbsd` | [Debian OpenBSD](https://packages.debian.org/wheezy/netcat-openbsd) | MQTT | Fully functional | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames only for `HTTP`. | Yes | Yes |
 | **ncBusyBox** | `nc` / `busybox nc` | [BusyBox] | MQTT | Barely Implemented | No | No | No | Yes | No | Yes | Yes |
 | **ncToybox** | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] | MQTT | Barely Implemented | No | No | No | Yes | No | No | Yes |
 | **nc6** | `nc6` | [netcat6](http://www.deepspace6.net/projects/netcat6.html) | MQTT | Fully functional‡ | Yes | Yes | No | No | No | Yes | Yes |

@@ -24,3 +24,115 @@ bishbosh_client_plaintext_ncDebianOpenBSD_checkIfNetcatVariant()
 	fi
 	return 1
 }
+
+_bishbosh_client_plaintext_ncDebianOpenBSD_start_addProxy()
+{
+	local proxyValue="$1"
+	bishbosh_client_addOptionWithEmptyMeaningNo '-X' "$proxyValue"
+	
+	local proxyAddress="$bishbosh_proxyAddress"
+	if core_variable_isSet bishbosh_proxyPort; then
+		# Note, if using an IPv6 address, we'll need surrounding []
+		proxyAddress="${proxyAddress}:${bishbosh_proxyPort}"
+	fi
+	
+	bishbosh_client_addOptionWithEmptyMeaningNo '-x' "$proxyAddress"
+	
+	if core_variable_isSet bishbosh_proxyUsername; then
+		if [ "$proxyValue" = 'connect' ]; then
+			core_variable_array_append options -P "$bishbosh_proxyUsername"
+		else
+			core_message WARN "The backend ncDebianOpenBSD does not support specifing the proxy username for proxy kinds other than 'HTTP'"
+		fi
+	fi
+	
+	if core_variable_isSet bishbosh_proxyPassword; then
+		core_message WARN "The backend ncDebianOpenBSD does not support specifing the proxy password"
+	fi
+}
+
+# Also -K tclass and -F options are in the commandline help (but not the man page)!
+core_usesIn core variable variable/array
+bishbosh_client_plaintext_ncDebianOpenBSD_start()
+{
+	local options
+	
+	if core_variable_isSet bishbosh_transport; then
+		case "$bishbosh_transport" in
+			
+			inet)
+				:
+			;;
+			
+			inet4)
+				core_variable_array_appendAsOptionArg '-4'
+			;;
+			
+			inet6)
+				core_variable_array_appendAsOptionArg '-6'
+			;;
+			
+			unix)
+				core_variable_array_appendAsOptionArg '-U'
+			;;
+			
+			serial)
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncDebianOpenBSD does not support the 'serial' transport."
+			;;
+			
+			*)
+				core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
+			;;
+			
+		esac
+	fi
+	
+	if core_variable_isSet bishbosh_sourceAddress; then
+		bishbosh_client_addOptionWithEmptyMeaningNo '-s' "$bishbosh_sourceAddress"
+	fi
+	
+	if core_variable_isSet bishbosh_sourcePort; then
+		bishbosh_client_addOptionWithEmptyMeaningNo '-p' "$bishbosh_sourcePort"
+	fi
+	
+	case "$bishbosh_proxyKind" in
+		
+		SOCKS4)
+			_bishbosh_client_plaintext_ncDebianOpenBSD_start_addProxy '4'
+		;;
+		
+		SOCKS5)
+			_bishbosh_client_plaintext_ncDebianOpenBSD_start_addProxy '5'
+		;;
+		
+		HTTP)
+			_bishbosh_client_plaintext_ncDebianOpenBSD_start_addProxy 'connect'
+		;;
+		
+	esac
+	
+	#Disable DNS  core_variable_array_append -n
+	#Idle NOT Connect Timeout  core_variable_array_append options -w 30
+	
+	case $(core_init_verbosity) in
+		
+		0)
+			:
+		;;
+		
+		1)
+			core_variable_array_append options -v
+		;;
+		
+		*)
+			core_variable_array_append options -v -v
+		;;
+	esac
+
+	core_variable_array_append options $bishbosh_server
+		
+	core_variable_array_append options $bishbosh_port
+	
+	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
+	core_variable_array_passToFunctionAsArguments options nc <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+}
