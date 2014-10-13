@@ -139,13 +139,17 @@ These settings relate to [MQTT]'s **CONNACK** packet.
 | `bishbosh_connection_write_CONNECT_willTopic` | Any valid topic name | No will messages |  Will topic |
 | `bishbosh_connection_write_CONNECT_willQos` | 0 - 2 inclusive | 0 | Will QoS, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
 | `bishbosh_connection_write_CONNECT_willRetain` | 0 or 1 \* | 0 | Will Retain flag, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
-| `bishbosh_connection_write_CONNECT_willMessage` | Any valid message, but ASCII NUL is not supported | invalid | Will message, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
+| `bishbosh_connection_write_CONNECT_willMessage` | Any valid message, but Unicode `U+0000` is not supported.† | invalid | Will message, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
+| `bishbosh_connection_write_CONNECT_willMessageFilePath` | A path to a valid message | invalid | Will message, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset or `bishbosh_connection_write_CONNECT_willMessage` is set. Useful if a message might contain Unicode `U+0000`.† |
 | `bishbosh_connection_write_CONNECT_keepAlive` | 0 to 65535 inclusive | 0 | Keep Alive for pings in seconds. A value of 0 disables keep alive handling |
-| `bishbosh_clientId` | Any valid UTF-8 string excluding ASCII NUL | invalid | Client id. Empty client ids, and random client ids, are not yet supported. Usually set on the command line with the switch `--client-id CLIENT_ID` |
-| `bishbosh_connection_write_CONNECT_username` | Any valid UTF-8 string excluding ASCII NUL. May be empty | No username | Username. May be empty or *unset* (the latter meaning it is not sent) |
-| `bishbosh_connection_write_CONNECT_password` | Any sequence of bytes excluding ASCII NUL. May be empty | No password | Password. May be empty or *unset* (the latter meaning it is not sent) |
+| `bishbosh_clientId` | Any valid UTF-8 string excluding Unicode `U+0000` | invalid | Client id. Empty client ids, and random client ids, are not yet supported. Usually set on the command line with the switch `--client-id CLIENT_ID` |
+| `bishbosh_connection_write_CONNECT_username` | Any valid UTF-8 string excluding Unicode `U+0000`. May be empty | No username | Username. May be empty or *unset* (the latter meaning it is not sent) |
+| `bishbosh_connection_write_CONNECT_password` | Any sequence of bytes excluding Unicode `U+0000`. May be empty | No password | Password. May be empty or *unset* (the latter meaning it is not sent) |
+| `bishbosh_connection_write_CONNECT_passwordFilePath` | A path to a valid file. May be empty. | No password | Password, invalid if `bishbosh_connection_write_CONNECT_password` is set. Useful if a password might contain Unicode `U+0000`†, or you want to able to check in configuration to source control or change passwords in production. |
 
 _\* Technically, a boolean, which might also be `Y`, `YES`, `Yes`, `yes`, `T`, `TRUE`, `True`, `true`, `ON`, `On`, `on` for 1 and `N`, `NO`, `No`, `no`, `F`, `FALSE`, `False`, `false`, `OFF`, `Off` and `off` for 0, but best as a number._
+
+_† Apart from [zsh], no shell can either have variables with Unicode `U+0000` (ACSCII `NUL` as was) in them, or read them directly._
 
 #### Handling read events
 [bish-bosh] supports a number of callbacks, called handlers, whenever something interesting has been read and processed. The default implementations of these just do logging if `--verbose 2` is used.
@@ -551,7 +555,7 @@ No installation should be required.
 All of these shells support dynamically-scoped `local` variables, something we make extensive use of. Some of them also support read timeouts, which is very useful for making [bish-bosh] responsive.
 
 ### Zsh and KornShell
-[bish-bosh] is not actively tested under [zsh] although it should work once the inevitable few bugs are fixed. [zsh] is a nice interactive shell, and good for scripting, too. In particular, it is the only shell where it's possible for the `read` builtin to read data containing Unicode `\u0000` (ACSCII `NUL` as was), and is also trully non-blocking.
+[bish-bosh] is not actively tested under [zsh] although it should work once the inevitable few bugs are fixed. [zsh] is a nice interactive shell, and good for scripting, too. In particular, it is the only shell where it's possible for the `read` builtin to read data containing Unicode `U+0000` (ACSCII `NUL` as was), and is also trully non-blocking.
 
 We try hard to maintain some compatibility with KornShell ksh88 derivatives; [bish-bosh] may work under [mksh] or [pdksh], although the latter hasn't been actively updated since 1999. At this time, [ksh93] is known not to work. We have no access to [ksh88] so can't support it.
 
@@ -590,12 +594,6 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 
 ### Specification Violations
 
-#### Unicode `NUL`, `U+0000` (aka ASCII NUL, `0x00`, `\u0000`, etc)
-Apart from [zsh], no shell can either have variables with Unicode NUL (aka ASCII NUL, 0x00) in them, or read them directly. [zsh] is not supported at this time. Consequently,
-
-* Will messages can not have `NUL` in them, although a mechanism to load them from disk may be added
-* Passwords likewise are so constrained (again, loading directly from disk may be added)
-
 #### Client Ids
 * To accommodate empty client ids, and those matching reserved file names (typically `.` and `..`), we prefix client ids in our file paths with `_`.
 * We do not permit client ids to exceed 254 bytes. This is because client ids can not exceed the maximum file name size of a file system, and most modern file systems support a maximum size of either 255 bytes or 255 UTF-8 code points (except HFS+).
@@ -622,8 +620,6 @@ Apart from [zsh], no shell can either have variables with Unicode NUL (aka ASCII
 	* Investigate suckless tools
 	* Investigate proxy support, eg corkscrew
 	* Investigate [Debian uscpi-tcp-ipv6](https://packages.debian.org/wheezy/ucspi-tcp-ipv6)
-* Password embedded NULs
-* Will message embedded NULs
 * Need a simple way to send messages from disk on start
 * Need to automatically re-subscribe on start
 * Need to support connecting more than once (ie connection recycling) so that we can script clean-session resets

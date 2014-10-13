@@ -66,6 +66,10 @@ _bishbosh_connection_write_PUBLISH_validateArguments()
 		messageFilePath=''
 		bishbosh_connection_write_fieldLengthCheck PUBLISH message
 	fi
+	if [ ${#message_fieldLength} -gt 65535 ]; then
+		# 268369912 estimated
+		core_exitError $core_commandLine_exitCode_CONFIG "The Will Message can not be longer than 65,535 bytes"
+	fi
 	remainingLength=$(( remainingLength + message_fieldLength ))
 	
 	if core_variable_isSet bishbosh_connection_write_PUBLISH_messageUnlinkFile; then
