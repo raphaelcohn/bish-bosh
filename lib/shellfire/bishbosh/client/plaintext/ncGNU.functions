@@ -3,7 +3,10 @@ core_functions_register _bishbosh_client_plaintext_registration ncGNU
 
 bishbosh_client_plaintext_ncGNU_check()
 {
-	local binary="$(core_compatibility_whichNoOutput nc)"
+	local binary="$(core_compatibility_which nc)"
+	if [ -z "$binary" ]; then
+		return 1
+	fi
 	bishbosh_client_plaintext_ncGNU_checkIfNetcatVariant
 }
 
@@ -18,4 +21,86 @@ bishbosh_client_plaintext_ncGNU_checkIfNetcatVariant()
 		return 0
 	fi
 	return 1
+}
+
+core_usesIn core variable variable/array
+bishbosh_client_plaintext_ncGNU_start()
+{
+	local options
+	
+	if core_variable_isSet bishbosh_transport; then
+		case "$bishbosh_transport" in
+			
+			inet)
+				:
+			;;
+			
+			inet4)
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncGNU does not support the 'inet4' transport explicitly."
+			;;
+			
+			inet6)
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncGNU does not support the 'inet6' transport explicitly."
+			;;
+			
+			unix)
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncGNU does not support the 'unix' transport."
+			;;
+			
+			serial)
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncGNU does not support the 'serial' transport."
+			;;
+			
+			*)
+				core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
+			;;
+			
+		esac
+	fi
+	
+	if core_variable_isSet bishbosh_sourceAddress; then
+		bishbosh_client_addOptionWithEmptyMeaningNo '-s' "$bishbosh_sourceAddress"
+	fi
+	
+	if core_variable_isSet bishbosh_sourcePort; then
+		bishbosh_client_addOptionWithEmptyMeaningNo '-p' "$bishbosh_sourcePort"
+	fi
+	
+	case "$bishbosh_proxyKind" in
+		
+		SOCKS4)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncGNU does not support the 'SOCKS4' bishbosh_proxyKind."
+		;;
+		
+		SOCKS5)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncGNU does not support the 'SOCKS5' bishbosh_proxyKind."
+		;;
+		
+		HTTP)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncGNU does not support the 'HTTP' bishbosh_proxyKind."
+		;;
+		
+	esac
+	
+	case $(core_init_verbosity) in
+		
+		0)
+			:
+		;;
+		
+		1)
+			core_variable_array_append options -v
+		;;
+		
+		*)
+			core_variable_array_append options -v -v
+		;;
+	esac
+
+	core_variable_array_append options $bishbosh_server
+		
+	core_variable_array_append options $bishbosh_port
+	
+	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
+	core_variable_array_passToFunctionAsArguments options nc <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

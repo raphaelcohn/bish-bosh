@@ -4,9 +4,9 @@ core_functions_register _bishbosh_client_plaintext_registration ncDebianTraditio
 # Default on Debian, lacks -e and -c (execute program / script)
 bishbosh_client_plaintext_ncDebianTraditional_check()
 {
-	if core_compatibility_whichNoOutput nc.openbsd; then
-		bishbosh_client_plaintext=ncDebianOpenBSD
-		bishbosh_client_plaintextPath="$(core_compatibility_which nc.openbsd)"
+	if core_compatibility_whichNoOutput nc.traditional; then
+		bishbosh_client_plaintext=ncDebianTraditional
+		bishbosh_client_plaintextPath="$(core_compatibility_which nc.traditional)"
 		return 0
 	fi
 	return 1

@@ -20,5 +20,5 @@ bishbosh_client_plaintext_find()
 		fi
 	done
 	
-	core_exitError $core_commandLine_exitCode_OSFILE "Could not find a backend to make socket connections."
+	core_exitError $core_commandLine_exitCode_OSFILE "Could not find a backend to make socket connections that was on the PATH '$PATH'."
 }

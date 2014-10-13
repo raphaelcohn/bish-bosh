@@ -596,12 +596,12 @@ The following shells are untested and unsupported:-
 | ------- | -------- | ------- | ------------ | ------ | ----------------------------------------------- | ----------------------------------------------- | ---------------------------------------------- | ------------------------------------------------ | ------------------------- | -------------------------------------------------- | ------------------------------------------------ |
 | **nc** | 'Meta' backend | Any **nc\*** backend | MQTT | Fully functional* | Yes† | Yes† | Yes† | Yes† | Yes† | Yes† | Yes† |
 | **ncMacOSX** | `nc` | Mac OS X | MQTT | Fully functional | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes | Yes |
-| **ncGNU** | `nc` | [GNU](http://netcat.sourceforge.net/) | MQTT | Barely Implemented | Yes | Yes | Yes | No | No | Yes | Yes |
+| **ncGNU** | `nc` | [GNU](http://netcat.sourceforge.net/) | MQTT | Fully functional | No | No | No | No | No | Yes | Yes |
 | **ncDebianTraditional** | `nc.traditional` | [Debian Traditional](https://packages.debian.org/wheezy/netcat-traditional) / Hobbit | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes | Yes |
 | **ncDebianOpenBSD** | `nc.openbsd` | [Debian OpenBSD](https://packages.debian.org/wheezy/netcat-openbsd) | MQTT | Barely Implemented | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames only for `HTTP`. | Yes | Yes |
 | **ncBusyBox** | `nc` / `busybox nc` | [BusyBox] | MQTT | Barely Implemented | No | No | No | Yes | No | Yes | Yes |
 | **ncToybox** | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] | MQTT | Barely Implemented | No | No | No | Yes | No | No | Yes |
-| **nc6** | `nc6` | [netcat6](http://www.deepspace6.net/projects/netcat6.html) | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes | Yes |
+| **nc6** | `nc6` | [netcat6](http://www.deepspace6.net/projects/netcat6.html) | MQTT | Fully functional‡ | Yes | Yes | No | No | No | Yes | Yes |
 | **ncat** | `ncat`| [Nmap ncat](http://nmap.org/ncat/) | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames and passwords supported for `HTTP`, usernames only for SOCKS. | Yes | Yes |
 | **socat** | `socat` | [socat](http://www.dest-unreach.org/socat/) | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | Yes | `SOCKS4` and `HTTP`. Usernames are supported. | ? | ? |
 | **tcpclient** | `tcpclient` | [ucspi-tcp](http://cr.yp.to/ucspi-tcp.html) | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes | Yes |
@@ -610,6 +610,10 @@ The following shells are untested and unsupported:-
 _\* Refers to the meta backend itself. A detected backend may not be._
 
 _† Yes, if the detected variant of the backend does._
+
+_‡ Nagle disabled. Does not respond to 'Ctrl-C'._
+
+Please note that all backends do not respond well to 'Ctrl-C' being sent to a process group, or `SIGINT` (some die early, some never die). It is best to terminate by sending `TERM` to [bish-bosh], eg using `kill`.
 
 ## Limitations
 

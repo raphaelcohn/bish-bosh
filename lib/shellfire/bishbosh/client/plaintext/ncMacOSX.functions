@@ -8,6 +8,12 @@ bishbosh_client_plaintext_ncMacOSX_check()
 	local binary
 	for binary in /usr/bin/nc "$(core_compatibility_which nc)"
 	do
+		if [ -z "$binary" ]; then
+			continue
+		fi
+		if [ ! -x "$binary" ]; then
+			continue
+		fi
 		if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^usage: nc \[-'; then
 			bishbosh_client_plaintext=ncMacOSX
 			bishbosh_client_plaintextPath="$binary"
@@ -57,7 +63,6 @@ bishbosh_client_plaintext_ncMacOSX_start()
 {
 	local options
 	
-	local isUnixDomainSocket
 	if core_variable_isSet bishbosh_transport; then
 		case "$bishbosh_transport" in
 			
@@ -78,7 +83,7 @@ bishbosh_client_plaintext_ncMacOSX_start()
 			;;
 			
 			serial)
-				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncMacOSX does not support 'serial' transports."
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncMacOSX does not support the 'serial' transport."
 			;;
 			
 			*)
@@ -115,7 +120,7 @@ bishbosh_client_plaintext_ncMacOSX_start()
 	case $(core_init_verbosity) in
 		
 		0)
-		
+			:
 		;;
 		
 		1)
@@ -131,6 +136,6 @@ bishbosh_client_plaintext_ncMacOSX_start()
 		
 	core_variable_array_append options $bishbosh_port
 	
-	# Problem: nc listends for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
+	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
 	core_variable_array_passToFunctionAsArguments options nc <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

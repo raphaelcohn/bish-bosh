@@ -11,3 +11,87 @@ bishbosh_client_plaintext_nc6_check()
 	fi
 	return 1
 }
+
+core_usesIn core variable variable/array
+bishbosh_client_plaintext_nc6_start()
+{
+	local options
+	
+	if core_variable_isSet bishbosh_transport; then
+		case "$bishbosh_transport" in
+			
+			inet)
+				:
+			;;
+			
+			inet4)
+				core_variable_array_appendAsOptionArg '-4'
+			;;
+			
+			inet6)
+				core_variable_array_appendAsOptionArg '-6'
+			;;
+			
+			unix)
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend nc6 does not support the 'unix' transport."
+			;;
+			
+			serial)
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend nc6 does not support the 'serial' transport."
+			;;
+			
+			*)
+				core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
+			;;
+			
+		esac
+	fi
+	
+	if core_variable_isSet bishbosh_sourceAddress; then
+		bishbosh_client_addOptionWithEmptyMeaningNo '-s' "$bishbosh_sourceAddress"
+	fi
+	
+	if core_variable_isSet bishbosh_sourcePort; then
+		bishbosh_client_addOptionWithEmptyMeaningNo '-p' "$bishbosh_sourcePort"
+	fi
+	
+	case "$bishbosh_proxyKind" in
+		
+		SOCKS4)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend nc6 does not support the 'SOCKS4' bishbosh_proxyKind."
+		;;
+		
+		SOCKS5)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend nc6 does not support the 'SOCKS5' bishbosh_proxyKind."
+		;;
+		
+		HTTP)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend nc6 does not support the 'HTTP' bishbosh_proxyKind."
+		;;
+		
+	esac
+	
+	case $(core_init_verbosity) in
+		
+		0)
+			:
+		;;
+		
+		1)
+			core_variable_array_append options -v
+		;;
+		
+		*)
+			core_variable_array_append options -v -v
+		;;
+	esac
+	
+	core_variable_array_append options '--disable-nagle' '--half-close'
+	
+	core_variable_array_append options $bishbosh_server
+		
+	core_variable_array_append options $bishbosh_port
+	
+	# Problem: SIGINT is ignored!
+	core_variable_array_passToFunctionAsArguments options nc6 <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+}
