@@ -80,7 +80,15 @@ bishbosh_connection_background_hexConversion()
 _bishbosh_connection_background_hexConversion_dd()
 {
 	{
-		while true
+		trap '' INT HUP ABRT QUIT USR1 USR2 INFO
+		bishbosh_connection_background_hexConversion_dd_trapHandler()
+		{
+			bishbosh_connection_background_hexConversion_dd_continue=false
+		}
+		bishbosh_connection_background_hexConversion_dd_continue=true
+		trap bishbosh_connection_background_hexConversion_dd_trapHandler TERM
+		
+		while $bishbosh_connection_background_hexConversion_dd_continue
 		do
 			dd bs=1 count=1 2>/dev/null | "$@"
 		done
@@ -105,6 +113,7 @@ bishbosh_connection_background_processLoop()
 		if ! $bishbosh_connection_continue; then
 			return
 		fi
+		core_message INFO "Writing CONNECT"
 		bishbosh_connection_write_CONNECT
 		
 		local controlPacketByte
@@ -152,6 +161,7 @@ bishbosh_connection_background_processLoop()
 			bishbosh_connection_ping_checkForResponseTimeout
 		done
 		
+		core_message INFO "Writing DISCONNECT"
 		bishbosh_connection_write_DISCONNECT
 		
 	} >"$bishbosh_connection_toServerFifo" 5<"$bishbosh_connection_fromHexConversionFifo" &
@@ -164,7 +174,16 @@ bishbosh_connection_background_processingLoopReadInterrupter()
 {
 	if [ $bishbosh_connection_supportsNonBlockingRead -eq 0 ]; then
 		{
-			while true
+			trap '' TERM INT HUP ABRT QUIT USR1 USR2 INFO
+			
+			bishbosh_connection_background_processingLoopReadInterrupter_trapHandler()
+			{
+				bishbosh_connection_background_processingLoopReadInterrupter_continue=false
+			}
+			bishbosh_connection_background_processingLoopReadInterrupter_continue=true
+			trap bishbosh_connection_background_processingLoopReadInterrupter_trapHandler TERM
+			
+			while $bishbosh_connection_background_processingLoopReadInterrupter_continue
 			do
 				sleep $bishbosh_readLatency_inFractionalSeconds
 				kill -HUP $bishbosh_connection_processLoopPid 2>/dev/null || exit 0
@@ -176,6 +195,8 @@ bishbosh_connection_background_processingLoopReadInterrupter()
 
 bishbosh_connection_background_client()
 {
+	trap '' INT HUP ABRT QUIT USR1 USR2 INFO
+	
 	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_temporaryFolderPath/$bishbosh_connection_id'"
 	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
 }

@@ -30,11 +30,13 @@ bishbosh_connection_foreground_recordBackgroundJob()
 	
 	core_variable_setVariable "$pidName" $pid
 	core_children_killOnExit $pid
-	core_message DEBUG "$pidName PID is $pid"
+	core_message DEBUG "$pidName is $pid"
 }
 
 bishbosh_connection_foreground_monitorForChildExit()
 {
+	core_message DEBUG "Our Pid is $$"
+	
 	while true
 	do
 		# Can be changed by signal handler
@@ -51,7 +53,11 @@ bishbosh_connection_foreground_monitorForChildExit()
 				kill -INT $$ 2>/dev/null || true
 				exit 1
 			else
-				core_exitError $exitCode "terminated by TERM, HUP, ABRT or QUIT"
+				if [ $exitCode -ne 0 ]; then
+					core_exitError $exitCode "terminated by TERM, HUP, ABRT or QUIT"
+				else
+					exit 0
+				fi
 			fi
 		fi
 	
