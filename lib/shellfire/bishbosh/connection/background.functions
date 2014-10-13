@@ -101,6 +101,14 @@ _bishbosh_connection_background_processLoop_trapHandlerTERM()
 	core_message INFO 'processLoop terminating because of signal'
 }
 
+_bishbosh_connection_background_processLoop_trapHandlerPIPE()
+{
+	core_message WARN 'Could not write DISCONNECT, probably because the network connection has already died (often due to nc handling SIGINT / Ctrl-C to a process group too quickly)'
+	
+	# Doesn't seem to work
+	exit $core_commandLine_exitCode_IOERR
+}
+
 bishbosh_connection_background_processLoop()
 {
 	{
@@ -162,8 +170,8 @@ bishbosh_connection_background_processLoop()
 		done
 		
 		core_message INFO "Writing DISCONNECT"
+		trap _bishbosh_connection_background_processLoop_trapHandlerPIPE PIPE
 		bishbosh_connection_write_DISCONNECT
-		
 	} >"$bishbosh_connection_toServerFifo" 5<"$bishbosh_connection_fromHexConversionFifo" &
 }
 

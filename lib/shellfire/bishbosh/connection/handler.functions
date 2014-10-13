@@ -53,5 +53,14 @@ bishbosh_connection_handler_PINGRESP()
 
 bishbosh_connection_handler_noControlPacketsRead()
 {
-	core_message DEBUG "bishbosh_connection_handler_noControlPacketsRead()"
+	if core_variable_isUnset _bishbosh_connection_handler_noControlPacketsRead_count; then
+		_bishbosh_connection_handler_noControlPacketsRead_count=1
+	fi
+	
+	if [ $_bishbosh_connection_handler_noControlPacketsRead_count -eq 10 ]; then
+		core_message DEBUG "bishbosh_connection_handler_noControlPacketsRead() 10 times"
+		_bishbosh_connection_handler_noControlPacketsRead_count=1
+	else
+		_bishbosh_connection_handler_noControlPacketsRead_count=$((_bishbosh_connection_handler_noControlPacketsRead_count+1))
+	fi
 }
