@@ -1,8 +1,8 @@
-core_usesIn bishbosh/connection/read protocolError
+core_usesIn bishbosh/connection error
 core_dependency_requires '*' mv touch
 bishbosh_connection_read_controlpacket_PUBREC()
 {
-	bishbosh_connection_read_protocolError_ifRemainingLengthNot PUBREC 2
+	bishbosh_connection_error_ifRemainingLengthNot PUBREC 2
 	
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
@@ -10,7 +10,7 @@ bishbosh_connection_read_controlpacket_PUBREC()
 	local pendingSendQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingSendPath"/"$packetIdentifier"
 	local pendingCompQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingCompPath"/"$packetIdentifier"
 	if [ -f "$pendingCompQos2PacketIdentifierPath" ]; then
-		bishbosh_connection_read_protocolError PUBREC "Packet identifier $packetIdentifier already exists at pendingCompQos2PacketIdentifierPath '$pendingCompQos2PacketIdentifierPath'. How?"
+		bishbosh_connection_error_readControlPacket PUBREC "Packet identifier $packetIdentifier already exists at pendingCompQos2PacketIdentifierPath '$pendingCompQos2PacketIdentifierPath'. How?"
 	fi
 	
 	if [ -f "$pendingSendQos2PacketIdentifierPath" ]; then

@@ -20,6 +20,19 @@ bishbosh_validate_backends()
 	done
 }
 
+bishbosh_validate_unsignedIntegerUpto65535Inclusive()
+{
+	local code=$1
+	local category="$2"
+	local name="$3"
+	local value="$4"
+	
+	core_validate_isUnsignedInteger $code "$category" "$name" "$value"
+	if [ $value -gt 65535 ]; then
+		core_exitError $code  "The $category '$name' specifies a value '$value' which is not between 0 and 65,535 inclusive."
+	fi
+}
+
 bishbosh_validate_address()
 {
 	local code=$1

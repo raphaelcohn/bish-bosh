@@ -1,7 +1,7 @@
-core_usesIn bishbosh/connection/read protocolError
+core_usesIn bishbosh/connection error
 bishbosh_connection_read_controlpacket_PINGRESP()
 {
-	bishbosh_connection_read_protocolError_ifRemainingLengthNotZero PINGRESP
+	bishbosh_connection_error_ifRemainingLengthNotZero PINGRESP
 	
 	bishbosh_connection_handler_PINGRESP
 }

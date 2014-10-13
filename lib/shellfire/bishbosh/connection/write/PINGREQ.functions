@@ -2,4 +2,6 @@ bishbosh_connection_write_PINGREQ()
 {
 	# 12 << 4 in octal, followed by 0 (remaining length)
 	printf '\300\000'
+	
+	bishbosh_connection_ping_recordLastSentControlPacketAt
 }

@@ -7,4 +7,6 @@ bishbosh_connection_write_UNSUBACK()
 	printf '\260\002'
 	
 	bishbosh_connection_write_twoByteLength $packetIdentifier
+	
+	bishbosh_connection_ping_recordLastSentControlPacketAt
 }

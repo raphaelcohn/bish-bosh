@@ -243,6 +243,7 @@ _*TODO: Document control packet writers of interest*_
 | `-s`, `--server` | `HOST` | `bishbosh_server` | `localhost` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an [MQTT] server to connect to. If using Unix domain sockets (see [`--transport`](#source-routing-settings)) it is a file path to a readable Unix domain socket. If using serial devices it a file path to a readable serial device file. |
 | `-p`, `--port` | `PORT` | `bishbosh_port` | 1883 for most backends; 8883 if backend is secure | Port your [MQTT] `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix domain sockets or serial device files (see [`--transport`](#source-routing-settings)). |
 | `-i`, `--client-id` | `ID` | `bishbosh_clientId` | *unset* | [MQTT] ClientId. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. |
+| `-t`, `--ping-timeout` | `SECS` `bishbosh_pingTimeout` | `30` | When the client's Keep Alive value is not 0, this is the 'reasonable time' in `SECS` seconds that the client will wait to receive a **PINGRESP** packet. |
 
 #### [Backends](#status-of-supported-backends)
 
@@ -259,7 +260,7 @@ By default, [bish-bosh] has a list of [backends](#status-of-supported-backends) 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
 | `-c`, `--client-path` | `PATH` | `bishbosh_clientPath` | *See help output* | `PATH` to a location to configuration - scriptlets for a client-id on a per-server, per-port, per-client-id basis. See [Configuration Locations](#configuration-locations) |
-| `-t`, `--session-path` | `PATH` | `bishbosh_sessionPath` | *See help output* | `PATH` to a location to store session data for clients connecting with Clean Session = 0 |
+| `-d`, `--session-path` | `PATH` | `bishbosh_sessionPath` | *See help output* | `PATH` to a location to store session data for clients connecting with Clean Session = 0 |
 | `-l`, `--lock-path` | `PATH` | `bishbosh_lockPath` | *See help output* | `PATH` to a location to screate a Mutex lock so only one instance connects per-server, per-port, per-client-id at a time. |
 | `--filesize-algorithm` | `ALGO` | `bishbosh_filesizeAlgorithm` | `ls` | Specify a more efficient filesize algorithm `ALGO` if you have the `stat` program and know which one it is. Choices are `ls`, `GNUAndBusyBoxStat`, `BSDStat` and `ToyboxStat` (not recommended due to lack of a `-L` switch). |
 | `--read-latency` | `MSECS` | `bishbosh_readLatency` | *See help output* | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak blocking read timeouts. blocking read timeouts are experimental and may not work properly in your shell. The value `0` may be interpreted differently by different shells and should be used with caution. |

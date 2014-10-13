@@ -9,4 +9,6 @@ bishbosh_connection_write_PUBCOMP()
 	bishbosh_connection_write_twoByteLength $packetIdentifier
 	
 	unset bishbosh_connection_write_PUBCOMP_packetIdentifier
+	
+	bishbosh_connection_ping_recordLastSentControlPacketAt
 }

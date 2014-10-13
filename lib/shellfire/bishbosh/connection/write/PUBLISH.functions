@@ -163,6 +163,8 @@ bishbosh_connection_write_PUBLISH()
 		core_TODO 'Experiment with dd bs=$message_fieldLength count=$message_fieldLength if="$messageFilePath" as an alternative to cat'
 	fi
 	
+	bishbosh_connection_ping_recordLastSentControlPacketAt
+	
 	case $qos in
 		
 		1)

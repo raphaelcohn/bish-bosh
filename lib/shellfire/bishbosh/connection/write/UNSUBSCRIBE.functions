@@ -44,4 +44,6 @@ bishbosh_connection_write_UNSUBSCRIBE()
 		bishbosh_connection_write_twoByteLength ${#topicFilter}
 		printf '%s' "$topicFilter"
 	done
+	
+	bishbosh_connection_ping_recordLastSentControlPacketAt
 }

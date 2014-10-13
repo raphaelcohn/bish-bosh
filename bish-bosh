@@ -52,6 +52,13 @@ _program_commandLine_parseInitialise()
 		_program_configurationSet_bishbosh_port=1
 	fi
 
+	_program_default_pingTimeout=30
+	if core_variable_isSet bishbosh_pingTimeout; then
+		_program_configurationSet_bishbosh_pingTimeout=0
+	else
+		_program_configurationSet_bishbosh_pingTimeout=1
+	fi
+	
 	_program_default_clientPath="${_program_varPath}"/lib/"$_program_name"/client
 	if core_variable_isSet bishbosh_clientPath; then
 		_program_configurationSet_bishbosh_clientPath=0
@@ -166,13 +173,16 @@ if on the PATH."
                             managed. ${_program_name} does not generate
                             random IDs, although a SCRIPTLET or configuration
                             is entitled to.
+  -t, --ping-timeout SECS   Maximum time to wait in SECS seconds for a
+                            PINGRESP packet if keep-alive is non-zero.
+                            Defaults to '${_program_default_pingTimeout}'
   -b, --backends A,B,...    Backend types A,B,... to talk to MQTT server.
                             Ordered in preference order. First found used.
                             Comma separated.
                             Defaults to '${_program_default_backends}'.
   -c, --client-path PATH    PATH to folder containing client scriptlets.
                             Defaults to '${_program_default_clientPath}'.
-  -t, --session-path PATH   PATH to folder containing session data for
+  -d, --session-path PATH   PATH to folder containing session data for
                             Clean Session = 0 clients.
                             Defaults to '${_program_default_sessionPath}'.
   -l, --lock-path PATH      PATH to a parent folder for locking with a
@@ -241,6 +251,7 @@ if on the PATH."
   bishbosh_server         Equivalent to --server
   bishbosh_port           Equivalent to --port
   bishbosh_clientId       Equivalent to --client-id
+  bishbosh_pingTimeout    Equivalent to --ping-timeout
   bishbosh_backends       Equivalent to --backends
   bishbosh_clientPath     Equivalent to --clients-path
   bishbosh_sessionPath    Equivalent to --session-path
@@ -260,12 +271,12 @@ if on the PATH."
 These may also be set in the SCRIPTLETS.
 
 The following values may be used in SCRIPTLETS to manage a connection:-
-  bishbosh_connection_write_CONNECT_cleanSession  Mandatory Boolean
+  bishbosh_connection_write_CONNECT_cleanSession  Option    Boolean
   bishbosh_connection_write_CONNECT_willTopic     Optional  String
   bishbosh_connection_write_CONNECT_willMessage   Optional  Binary*
   bishbosh_connection_write_CONNECT_willQos       Optional  0 - 2
   bishbosh_connection_write_CONNECT_willRetain    Optional
-  bishbosh_connection_write_CONNECT_keepAlive     Mandatory 0 - 65535
+  bishbosh_connection_write_CONNECT_keepAlive     Optionl   0 - 65535
   bishbosh_connection_write_CONNECT_username      Optional  String
   bishbosh_connection_write_CONNECT_password      Optional  Binary*
 
@@ -313,6 +324,10 @@ _program_commandLine_optionExists()
 			echo 'yes-argumented'
 		;;
 		
+		t|ping-timeout)
+			echo 'yes-argumented'
+		;;
+		
 		b|backends)
 			echo 'yes-argumented'
 		;;
@@ -321,7 +336,7 @@ _program_commandLine_optionExists()
 			echo 'yes-argumented'
 		;;
 		
-		t|session-path)
+		d|session-path)
 			echo 'yes-argumented'
 		;;
 		
@@ -401,6 +416,11 @@ _program_commandLine_processOptionWithArgument()
 		
 		i|client-id)
 			bishbosh_clientId="$optionValue"
+		;;
+		
+		t|ping-timeout)
+			bishbosh_validate_unsignedIntegerUpto65535Inclusive $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_pingTimeout=$optionValue
 		;;
 		
 		b|backends)
@@ -617,9 +637,15 @@ _program_commandLine_validate()
 	if core_variable_isUnset bishbosh_server; then
 		bishbosh_server="$_program_default_server"
 	else
-		bishbosh_validate_address $core_commandLine_exitCode_CONFIG 'configuration setting' "bishbosh_server" "$bishbosh_server"
+		bishbosh_validate_address $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_server' "$bishbosh_server"
 	fi
 	
+	if core_variable_isUnset bishbosh_pingTimeout; then
+		bishbosh_pingTimeout=$_program_default_pingTimeout
+	else
+		bishbosh_validate_unsignedIntegerUpto65535Inclusive $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_pingTimeout' "$bishbosh_pingTimeout"
+	fi
+		
 	if core_variable_isUnset bishbosh_clientPath; then
 		bishbosh_clientPath="$_program_default_clientPath"
 		core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--client-path' "$bishbosh_clientPath"

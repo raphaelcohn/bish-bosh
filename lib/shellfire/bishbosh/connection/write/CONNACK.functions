@@ -36,4 +36,6 @@ bishbosh_connection_write_CONNACK()
 	printf '\040\002'
 	bishbosh_connection_write_byte $sessionPresent
 	bishbosh_connection_write_byte $connectReturnCode
+	
+	bishbosh_connection_ping_recordLastSentControlPacketAt
 }

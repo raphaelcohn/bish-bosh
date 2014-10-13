@@ -68,12 +68,10 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 	fi
 	
 	if core_variable_isUnset bishbosh_connection_write_CONNECT_keepAlive; then
+		bishbosh_connection_write_CONNECT_keepAlive=0
 		keepAlive=0
 	else
-		core_validate_isUnsignedInteger $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_keepAlive "$bishbosh_connection_write_CONNECT_keepAlive"
-		if [ $bishbosh_connection_write_CONNECT_keepAlive -gt 65535 ]; then
-			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_keepAlive' should be between 0 and 65535, not '$bishbosh_connection_write_CONNECT_keepAlive'"
-		fi
+		bishbosh_validate_unsignedIntegerUpto65535Inclusive $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_keepAlive "$bishbosh_connection_write_CONNECT_keepAlive"
 		keepAlive=$bishbosh_connection_write_CONNECT_keepAlive
 	fi
 	
@@ -176,4 +174,6 @@ bishbosh_connection_write_CONNECT()
 		bishbosh_connection_write_twoByteLength $password_fieldLength
 		printf '%s' "$password"
 	fi
+	
+	bishbosh_connection_ping_recordLastSentControlPacketAt
 }

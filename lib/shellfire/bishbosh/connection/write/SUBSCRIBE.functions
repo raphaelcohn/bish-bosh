@@ -85,4 +85,6 @@ bishbosh_connection_write_SUBSCRIBE()
 		printf '%s' "$topicFilter"
 		bishbosh_connection_write_byte $topicQos
 	done
+	
+	bishbosh_connection_ping_recordLastSentControlPacketAt
 }

@@ -1,8 +1,8 @@
-core_usesIn bishbosh/connection/read protocolError
+core_usesIn bishbosh/connection error
 core_dependency_requires '*' mv touch
 bishbosh_connection_read_controlpacket_PUBCOMP()
 {
-	bishbosh_connection_read_protocolError_ifRemainingLengthNot PUBCOMP 2
+	bishbosh_connection_error_ifRemainingLengthNot PUBCOMP 2
 	
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier

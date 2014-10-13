@@ -1,8 +1,8 @@
-core_usesIn bishbosh/connection/read protocolError
+core_usesIn bishbosh/connection error
 
 bishbosh_connection_read_controlpacket_CONNACK()
 {
-	bishbosh_connection_read_protocolError_ifRemainingLengthNot CONNACK 2
+	bishbosh_connection_error_ifRemainingLengthNot CONNACK 2
 	
 	local connectAcknowledgeFlags
 	bishbosh_connection_read_byte_blocking connectAcknowledgeFlags
@@ -18,7 +18,7 @@ bishbosh_connection_read_controlpacket_CONNACK()
 		;;
 		
 		*)
-			bishbosh_connection_read_protocolError CONNACK "Field 'connectAcknowledgeFlags' was '$connectAcknowledgeFlags', not a value between 0 to 1 inclusive"
+			bishbosh_connection_error_readControlPacket CONNACK "Field 'connectAcknowledgeFlags' was '$connectAcknowledgeFlags', not a value between 0 to 1 inclusive"
 		;;
 		
 	esac
@@ -34,27 +34,27 @@ bishbosh_connection_read_controlpacket_CONNACK()
 		;;
 		
 		1)
-			bishbosh_connection_read_protocolError CONNACK "Field 'connectReturnCode' was '$connectReturnCode' ('Connection Refused, unacceptable protocol version')"
+			bishbosh_connection_error_readControlPacket CONNACK "Field 'connectReturnCode' was '$connectReturnCode' ('Connection Refused, unacceptable protocol version')"
 		;;
 		
 		2)
-			bishbosh_connection_read_protocolError CONNACK "Field 'connectReturnCode' was '$connectReturnCode' ('Connection Refused, identifier rejected')"
+			bishbosh_connection_error_readControlPacket CONNACK "Field 'connectReturnCode' was '$connectReturnCode' ('Connection Refused, identifier rejected')"
 		;;
 		
 		3)
-			bishbosh_connection_read_protocolError CONNACK "Field 'connectReturnCode' was '$connectReturnCode' ('Connection Refused, Server unavailable')"
+			bishbosh_connection_error_readControlPacket CONNACK "Field 'connectReturnCode' was '$connectReturnCode' ('Connection Refused, Server unavailable')"
 		;;
 		
 		4)
-			bishbosh_connection_read_protocolError CONNACK "Field 'connectReturnCode' was '$connectReturnCode' ('Connection Refused, bad user name or password')"
+			bishbosh_connection_error_readControlPacket CONNACK "Field 'connectReturnCode' was '$connectReturnCode' ('Connection Refused, bad user name or password')"
 		;;
 		
 		5)
-			bishbosh_connection_read_protocolError CONNACK "Field 'connectReturnCode' was '$connectReturnCode' ('Connection Refused,  not authorized')"
+			bishbosh_connection_error_readControlPacket CONNACK "Field 'connectReturnCode' was '$connectReturnCode' ('Connection Refused,  not authorized')"
 		;;
 		
 		*)
-			bishbosh_connection_read_protocolError CONNACK "Received reserved connectReturnCode code of $connectReturnCode"
+			bishbosh_connection_error_readControlPacket CONNACK "Received reserved connectReturnCode code of $connectReturnCode"
 		;;
 		
 	esac

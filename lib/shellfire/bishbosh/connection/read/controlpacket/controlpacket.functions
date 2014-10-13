@@ -160,5 +160,5 @@ bishbosh_connection_read_controlpacket_handle()
 
 bishbosh_connection_read_controlpacket_invalid()
 {
-	bishbosh_connection_read_protocolError invalid "Invalid control packet code '$controlPacketByte' with remaining length '$remainingLength'"
+	bishbosh_connection_error_readControlPacket invalid "Invalid control packet code '$controlPacketByte' with remaining length '$remainingLength'"
 }

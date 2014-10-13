@@ -1,8 +1,8 @@
-core_usesIn bishbosh/connection/read protocolError
+core_usesIn bishbosh/connection error
 core_dependency_requires '*' rm
 bishbosh_connection_read_controlpacket_PUBREL()
 {
-	bishbosh_connection_read_protocolError_ifRemainingLengthNot PUBREL 2
+	bishbosh_connection_error_ifRemainingLengthNot PUBREL 2
 	
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier

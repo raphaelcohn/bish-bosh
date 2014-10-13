@@ -1,0 +1,44 @@
+bishbosh_connection_ping_initialise()
+{
+	SECONDS=0
+	bishbosh_connection_ping_responsePending=0
+	
+	if [ $bishbosh_connection_write_CONNECT_keepAlive -eq 0 ]; then
+		bishbosh_connection_ping_recordLastSentControlPacketAt()
+		{
+			:
+		}
+		
+		bishbosh_connection_ping_check()
+		{
+			:
+		}
+	fi
+}
+
+bishbosh_connection_ping_recordLastSentControlPacketAt()
+{
+	# Won't work on dash
+	# Reset timer
+	SECONDS=0
+}
+
+bishbosh_connection_ping_check()
+{
+	local currentSeconds=$SECONDS
+	
+	if [ $bishbosh_connection_ping_responsePending -eq 1 ]; then
+		if [ $SECONDS -gt $bishbosh_pingTimeout ]; then
+			bishbosh_connection_error_pingTimeout
+		fi
+		return 0
+	fi
+	
+	if [ $currentSeconds -lt $bishbosh_connection_write_CONNECT_keepAlive ]; then
+		return 0
+	fi
+	
+	# Last sent control packet time...
+	
+	bishbosh_connection_ping_lastCheckAt=$SECONDS
+}
