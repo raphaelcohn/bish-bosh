@@ -82,7 +82,7 @@ bishbosh_client_plaintext_ncBusyBox_start()
 			;;
 			
 			serial)
-				core_variable_array_append options -f $bishbosh_server
+				core_variable_array_append options -f "$bishbosh_server"
 			;;
 			
 			*)
