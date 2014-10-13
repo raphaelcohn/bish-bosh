@@ -80,7 +80,7 @@ bishbosh_connection_background_hexConversion()
 _bishbosh_connection_background_hexConversion_dd()
 {
 	{
-		trap '' INT HUP ABRT QUIT USR1 USR2 INFO
+		trap '' INT HUP ABRT QUIT USR1 USR2
 		bishbosh_connection_background_hexConversion_dd_trapHandler()
 		{
 			bishbosh_connection_background_hexConversion_dd_continue=false
@@ -182,7 +182,7 @@ bishbosh_connection_background_processingLoopReadInterrupter()
 {
 	if [ $bishbosh_connection_supportsNonBlockingRead -eq 0 ]; then
 		{
-			trap '' TERM INT HUP ABRT QUIT USR1 USR2 INFO
+			trap '' TERM INT HUP ABRT QUIT USR1 USR2
 			
 			bishbosh_connection_background_processingLoopReadInterrupter_trapHandler()
 			{
@@ -203,7 +203,7 @@ bishbosh_connection_background_processingLoopReadInterrupter()
 
 bishbosh_connection_background_client()
 {
-	trap '' INT HUP ABRT QUIT USR1 USR2 INFO
+	trap '' INT HUP ABRT QUIT USR1 USR2
 	
 	core_message INFO "Initiating connection '$bishbosh_connection_id' to server '$bishbosh_server' with temporary path '$bishbosh_temporaryFolderPath/$bishbosh_connection_id'"
 	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
