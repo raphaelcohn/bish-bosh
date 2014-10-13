@@ -36,6 +36,9 @@ bishbosh_client_plaintext_ncBusyBox_start()
 	#Disable DNS  not supported
 	#Connect Timeout  core_variable_array_append options -w 30
 	
+	core_TODO 'Allow BusyBox builtins to work by calling nc directly'
+	core_variable_array_append options nc
+	
 	case "$bishbosh_proxyKind" in
 		
 		SOCKS4)
@@ -92,6 +95,5 @@ bishbosh_client_plaintext_ncBusyBox_start()
 		esac
 	fi
 	
-	core_TODO 'Allow BusyBox builtins to work by calling nc directly'
-	core_variable_array_passToFunctionAsArguments options busybox nc <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	core_variable_array_passToFunctionAsArguments options busybox <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }
