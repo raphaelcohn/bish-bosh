@@ -27,7 +27,6 @@ bishbosh_client_plaintext_ncBusyBox_checkIfNetcatVariant()
 	return 1
 }
 
-
 core_usesIn core variable variable/array
 bishbosh_client_plaintext_ncBusyBox_start()
 {
