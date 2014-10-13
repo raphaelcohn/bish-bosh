@@ -1,9 +1,10 @@
-core_usesIn core/connection write
+core_usesIn bishbosh/connection write
 
 bishbosh_connection_clientId_validateAndDefault()
 {
 	if core_variable_isSet bishbosh_clientId; then
 		bishbosh_connection_write_validateClientId
+		return 0
 	fi
 	
 	if core_variable_isUnset bishbosh_connection_write_CONNECT_cleanSession; then
@@ -80,7 +81,7 @@ bishbosh_connection_clientId_randomBytesBase64EncodedALike()
 		{
 			local index
 			local randomReduced
-			while [ $index -lt $count ]; then
+			while [ $index -lt $count ]
 			do
 				printf "\\$(printf '%o' $((RANDOM%256)))"
 				index=$((index+1))
@@ -91,7 +92,7 @@ bishbosh_connection_clientId_randomBytesBase64EncodedALike()
 	if core_compatibility_whichNoOutput awk; then
 		{
 			local index
-			while [ $index -lt $count ]; then
+			while [ $index -lt $count ]
 			do
 				echo | awk -v ORS='' '{ srand(); print int((rand()*1000000)%256)} '
 				index=$((index+1))

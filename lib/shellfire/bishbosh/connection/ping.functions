@@ -8,7 +8,16 @@ bishbosh_connection_ping_initialise()
 {
 	bishbosh_connection_ping_responsePending=0
 	
-	if [ $bishbosh_connection_write_CONNECT_keepAlive -eq 0 ]; then
+	local turnOffPing
+	if core_variable_isUnset bishbosh_connection_write_CONNECT_keepAlive; then
+		turnOffPing=1
+	elif [ $bishbosh_connection_write_CONNECT_keepAlive -eq 0 ]; then
+		turnOffPing=1
+	else
+		turnOffPing=0
+	fi
+	
+	if [ $turnOffPing -eq 1 ]; then
 		bishbosh_connection_ping_recordLastSentControlPacketAt()
 		{
 			:
@@ -48,8 +57,7 @@ bishbosh_connection_ping_initialise()
 			[ $SECONDS $1 $2 ]
 		}
 	else
-
-		if core_compatibility_whichNoOutput date; then
+		if ! core_compatibility_whichNoOutput date; then
 			core_exitError $core_commandLine_exitCode_OSFILE "Your shell does not support 'SECONDS' and the 'date' program can't be found"
 		fi
 		
