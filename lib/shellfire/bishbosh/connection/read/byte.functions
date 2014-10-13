@@ -1,10 +1,9 @@
 bishbosh_connection_read_byte_initialise()
-{
-	# TMOUT works for ksh93, bash
-	# But works only for auto-logout in pdksh and Busybox's Ash
-		
+{		
 	if [ $bishbosh_connection_supportsNonBlockingRead -eq 1 ]; then
 
+		# TMOUT also works for ksh93, bash
+		# But works only for auto-logout in pdksh and Busybox's Ash
 		bishbosh_connection_read_byte_blocking()
 		{
 			set +e

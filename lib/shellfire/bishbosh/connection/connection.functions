@@ -223,29 +223,22 @@ bishbosh_connection_makeClientConnection()
 	
 	bishbosh_connection_read_initialise 'no'
 	bishbosh_connection_ping_initialise
-	
-	# http://mywiki.wooledge.org/SignalTrap
+	bishbosh_connection_foreground_initialise
 	
 	# We can not open for writing using a file descriptor or redirection operator (>) a FIFO unless someone is already reading from it; we will be blocked
 	# We can not open for reading using a file descriptor or redirection operator (<) a FIFO unless someone is already writing to it; we will be blocked
 	
 	# Background <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo"
 	bishbosh_connection_background_hexConversion
-	local hexConversionPid=$!
-	core_children_killOnExit $hexConversionPid
-	core_message DEBUG "hexConversionPid PID is $hexConversionPid"
+	bishbosh_connection_foreground_recordBackgroundJob bishbosh_connection_hexConversionPid
 	
 	# Background >"$bishbosh_connection_toServerFifo" <"$bishbosh_connection_fromHexConversionFifo"
 	bishbosh_connection_background_processLoop
-	local processLoopPid=$!
-	core_children_killOnExit $processLoopPid
-	core_message DEBUG "processLoop PID is $processLoopPid"
+	bishbosh_connection_foreground_recordBackgroundJob bishbosh_connection_processLoopPid
 	
 	# Background <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo"
 	bishbosh_connection_background_client
-	local clientPid=$!
-	core_children_killOnExit $clientPid
-	core_message DEBUG "clientPid PID is $clientPid"
+	bishbosh_connection_foreground_recordBackgroundJob bishbosh_connection_clientPid
 	
 	# Background process, if required, to interrupt processingLoopRead
 	bishbosh_connection_background_processingLoopReadInterrupter

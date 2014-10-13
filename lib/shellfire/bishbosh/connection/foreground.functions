@@ -1,32 +1,84 @@
 core_dependency_requires '*' kill
+bishbosh_connection_foreground_initialise()
+{
+	# http://mywiki.wooledge.org/SignalTrap
+	bishbosh_connection_foreground_monitorForChildExit=0
+	trap '' INT HUP TERM ABRT QUIT
+	trap _bishbosh_connection_foreground_trapHandlerMost HUP TERM ABRT QUIT
+	trap _bishbosh_connection_foreground_trapHandlerINT INT
+}
+
+_bishbosh_connection_foreground_trapHandlerMost()
+{
+	bishbosh_connection_foreground_monitorForChildExit=1
+	
+	trap - INT HUP TERM ABRT QUIT
+}
+
+_bishbosh_connection_foreground_trapHandlerINT()
+{
+	bishbosh_connection_foreground_monitorForChildExit=2
+	
+	trap - INT HUP TERM ABRT QUIT
+}
+
+core_usesIn core variable
+bishbosh_connection_foreground_recordBackgroundJob()
+{
+	local pidName="$1"
+	local pid=$!
+	
+	core_variable_setVariable "$pidName" $pid
+	core_children_killOnExit $pid
+	core_message DEBUG "$pidName PID is $pid"
+}
+
 bishbosh_connection_foreground_monitorForChildExit()
 {
 	while true
 	do
-		# core_exitError $core_commandLine_exitCode_TEMPFAIL "Could not connect"
-		# bishbosh_client_* is dead, either because the connection wasn't established (so exitCode is usually 1), or the processLoop cleanly exited
-		# Seems if server closes connection, exit code is 0 for nc.
-		if ! kill -0 $clientPid 2>/dev/null; then
+		# Can be changed by signal handler
+		if [ $bishbosh_connection_foreground_monitorForChildExit -gt 0 ]; then
+			
+			kill $bishbosh_connection_processLoopPid 2>/dev/null || true
 			set +e
-			wait $clientPid
+			wait $bishbosh_connection_processLoopPid
 			local exitCode=$?
 			set -e
-			if [ $exitCode -ne 0 ]; then
-				core_exitError $core_commandLine_exitCode_TEMPFAIL "Could not connect to '$bishbosh_server'"
+			
+			# http://mywiki.wooledge.org/SignalTrap
+			if [ $bishbosh_connection_foreground_monitorForChildExit -eq 2 ]; then
+				kill -INT $$ 2>/dev/null || true
+				exit 1
+			else
+				core_exitError $exitCode "terminated by TERM, HUP, ABRT or QUIT"
 			fi
-			break
 		fi
 	
 		# The processLoop has exited. If it exited non-cleanly (ie before DISCONNECT was fully piped), bishbosh_client_* runs forever (no EOF) 
-		if ! kill -0 $processLoopPid 2>/dev/null; then
+		if ! kill -0 $bishbosh_connection_processLoopPid 2>/dev/null; then
 			set +e
-			wait $processLoopPid
+			wait $bishbosh_connection_processLoopPid
 			local exitCode=$?
 			set -e
 			if [ $exitCode -ne 0 ]; then
 				core_exitError $exitCode "processLoop failed"
 			fi
-			break
+			exit 0
+		fi
+		
+		# core_exitError $core_commandLine_exitCode_TEMPFAIL "Could not connect"
+		# bishbosh_client_* is dead, either because the connection wasn't established (so exitCode is usually 1), or the processLoop cleanly exited
+		# Seems if server closes connection, exit code is 0 for nc.
+		if ! kill -0 $bishbosh_connection_clientPid 2>/dev/null; then
+			set +e
+			wait $bishbosh_connection_clientPid
+			local exitCode=$?
+			set -e
+			if [ $exitCode -ne 0 ]; then
+				core_exitError $core_commandLine_exitCode_TEMPFAIL "Could not connect to '$bishbosh_server'"
+			fi
+			exit 0
 		fi
 	
 		sleep "$bishbosh_readLatency_inFractionalSeconds"

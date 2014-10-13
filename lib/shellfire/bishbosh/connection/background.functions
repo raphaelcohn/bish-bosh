@@ -87,17 +87,28 @@ _bishbosh_connection_background_hexConversion_dd()
 	}
 }
 
+_bishbosh_connection_background_processLoop_trapHandlerTERMfunction()
+{
+	bishbosh_connection_continue=false
+	core_message INFO 'processLoop terminating because of signal'
+}
+
 bishbosh_connection_background_processLoop()
-{	
+{
 	{
+		trap '' TERM INT HUP ABRT QUIT
+		bishbosh_connection_continue=true
+		trap _bishbosh_connection_background_processLoop_trapHandlerTERMfunction TERM
+		
 		bishbosh_connection_read_byte_nonBlockingInitialise
 		
+		if ! $bishbosh_connection_continue; then
+			return
+		fi
 		bishbosh_connection_write_CONNECT
 		
 		local controlPacketByte
 		local remainingLength
-		
-		bishbosh_connection_continue=true
 		
 		# Specialised CONNACK handling
 		# - No need to check for pings
@@ -112,6 +123,9 @@ bishbosh_connection_background_processLoop()
 			fi
 			break
 		done
+		if ! $bishbosh_connection_continue; then
+			return
+		fi
 		if [ $controlPacketByte -ne 32 ]; then
 			bishbosh_connection_read_controlpacket_invalid
 		fi
@@ -145,6 +159,7 @@ bishbosh_connection_background_processLoop()
 
 # Only needed for dash, pdksh
 core_dependency_requires '*' sleep kill
+core_usesIn bishbosh/connection foreground
 bishbosh_connection_background_processingLoopReadInterrupter()
 {
 	if [ $bishbosh_connection_supportsNonBlockingRead -eq 0 ]; then
@@ -152,12 +167,10 @@ bishbosh_connection_background_processingLoopReadInterrupter()
 			while true
 			do
 				sleep $bishbosh_readLatency_inFractionalSeconds
-				kill -HUP $processLoopPid 2>/dev/null || exit 0
+				kill -HUP $bishbosh_connection_processLoopPid 2>/dev/null || exit 0
 			done
 		} 1>/dev/null </dev/null &
-		local processingLoopReadInterrupterPid=$!
-		core_children_killOnExit $processingLoopReadInterrupterPid
-		core_message DEBUG "processingLoopReadInterrupterPid PID is $processingLoopReadInterrupterPid"
+		bishbosh_connection_foreground_recordBackgroundJob bishbosh_connection_processingLoopReadInterrupterPid
 	fi
 }
 
