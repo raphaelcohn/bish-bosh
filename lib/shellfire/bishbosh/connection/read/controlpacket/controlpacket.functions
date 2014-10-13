@@ -158,7 +158,8 @@ bishbosh_connection_read_controlpacket_handle()
 	esac
 }
 
+core_usesIn bishbosh/connection error
 bishbosh_connection_read_controlpacket_invalid()
 {
-	bishbosh_connection_error_readControlPacket invalid "Invalid control packet code '$controlPacketByte' with remaining length '$remainingLength'"
+	bishbosh_connection_error_protocolRead "Invalid control packet code '$controlPacketByte' with remaining length '$remainingLength'"
 }

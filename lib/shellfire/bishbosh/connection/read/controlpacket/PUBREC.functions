@@ -10,7 +10,7 @@ bishbosh_connection_read_controlpacket_PUBREC()
 	local pendingSendQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingSendPath"/"$packetIdentifier"
 	local pendingCompQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingCompPath"/"$packetIdentifier"
 	if [ -f "$pendingCompQos2PacketIdentifierPath" ]; then
-		bishbosh_connection_error_readControlPacket PUBREC "Packet identifier $packetIdentifier already exists at pendingCompQos2PacketIdentifierPath '$pendingCompQos2PacketIdentifierPath'. How?"
+		bishbosh_connection_error_any $core_commandLine_exitCode_SOFTWARE "read:PUBREC:Packet identifier $packetIdentifier already exists at pendingCompQos2PacketIdentifierPath '$pendingCompQos2PacketIdentifierPath'. How?"
 	fi
 	
 	if [ -f "$pendingSendQos2PacketIdentifierPath" ]; then

@@ -21,6 +21,28 @@ bishbosh_connection_mkfifo()
 	printf '%s' "$fifoPath"
 }
 
+bishbosh_connection_validateAndDefaultClientId()
+{
+	if core_variable_isUnset bishbosh_clientId; then
+		if core_variable_isUnset bishbosh_connection_write_CONNECT_cleanSession; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The option -i,--client-id or configuration setting bishbosh_clientId isn't set, either in configuration, SCRIPTLETS or any path under '$bishbosh_clientPath' (and Clean Session is unset, ie 0)"
+		else
+			core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'configuration setting' bishbosh_connection_write_CONNECT_cleanSession "$bishbosh_connection_write_CONNECT_cleanSession"
+			if core_variable_isFalse "$bishbosh_connection_write_CONNECT_cleanSession"; then
+				core_exitError $core_commandLine_exitCode_CONFIG "The option -i,--client-id or configuration setting bishbosh_clientId isn't set, either in configuration, SCRIPTLETS or any path under '$bishbosh_clientPath' (and Clean Session is 0)"
+			fi
+		fi
+	
+		# May be rejected by some servers
+		core_message WARN "Clean Session is 1 and the client id is unset; defaulting to empty (''). This may be rejected by some MQTT servers."
+		bishbosh_clientId=''
+	else
+		if [ ${#bishbosh_clientId} -gt 254 ]; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The option -i,--client-id or configuration setting bishbosh_clientId '$bishbosh_clientId' is longer than 254 bytes."
+		fi
+	fi
+}
+
 bishbosh_connection_sourceScriptlets()
 {
 	local path="$1"
@@ -180,7 +202,7 @@ bishbosh_connection_obtainLockForClientId()
 	if mkdir -m 0755 -p "$lockPath"; then
 		bishbosh_connection_clientIdLockFolderPath="$lockPath"
 	else
-		core_exitError "Another process has lock'd Client Id '$bishbosh_clientId' at path '$lockPath'"
+		core_exitError $core_commandLine_exitCode_TEMPFAIL "Another process has lock'd Client Id '$bishbosh_clientId' at path '$lockPath'"
 	fi
 }
 
@@ -204,8 +226,10 @@ bishbosh_connection_makeClientConnection()
 		bishbosh_connection_sourceScriptlets "$bishbosh_connection_clientServersPortsPath"
 	fi
 	
+	bishbosh_connection_validateAndDefaultClientId
+	
 	if core_variable_isUnset bishbosh_connection_clientServersPortsClientIdsPath; then
-		bishbosh_connection_clientServersPortsClientIdsPath="$bishbosh_connection_clientServersPortsPath"/client-ids/"$bishbosh_clientId"
+		bishbosh_connection_clientServersPortsClientIdsPath="$bishbosh_connection_clientServersPortsPath"/client-ids/_"$bishbosh_clientId"
 		bishbosh_connection_sourceScriptlets "$bishbosh_connection_clientServersPortsClientIdsPath"
 	fi
 	
@@ -220,6 +244,7 @@ bishbosh_connection_makeClientConnection()
 	bishbosh_connection_createFifos
 	
 	bishbosh_connection_read_initialise 'no'
+	bishbosh_connection_ping_initialise
 	
 	# http://mywiki.wooledge.org/SignalTrap
 	

@@ -2,7 +2,8 @@ bishbosh_connection_write_PINGRESP()
 {
 	# 13 << 4 in octal, followed by 0 (remaining length)
 	printf '\320\000'
-	
+
 	bishbosh_connection_ping_recordLastSentControlPacketAt
-	bishbosh_connection_ping_sentAt=-1
+	
+	bishbosh_connection_pingResponseReceived
 }

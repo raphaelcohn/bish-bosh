@@ -100,6 +100,8 @@ bishbosh_connection_background_processLoop()
 		bishbosh_connection_continue=true
 		
 		# Specialised CONNACK handling
+		# - No need to check for pings
+		# - Do not respond to any other packets bar CONNACK
 		while $bishbosh_connection_continue
 		do
 			# Will return empty if interrupted (SIGINT) or non-blocking
@@ -119,18 +121,21 @@ bishbosh_connection_background_processLoop()
 		# Main read loop
 		while $bishbosh_connection_continue
 		do
-			bishbosh_connection_ping_check
+			bishbosh_connection_ping_sendPingIfRequired
 			
 			# Will return empty if interrupted (SIGINT) or non-blocking
 			controlPacketByte=''
 			bishbosh_connection_read_byte_nonBlocking controlPacketByte
 			if [ -z "$controlPacketByte" ]; then
+				bishbosh_connection_ping_checkForResponseTimeout
 				bishbosh_connection_handler_noControlPacketsRead
 				continue
 			fi
 			
 			bishbosh_connection_read_remainingLength "$controlPacketByte"
 			bishbosh_connection_read_controlpacket_handle
+			
+			bishbosh_connection_ping_checkForResponseTimeout
 		done
 		
 		bishbosh_connection_write_DISCONNECT

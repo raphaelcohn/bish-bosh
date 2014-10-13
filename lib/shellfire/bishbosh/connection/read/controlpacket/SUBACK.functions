@@ -16,7 +16,7 @@ bishbosh_connection_read_controlpacket_SUBACK()
 	local returnCodeCount=$((remainingLength-2))
 	local expectedReturnCodeCount=$(<"$pendingSubscribeByPacketIdentifierPath".count)
 	if [ $returnCodeCount -ne $expectedReturnCodeCount ]; then
-		bishbosh_connection_error_readControlPacket SUBACK "Mismatch in number of return codes; received '$returnCodeCount', expected '$expectedReturnCodeCount' from file '$recordFileWritten'"
+		bishbosh_connection_error_protocolReadControlPacket SUBACK "Mismatch in number of return codes; received '$returnCodeCount', expected '$expectedReturnCodeCount' from file '$recordFileWritten'"
 	fi
 	
 	local index=0
@@ -33,7 +33,7 @@ bishbosh_connection_read_controlpacket_SUBACK()
 			;;
 		
 			*)
-				bishbosh_connection_error_readControlPacket SUBACK "Received reserved returnCode code of $returnCode"
+				bishbosh_connection_error_protocolReadControlPacket SUBACK "Received reserved returnCode code of $returnCode"
 			;;
 		
 		esac

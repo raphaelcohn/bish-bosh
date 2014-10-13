@@ -1,6 +1,5 @@
 _bishbosh_connection_write_CONNECT_validateArguments()
 {
-	# TODO: May be change from exit to return in core_exitError?
 	if core_variable_isUnset bishbosh_connection_write_CONNECT_cleanSession; then
 		cleanSession=0
 	else
@@ -76,7 +75,7 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 	fi
 	
 	if core_variable_isUnset bishbosh_clientId; then
-		core_exitError "How is bishbosh_clientId unset?"
+		core_exitError $core_commandLine_exitCode_SOFTWARE "How is bishbosh_clientId unset?"
 	elif [ -z "$bishbosh_clientId" ]; then
 		if [ $cleanSession -eq 0 ]; then
 			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_clientId' can not be empty (blank) if the argument 'bishbosh_connection_write_CONNECT_cleanSession' is 0"

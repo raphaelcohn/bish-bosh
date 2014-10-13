@@ -95,7 +95,7 @@ _random_generateBetween0To255_determineImplementation()
 		return 0
 	fi
 	
-	core_exitError "No source of randomess could be used"
+	core_exitError $core_commandLine_exitCode_OSFILE "No source of randomess could be used"
 }
 
 random_generateBetween0To255()

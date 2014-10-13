@@ -71,7 +71,7 @@ bishbosh_connection_read_remainingLength()
 		remainingLength=$((remainingLength+remainingLengthByte*128*128*128))
 		return 0
 	fi
-	bishbosh_connection_error_readControlPacket "$controlPacket" "Remaining length exceeds four bytes"
+	bishbosh_connection_error_protocolReadControlPacket "$controlPacket" "Remaining length exceeds four bytes"
 }
 
 bishbosh_connection_read_packetIdentifier()

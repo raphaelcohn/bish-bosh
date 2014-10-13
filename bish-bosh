@@ -673,10 +673,6 @@ _program_commandLine_validate()
 		bishbosh_validate_filesizeAlgorithm $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_filesizeAlgorithm' "$bishbosh_filesizeAlgorithm"
 	fi
 	
-	if core_variable_isUnset bishbosh_clientId; then
-		core_exitError $core_commandLine_exitCode_CONFIG "The option -i,--client-id or configuration setting bishbosh_clientId isn't set, either in configuration or SCRIPTLETS"
-	fi
-	
 	if core_variable_isUnset bishbosh_readLatency; then
 		bishbosh_readLatency="$_program_default_readLatency"
 	else

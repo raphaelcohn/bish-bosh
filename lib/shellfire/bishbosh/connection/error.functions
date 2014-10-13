@@ -1,0 +1,56 @@
+bishbosh_connection_error_any()
+{
+	local exitCode=$1
+	local message="$2"
+	core_exitError $exitCode "Connection:$bishbosh_connection_id:$message"
+}
+
+bishbosh_connection_error_pingTimeout()
+{
+	bishbosh_connection_error_any $core_commandLine_exitCode_UNAVAILABLE "ping:timeout"
+}
+
+bishbosh_connection_error_connectReturnCode()
+{
+	local exitCode=$1
+	local message="$2"
+	bishbosh_connection_error_any $exitCode "CONNACK:read:$message"
+}
+
+bishbosh_connection_error_protocol()
+{
+	local message="$1"
+	bishbosh_connection_error_any $core_commandLine_exitCode_PROTOCOL "$message"
+}
+
+bishbosh_connection_error_protocolRead()
+{
+	local message="$1"
+	bishbosh_connection_error_protocol "read:$message"
+}
+
+bishbosh_connection_error_protocolReadControlPacket()
+{
+	local controlPacket="$1"
+	local message="$2"
+	bishbosh_connection_error_protocolRead "$controlPacket:$message"
+}
+
+bishbosh_connection_error_unknownPacketIdentifier()
+{
+	bishbosh_connection_error_protocolReadControlPacket "$1" "Unknown packet identifier '$packetIdentifier'"
+}
+
+bishbosh_connection_error_ifRemainingLengthNot()
+{
+	local controlPacket="$1"
+	local expectedLength=$2
+	if [ $remainingLength -ne $expectedLength ]; then
+		bishbosh_connection_error_protocolReadControlPacket "$controlPacket" "Remaining length '$remainingLength' should be $expectedLength"
+	fi
+}
+
+bishbosh_connection_error_ifRemainingLengthNotZero()
+{
+	bishbosh_connection_error_ifRemainingLengthNot "$1" 0
+}

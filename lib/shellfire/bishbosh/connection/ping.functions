@@ -1,6 +1,11 @@
+
+
+_bishbosh_connection_ping_resetTimer()
+date '+%s'
+
+core_dependency_oneOf '*' date
 bishbosh_connection_ping_initialise()
 {
-	SECONDS=0
 	bishbosh_connection_ping_responsePending=0
 	
 	if [ $bishbosh_connection_write_CONNECT_keepAlive -eq 0 ]; then
@@ -9,36 +14,95 @@ bishbosh_connection_ping_initialise()
 			:
 		}
 		
-		bishbosh_connection_ping_check()
+		bishbosh_connection_ping_sendPingIfRequired()
 		{
 			:
+		}
+		
+		bishbosh_connection_ping_checkForResponseTimeout()
+		{
+			:
+		}
+		
+		bishbosh_connection_pingResponseReceived()
+		{
+			bishbosh_connection_error_protocolReadControlPacket PINGRESP 'Pings should not be received when Keep Alive is 0'
+		}
+		
+		bishbosh_connection_write_PINGREQ()
+		{
+			bishbosh_connection_error_protocol "PINGREQ should not be called when Keep Alive is 0"
+		}
+		
+		return 0
+	fi
+	
+	if core_variable_isSet SECONDS; then
+		bishbosh_connection_ping_resetTimer()
+		{
+			SECONDS=0
+		}
+
+		bishbosh_connection_ping_checkTimer()
+		{
+			[ $SECONDS $1 $2 ]
+		}
+	else
+
+		if core_compatibility_whichNoOutput date; then
+			core_exitError $core_commandLine_exitCode_OSFILE "Your shell does not support 'SECONDS' and the 'date' program can't be found"
+		fi
+		
+		_bishbosh_connection_ping_timer=0
+		bishbosh_connection_ping_resetTimer()
+		{
+			_bishbosh_connection_ping_timer=$(date '+%s')
+		}
+
+		bishbosh_connection_ping_checkTimer()
+		{
+			local now=$(date '+%s')
+			local elapsedTime=$((now-_bishbosh_connection_ping_timer))
+			[ $elapsedTime $1 $2 ]
 		}
 	fi
 }
 
 bishbosh_connection_ping_recordLastSentControlPacketAt()
 {
-	# Won't work on dash
-	# Reset timer
-	SECONDS=0
+	# Avoid unnecessary resets - speeds up dash, etc shells lacking $SECONDS builtin
+	if [ $bishbosh_connection_ping_responsePending -eq 1 ]; then
+		return 0
+	fi
+	
+	bishbosh_connection_ping_resetTimer
 }
 
-bishbosh_connection_ping_check()
+bishbosh_connection_ping_sendPingIfRequired()
 {
-	local currentSeconds=$SECONDS
-	
 	if [ $bishbosh_connection_ping_responsePending -eq 1 ]; then
-		if [ $SECONDS -gt $bishbosh_pingTimeout ]; then
-			bishbosh_connection_error_pingTimeout
-		fi
+		return 0
+	fi
+	if bishbosh_connection_ping_checkTimer -lt $bishbosh_connection_write_CONNECT_keepAlive; then
 		return 0
 	fi
 	
-	if [ $currentSeconds -lt $bishbosh_connection_write_CONNECT_keepAlive ]; then
+	bishbosh_connection_write_PINGREQ
+	bishbosh_connection_ping_responsePending=1
+}
+
+bishbosh_connection_ping_checkForResponseTimeout()
+{
+	if [ $bishbosh_connection_ping_responsePending -eq 0 ]; then
 		return 0
 	fi
-	
-	# Last sent control packet time...
-	
-	bishbosh_connection_ping_lastCheckAt=$SECONDS
+
+	if bishbosh_connection_ping_checkTimer -gt $bishbosh_pingTimeout; then
+		bishbosh_connection_error_pingTimeout
+	fi
+}
+
+bishbosh_connection_pingResponseReceived()
+{
+	bishbosh_connection_ping_responsePending=0
 }

@@ -242,7 +242,7 @@ _*TODO: Document control packet writers of interest*_
 | ------ | ----- | --------------------- | ------- | ------- |
 | `-s`, `--server` | `HOST` | `bishbosh_server` | `localhost` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an [MQTT] server to connect to. If using Unix domain sockets (see [`--transport`](#source-routing-settings)) it is a file path to a readable Unix domain socket. If using serial devices it a file path to a readable serial device file. |
 | `-p`, `--port` | `PORT` | `bishbosh_port` | 1883 for most backends; 8883 if backend is secure | Port your [MQTT] `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix domain sockets or serial device files (see [`--transport`](#source-routing-settings)). |
-| `-i`, `--client-id` | `ID` | `bishbosh_clientId` | *unset* | [MQTT] ClientId. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. |
+| `-i`, `--client-id` | `ID` | `bishbosh_clientId` | *unset* | [MQTT] ClientId. Essential; we do not support random ids (yet). When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. If *unset*, and [`bishbosh_connection_write_CONNECT_cleanSession`](#being-specific-about-how-a-is-made-connection) is 1, then forced to empty (`''`), which MAY NOT work with some MQTT servers. |
 | `-t`, `--ping-timeout` | `SECS` `bishbosh_pingTimeout` | `30` | When the client's Keep Alive value is not 0, this is the 'reasonable time' in `SECS` seconds that the client will wait to receive a **PINGRESP** packet. |
 
 #### [Backends](#status-of-supported-backends)
@@ -318,8 +318,8 @@ Anything you can do with a command line switch, you can do as configuration. But
   2. Any files in the folder `servers/${bishbosh_server}/rc.d`†
   3. The file `servers/${bishbosh_server}/ports/${bishbosh_port}/rc` where `bishbosh_port` is a configuration setting or the switch [`--port`](#mqtt-big-hitters)‡
   4. Any files in the folder `servers/${bishbosh_server}/port/${bishbosh_port}/rc.d`‡
-  5. The file `servers/${bishbosh_server}/ports/${bishbosh_port}/client-ids/${bishbosh_clientId}/rc` where `bishbosh_clientId` is a configuration setting or the switch [`--client-id`](#mqtt-big-hitters)
-  6. Any files in the folder `servers/${bishbosh_server}/ports/${bishbosh_port}/client-ids/${bishbosh_clientId}/rc.d` 
+  5. The file `servers/${bishbosh_server}/ports/${bishbosh_port}/client-ids/_${bishbosh_clientId}/rc` where `bishbosh_clientId` is a configuration setting or the switch [`--client-id`](#mqtt-big-hitters)§
+  6. Any files in the folder `servers/${bishbosh_server}/ports/${bishbosh_port}/client-ids/_${bishbosh_clientId}/rc.d`§
 
 Nothing stops any of these paths, or files in them, being symlinks. This can be exploited to symlink together, say, port numbers 1883 and 8883, or client ids that share usernames and passwords, etc.
 
@@ -327,7 +327,35 @@ _\* An installation as a daemon using a service account would normally set `HOME
 
 _† it is possible for a configuration file here to set `bishbosh_port` (or even `bishbost_clientId`), so influencing the search in 3 - 6._
 
-_‡ It is possible for a configuration file here to set `bishbost_clientId`, so influencing the search in 5 and 6.__
+_‡ It is possible for a configuration file here to set `bishbost_clientId`, so influencing the search in 5 and 6._
+
+_§ Note the leading `_` before `${bishbosh_clientId}`. This is to accommodate Client Ids that are empty or start with `.` or `..`._
+
+### `/var`
+We use a `/var` folder underneath where we're installed. If you've just cloned [bish-bosh] from [GitHub], then this is _within_ the clone.
+* `/var/lib/bish-bosh/client` must be searchable for the user running `bish-bosh`. This `PATH` be changed with the [`--client-path PATH`](#configuration-tweaks) option or [`bishbosh_clientPath='PATH'`](#configuration-tweaks) configuration setting. Ordinarily, it needs to be writable _unless_ you've created the entire servers, ports and client-ids structure in advance.
+* `/var/spool/bish-bosh/session` must be searchable and writable for the user running `bish-bosh`. This `PATH` be changed with the [`--session-path PATH`](#configuration-tweaks) option or [`bishbosh_sessionPath='PATH'`](#configuration-tweaks) configuration setting.
+* `/var/run/bish-bosh/lock` must be searchable and writable for the user running `bish-bosh`. This `PATH` be changed with the [`--lock-path PATH`](#configuration-tweaks) option or [`bishbosh_lockPath='PATH'`](#configuration-tweaks) configuration setting. You may want to change this location to `/var/lock` on Linux, or mount this path with a temporary file system.
+
+### `/etc`
+We use a `/etc` folder underneath where we're installed. If you've just cloned [bish-bosh] from [GitHub], then this is _within_ the clone.
+* `/etc/bish-bosh/paths.d` is optional, but must be a readable and searchable folder if present.
+* `/etc/bish-bosh/rc.d` is optional, but must be a readable and searchable folder if present.
+* `/etc/bish-bosh/rc` is optional, but must be readable, non-empty file if present.
+
+### `/tmp`: Temporary Files
+* There must be a writable temporary folder (eg `/tmp`; we use whatever `mktemp` does), ideally mounted on an in-memory file system (eg tmpfs).
+* Every client connection will create a very small amount of data in the temporary structure (mostly FIFOs and folders).
+* Additionally, clients connecting with Clean Session = 1 will store all their data inside temporary folders; if messages are large, then this will consume more data.
+* If so desired, other paths below can be symlinked to temporary folders.
+
+### `/dev`: Devices
+* `/dev/null` must be present and permission available for reading and writing to.
+* one of `/dev/urandom` or `/dev/random` may be required if generating random ids (only used if `openssl` is not available)
+* If using serial devices with [`--transport serial`](#source-routing-settings) then the character device file `DEVICE` you specify to [`--server DEVICE`](#mqtt-big-hitters) must exist on the file system and be readable/writable.
+
+### Unix domain sockets
+* If using unix domain sockets with [`--transport unix`](#source-routing-settings) then the unix domain socket file `SOCKET` you specify to [`--server SOCKET`](#mqtt-big-hitters) must exist on the file system and be readable/writable.
 
 ## Dependencies
 [bish-bosh] tries to use as few dependencies as possible, but, since this is shell script, that's not always possible. It's compounded by the need to support the difference between major shells, too. It also does its best to work around differences in common binaries, by using feature detection, and where it can't do any better, by attempting to install using your package manager.
@@ -380,9 +408,14 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * `bash` (if compiled with socket support; this is true for Mac OS X Snow Leopard+, Mac OS X + Homebrew, RHEL 6+, Centos 6+, Debian 6+, and Ubuntu 10.04 LTS +)
   * `socat`
   * `tcpclient`, part of D J Bernstein's [`ucspi-tcp`](http://cr.yp.to/ucspi-tcp.html) package (available as `ucspi-tcp` on Debian/Ubuntu and Mac OS X + Homebrew)
+* Keep Alives (only required if `bishbosh_connection_write_CONNECT_keepAlive` is not `0`)
+  * `SECONDS` pseudo-environment variable if your shell supports it [GNU Bash], [mksh] and [pdksh] do)
+    * Works slightly differently on [ksh93], as it uses 3 decimal places, but still effective
+  * `date`, as long as it supports the `+%s` format string (true for GNU `coreutils`, [BusyBox], [Toybox] and Mac OS X)
 * Validating UTF-8 strings
-  * `iconv`, from the GNU `glibc` package
+  * `iconv`, from the [GNU glibc] package
   * `iconv`, BSD-derived
+  * `iconv`, from the [GNU libiconv] package
   * Nothing (validation not performed)
 * File sizes
   * `ls`, any, used for file sizes (not efficient, but `ls -L -l -n FILE` is portable)
@@ -418,34 +451,6 @@ Unfortunately, there are a lot of [GNU Bash] versions that are still in common u
   * Ubuntu 14.04 LTS
   * Mac OS X + Homebrew
 
-### File System Requirements
-
-#### Temporary Files
-* There must be a writable temporary folder (eg `/tmp`; we use whatever `mktemp` does), ideally mounted on an in-memory file system (eg tmpfs).
-* Every client connection will create a very small amount of data in the temporary structure (mostly FIFOs and folders).
-* Additionally, clients connecting with Clean Session = 1 will store all their data inside temporary folders; if messages are large, then this will consume more data.
-* If so desired, other paths below can be symlinked to temporary folders.
-
-#### Devices
-* `/dev/null` must be present and permission available for writing to (we do not read from it).
-* one of `/dev/urandom` or `/dev/random` may be required if generating random ids (only used if `openssl` is not available)
-* If using serial devices with [`--transport serial`](#source-routing-settings) then the character device file `DEVICE` you specify to [`--server DEVICE`](#mqtt-big-hitters) must exist on the file system and be readable/writable.
-
-#### Unix domain sockets
-* If using unix domain sockets with [`--transport unix`](#source-routing-settings) then the unix domain socket file `SOCKET` you specify to [`--server SOCKET`](#mqtt-big-hitters) must exist on the file system and be readable/writable.
-
-#### `/var`
-We use a `/var` folder underneath where we're installed. If you've just cloned [bish-bosh] from [GitHub], then this is _within_ the clone.
-* `/var/lib/bish-bosh/client` must be searchable for the user running `bish-bosh`. This `PATH` be changed with the [`--client-path PATH`](#configuration-tweaks) option or [`bishbosh_clientPath='PATH'`](#configuration-tweaks) configuration setting. Ordinarily, it needs to be writable _unless_ you've created the entire servers, ports and client-ids structure in advance.
-* `/var/spool/bish-bosh/session` must be searchable and writable for the user running `bish-bosh`. This `PATH` be changed with the [`--session-path PATH`](#configuration-tweaks) option or [`bishbosh_sessionPath='PATH'`](#configuration-tweaks) configuration setting.
-* `/var/run/bish-bosh/lock` must be searchable and writable for the user running `bish-bosh`. This `PATH` be changed with the [`--lock-path PATH`](#configuration-tweaks) option or [`bishbosh_lockPath='PATH'`](#configuration-tweaks) configuration setting. You may want to change this location to `/var/lock` on Linux, or mount this path with a temporary file system.
-
-#### `/etc`
-We use a `/etc` folder underneath where we're installed. If you've just cloned [bish-bosh] from [GitHub], then this is _within_ the clone.
-* `/etc/bish-bosh/paths.d` is optional, but must be a readable and searchable folder if present.
-* `/etc/bish-bosh/rc.d` is optional, but must be a readable and searchable folder if present.
-* `/etc/bish-bosh/rc` is optional, but must be readable, non-empty file if present.
-
 ## Configurations
 The widely varying list of dependencies and preferences can be confusing, so here's a little guidance.
 
@@ -479,10 +484,11 @@ cd -
   * `ash` ([GNU Bash]-like features aren't required)
   * `hexdump`
   * `dd`
+  * `date`
 * From GNU coreutils (because BusyBox doesn't have a builtin for stdbuf)
   * `stdbuf`
   * `od`
-* From GNU glibc
+* From [GNU glibc] or [GNU libiconv]
   * `iconv`
 
 _Note: BusyBox configurations will work on Debian/Ubuntu, too, and so can be used for boot-time [MQTT] activities._
@@ -520,6 +526,7 @@ cd -
   * `ash` ([GNU Bash]-like features aren't required)
   * `hexdump`
   * `dd`
+  * `date`
 
 #### For Mac OS X
 No installation should be required.
@@ -579,28 +586,32 @@ _† Yes, if the detected variant of the backend does._
 bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit as soon as possible with an error. It is madness to run shell scripts with such settings.
 
 ### Specification Violations
-* Apart from [zsh], no shell can either have variables with Unicode NUL (aka ASCII NUL, 0x00) in them, or read them directly. [zsh] is not supported at this time. Consequently,
-  * Will messages can not have ASCII NUL in them, although a mechanism to load them from disk may be added
-  * Passwords likewise are so constrained (again, loading directly from disk may be added)
-* It is not possible to support Keep Alives other than 0 on pure POSIX shells such as `dash`, as they lack read timeouts and the pseudo-environment variable `SECONDS` (a workaround with `date` is painful to consider)
+
+#### Unicode `NUL`, `U+0000` (aka ASCII NUL, `0x00`, `\u0000`, etc)
+Apart from [zsh], no shell can either have variables with Unicode NUL (aka ASCII NUL, 0x00) in them, or read them directly. [zsh] is not supported at this time. Consequently,
+
+* Will messages can not have `NUL` in them, although a mechanism to load them from disk may be added
+* Passwords likewise are so constrained (again, loading directly from disk may be added)
+
+#### Client Ids
+* To accommodate empty client ids, and those matching reserved file names (typically `.` and `..`), we prefix client ids in our file paths with `_`.
+* We do not permit client ids to exceed 254 bytes. This is because client ids can not exceed the maximum file name size of a file system, and most modern file systems support a maximum size of either 255 bytes or 255 UTF-8 code points (except HFS+).
+
+#### Topic Names and Topic Filters
 * Shell builtins and most common tools do not support parsing lines delimited with anything other than `\n` (eg `sed`). Whilst some tooling (eg GNU coreutils, [GNU Bash]) can handle `\0` terminated lines, support is not consistent enough. Consequently,
   * Topic names can not contain `\n`.
   * Topic filters can not contain `\n`.
-* Since client-ids are used as part of file system paths, they may not be empty even when `bishbosh_connection_write_CONNECT_cleanSession` is 0. This might be fixed in a future version.
 
 ### Broken but Fixable
-* Keep Alive handling does not correctly support values other than 0, and *PINGREQ* packets are not sent (and **PINGRESP** packets are discarded)
 * Unsubscribe handling is broken
 * Connection tear down is very brittle, and state can be easily corrupted
 * State transitions are nothing like as close to atomic as they could be
-* SIGINT / SIGTERM signal handling for read
+* We do not handle SIGTERM et al cleanly
 * Non-blocking reads should cause re-evaluation of connection status
 
 ### Useful to do
 * nextPacketIdentifier, set at start, and calculate better
-* Publish messages from a handler that happens before / after read
 * Turning off DNS resolution
-* supporting inactivity timers
 * [MQTT]S using openssl, socat, gnutls, ncat and others
 * [MQTT] over SSH
 * [MQTT] over WebSockets
@@ -627,3 +638,5 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 [ksh88]: http://www.kornshell.com "ksh88 at kornshell.com"
 [Almquist]: http://www.in-ulm.de/~mascheck/various/ash/ "Almquist shell"
 [Linux FHS]: http://refspecs.linuxfoundation.org/fhs.shtml "Linux File Hierarchy Standard"
+[GNU glibc]: https://www.gnu.org/software/libc/ "GNU libc"
+[GNU libiconv]: https://www.gnu.org/software/libiconv/ "GNU libiconv"
