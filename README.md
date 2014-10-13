@@ -324,6 +324,7 @@ _\* Not running proxies myself, I can't test many of these settings combinations
 | 66   |  | Not used |
 | 65   |  | Not used |
 | 64   | Incorrect command line | Command line switches omitted, contradictory or incorrectly specified |
+| 2    |  | A shell builtin misbehaved |
 | 1    |  | Something went wrong we didn't expect or couldn't intercept |
 | 0    |  | Successful operation; connection disconnected cleanly |
 
