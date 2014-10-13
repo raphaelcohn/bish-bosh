@@ -66,9 +66,12 @@ _bishbosh_connection_write_PUBLISH_validateArguments()
 		messageFilePath=''
 		bishbosh_connection_write_fieldLengthCheck PUBLISH message
 	fi
-	if [ ${#message_fieldLength} -gt 65535 ]; then
-		# 268369912 estimated
-		core_exitError $core_commandLine_exitCode_CONFIG "The Will Message can not be longer than 65,535 bytes"
+	local maximumLength=$((268435455-2-topicName_fieldLength))
+	if [ $qos -ne 0 ]; then
+		maximumLength=$((maximumLength-2))
+	fi
+	if [ ${#message_fieldLength} -gt $maximumLength ]; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The message can not be longer than $maximumLength bytes when topicName is $topicName_fieldLength bytes and qos is $qos."
 	fi
 	remainingLength=$(( remainingLength + message_fieldLength ))
 	
