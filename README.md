@@ -304,6 +304,29 @@ When using a proxy, you won't be able to use Unix domain sockets ([`--transport 
 
 _\* Not running proxies myself, I can't test many of these settings combinations._
 
+## Exit Codes
+[bish-bosh] tries to follow the BSD exit code conventions. A non-zero exit code is indicative of failure. Typical codes are:-
+
+| Code | Meaning | Common Causes |
+| ---- | ------- | ------------- |
+| 78   | Configuration issue | Configuration omitted, contradictory or incorrectly specified |
+| 77   | Permission Denied | Run with setuid / setgid bits set. **CONNACK** had a connection return code of 4 or 5 |
+| 76   | Protocol | An invalid control packet code, remaining length or control packet was read or decoded |
+| 75   | Temporary Failure | Another process has locked our client-id. We could not establish a socket connection to the MQTT server |
+| 74   | I/O Error | We couldn't unlink (delete) a message file |
+| 73   | Can't create | We couldn't create a temporary file or folder |
+| 72   | Missing File | We tried very hard, but even a fallback dependency was missing |
+| 71   |  | Not used |
+| 70   | Internal Error | Something went wrong with [bish-bosh]; an assumption was violated |
+| 69   | Unavailable |  Ping timed out. **CONNACK** had a connection return code of 1 or 3 |
+| 68   | Unknown Host | Not used presently |
+| 67   | Unknown User | **CONNACK** had a connection return code of 2 |
+| 66   |  | Not used |
+| 65   |  | Not used |
+| 64   | Incorrect command line | Command line switches omitted, contradictory or incorrectly specified |
+| 1    |  | Something went wrong we didn't expect or couldn't intercept |
+| 0    |  | Successful operation; connection disconnected cleanly |
+
 ## File Locations
 
 ### Configuration Locations

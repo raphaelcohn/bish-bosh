@@ -71,7 +71,7 @@ bishbosh_connection_background_hexConversion()
 			fi
 		fi
 		
-		core_exitError $core_commandLine_exitCode_UNAVAILABLE "Could not find a means of doing Hex Conversion"
+		core_exitError $core_commandLine_exitCode_OSFILE "Could not find a means of doing Hex Conversion"
 	done
 	
 	"$@" <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo" &
