@@ -11,7 +11,7 @@ bishbosh_client_plaintext_ncToybox_check()
 		if core_compatibility_whichNoOutput "$toyboxName"; then
 			binary="$(core_compatibility_which "$toyboxName")"
 			if "$binary" 2>/dev/null | grep -q -E '^nc$| nc | nc$'; then
-				bishbosh_client_plaintext=ncToyBox
+				bishbosh_client_plaintext=ncToybox
 				bishbosh_client_plaintextPath="$binary"
 				return 0
 			fi
