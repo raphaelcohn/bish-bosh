@@ -131,7 +131,7 @@ bishbosh_validate_proxyKind()
 	
 	case "$value" in
 		
-		SOCKS4|SOCKS5|HTTP)
+		SOCKS4|SOCKS4a|SOCKS5|HTTP)
 			:
 		;;
 		

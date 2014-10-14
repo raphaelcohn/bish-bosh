@@ -99,6 +99,10 @@ bishbosh_backend_ncat_start()
 			_bishbosh_backend_ncat_start_addProxy 'socks4'
 		;;
 		
+		SOCKS4a)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncat does not support the 'SOCKS4a' bishbosh_proxyKind."
+		;;
+		
 		SOCKS5)
 			_bishbosh_backend_ncat_start_addProxy 'socks5'
 		;;

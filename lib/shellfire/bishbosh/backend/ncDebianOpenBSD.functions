@@ -12,12 +12,14 @@ bishbosh_backend_ncDebianOpenBSD_check()
 	return 1
 }
 
+# was '^OpenBSD netcat \(Debian '
+# Ported from OpenBSD to Debian, FreeBSD, Cygwin, Solaris
 core_dependency_requires '*' grep
 core_dependency_requires '*' head
 bishbosh_backend_ncDebianOpenBSD_checkIfNetcatVariant()
 {
 	# eg  'OpenBSD netcat (Debian patchlevel 1.105-7ubuntu1)'
-	if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^OpenBSD netcat \(Debian '; then
+	if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^OpenBSD netcat '; then
 		bishbosh_client_plaintext=ncDebianOpenBSD
 		bishbosh_client_plaintextPath="$binary"
 		return 0
@@ -96,6 +98,10 @@ bishbosh_backend_ncDebianOpenBSD_start()
 		
 		SOCKS4)
 			_bishbosh_backend_ncDebianOpenBSD_start_addProxy '4'
+		;;
+		
+		SOCKS4a)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncDebianOpenBSD does not support the 'SOCKS4a' bishbosh_proxyKind."
 		;;
 		
 		SOCKS5)

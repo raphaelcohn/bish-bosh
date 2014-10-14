@@ -61,26 +61,97 @@ bishbosh_backend_socat_start()
 	
 	case "$bishbosh_transport" in
 		
-		# Timeout with  connect-timeout=<seconds> (also for Unix)
-		# keepalive
-		inet)
-			core_variable_array_append options "TCP:${bishbosh_server}:${bishbosh_port}"
-		;;
-		
-		inet4)
-			core_variable_array_append options "TCP4:${bishbosh_server}:${bishbosh_port}"
-		;;
-		
-		inet6)
-			core_variable_array_append options "TCP6:${bishbosh_server}:${bishbosh_port}"
-		;;
-		
 		unix)
 			core_variable_array_append options "UNIX-CONNECT:${bishbosh_server}"
+			core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 		;;
 		
 		serial)
 			core_variable_array_append options "${bishbosh_server},raw,echo=0"
+			core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+		;;
+		
+		# Timeout with  connect-timeout=<seconds> (also for Unix)
+		inet*)
+		
+			local binding
+			if core_variable_isSet bishbosh_sourceAddress; then
+				binding=",bind=$bishbosh_sourceAddress"
+				if core_variable_isSet bishbosh_sourcePort; then
+					binding="${binding}:${bishbosh_sourcePort}"
+				fi
+			elif core_variable_isSet bishbosh_sourcePort; then
+				binding=",sourceport=${bishbosh_sourcePort}"
+			fi
+			
+			local connectTimeout
+			if [ $bishbosh_connectTimeout -ne 0 ]; then
+				connectTimeout=",connect-timeout=${bishbosh_connectTimeout}"
+			else
+				connectTimeout=''
+			fi
+
+			local addressKind
+			case "$bishbosh_proxyKind" in
+				
+				SOCKS4|SOCKS4a)
+					addressKind="${$bishbosh_proxyKind}:${bishbosh_proxyAddress}:${bishbosh_server}:${bishbosh_port}"
+					if core_variable_isSet bishbosh_proxyPort; then
+						addressKind="${addressKind},socksport=${bishbosh_proxyPort}"
+					fi
+	
+					if core_variable_isSet bishbosh_proxyUsername; then
+						addressKind="${addressKind},socksuser=${bishbosh_proxyUsername}"
+					fi
+					
+					if core_variable_isSet bishbosh_proxyPassword; then
+						core_message WARN "The backend socat does not support specifing the proxy password for 'SOCKS4' bishbosh_proxyKind."
+					fi
+				;;
+				
+				SOCKS5)
+					core_exitError $core_commandLine_exitCode_CONFIG "The backend socat does not support the 'SOCKS5' bishbosh_proxyKind."
+				;;
+		
+				HTTP)
+					addressKind="PROXY:${bishbosh_proxyAddress}:${bishbosh_server}:${bishbosh_port}"
+					if core_variable_isSet bishbosh_proxyPort; then
+						addressKind="${addressKind},socksport=${bishbosh_proxyPort}"
+					fi
+					if core_variable_isSet bishbosh_proxyUsername; then
+						if core_variable_isSet bishbosh_proxyPassword; then
+							addressKind="${addressKind},proxyauth=${bishbosh_proxyUsername}:${bishbosh_proxyPassword}"
+						else
+							core_message WATN $core_commandLine_exitCode_CONFIG "The backend socat requires 'bishbosh_proxyUsername' and 'bishbosh_proxyPassword' for the 'HTTP' bishbosh_proxyKind."
+						fi
+					elif core_variable_isSet bishbosh_proxyPassword; then
+						core_message WATN $core_commandLine_exitCode_CONFIG "The backend socat requires 'bishbosh_proxyUsername' and 'bishbosh_proxyPassword' for the 'HTTP' bishbosh_proxyKind."
+					fi
+				;;
+				
+				*)
+					case "$bishbosh_transport" in
+						
+						inet)
+							addressKind='TCP'
+						;;
+		
+						inet4)
+							addressKind='TCP4'
+						;;
+		
+						inet6)
+							addressKind='TCP6'
+						;;
+					esac
+					
+					addressKind="${addressKind}:${bishbosh_server}:${bishbosh_port}"
+				;;
+		
+			esac
+			
+			# keepidle, keepintvl, keepcnt, linger2, mss, mss-late, syncnt
+			core_variable_array_append options "${addressKind}:${binding}${connectTimeout},keepalive,linger=1,nodelay"
 		;;
 		
 		*)
@@ -88,37 +159,4 @@ bishbosh_backend_socat_start()
 		;;
 		
 	esac
-	
-	if core_variable_isSet bishbosh_sourceAddress; then
-		core_variable_array_append options '-s' "$bishbosh_sourceAddress"
-	fi
-	
-	if core_variable_isSet bishbosh_sourcePort; then
-		core_variable_array_append options '-p' "$bishbosh_sourcePort"
-	fi
-	
-	case "$bishbosh_proxyKind" in
-		
-		SOCKS4)
-			_bishbosh_backend_socat_start_addProxy '4'
-		;;
-		
-		SOCKS5)
-			_bishbosh_backend_socat_start_addProxy '5'
-		;;
-		
-		HTTP)
-			_bishbosh_backend_socat_start_addProxy 'connect'
-		;;
-		
-	esac
-	
-	#Disable DNS  core_variable_array_append -n
-
-	core_variable_array_append options "$bishbosh_server"
-		
-	core_variable_array_append options "$bishbosh_port"
-	
-	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
-	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

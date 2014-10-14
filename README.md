@@ -256,7 +256,7 @@ _ \* This value is a boolean. Use `0` for false, `1` for true ._
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-b`, `--backends` | `A,B,...` | `bishbosh_backends` | `ncat,nc6,nc,devtcp,socat,tcpclient` | [Backends](#status-of-supported-backends) are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. |
+| `-b`, `--backends` | `A,B,...` | `bishbosh_backends` | `ncat,nc6,nc,socat,devtcp` | [Backends](#status-of-supported-backends) are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. |
 
 A backend is the strategy [bish-bosh] uses to connect to a [MQTT] server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. [bish-bosh] ships with a large number of [backends](#status-of-supported-backends) to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
 
@@ -292,9 +292,9 @@ If you have a box with multiple NICs or IP addresses, broken IPv4 / IPv6 network
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `--proxy-kind` | `KIND` | `bishbosh_proxyKind` | *unset* | Use a particular `KIND` of proxy. `KIND` is one of `SOCKS4`, `SOCKS5`, `HTTP` or `none`. Using `none` disables the proxy; this is for when a global configuration has been set for a machine but a local user needs to run without it. |
+| `--proxy-kind` | `KIND` | `bishbosh_proxyKind` | *unset* | Use a particular `KIND` of proxy. `KIND` is one of `SOCKS4`, `SOCKS4a`, `SOCKS5`, `HTTP` or `none`. Using `none` disables the proxy; this is for when a global configuration has been set for a machine but a local user needs to run without it. Most backends do not support `SOCKS4a`. When using the `SOCKS4` protocol, `HOST` (below) must be a numeric address. `SOCKS4` and `SOCKS4a` do not support IPv6. |
 | `-proxy-server` | `HOST` | `bishbosh_proxyServer` | *unset* | Connect to a proxy server on a given `HOST`, which may be a name, an IPv4 or IPv6 address (in the case of the latter, you may need to surround it in `[]`, eg `[::1]`; backends vary and do not document IPv6 proxy address handling). If you disable DNS resolution of [MQTT] server names, it's likely that a backend will do likewise for `HOST`. |
-| `--proxy-port` | `PORT` | `bishbosh_proxyPort` | 1080 for `KIND` of `SOCKS4` or `SOCKS5`. 3128 for `HTTP`. *unset* for `none`. | Port the proxy server `HOST` is running on. |
+| `--proxy-port` | `PORT` | `bishbosh_proxyPort` | 1080 for `KIND` of `SOCKS4`, `SOCKS4a` or `SOCKS5`. 3128 for `HTTP`. *unset* for `none`. | Port the proxy server `HOST` is running on. |
 | `--proxy-username` | `UN` | `bishbosh_proxyUsername` | *unset* | Username `UN` to use. Please note that passing this as a switch is insecure. |
 | `--proxy-password` | `PWD` | `bishbosh_proxyPassword` | *unset* | Password `PWD` to use. Please note that passing this as a switch is insecure. Rarely supported. |
 
@@ -441,7 +441,6 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * `bash` (if compiled with socket support; this is true for Mac OS X Snow Leopard+, Mac OS X + Homebrew, RHEL 6+, Centos 6+, Debian 6+, and Ubuntu 10.04 LTS +)
   * `ksh` ([ksh93], however [ksh93] doesn't work with other script features at this time)
   * `socat`
-  * `tcpclient`, part of D J Bernstein's [`ucspi-tcp`](http://cr.yp.to/ucspi-tcp.html) package (available as `ucspi-tcp` on Debian/Ubuntu and Mac OS X + Homebrew)
 * Keep Alives (only required if `bishbosh_connection_write_CONNECT_keepAlive` is not `0`)
   * `SECONDS` pseudo-environment variable if your shell supports it [GNU Bash], [mksh] and [pdksh] do)
     * Works slightly differently on [ksh93], as it uses 3 decimal places, but still effective
@@ -609,8 +608,7 @@ The following shells are untested and unsupported:-
 | **ncat** | `ncat`| [Nmap ncat](http://nmap.org/ncat/) | MQTT / MQTTS | Fully functional‡ | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames and passwords supported for `HTTP`, usernames only for SOCKS. | Yes | Yes | **nc6** | `nc6` | [netcat6](http://www.deepspace6.net/projects/netcat6.html) | MQTT | Fully functional‡ | Yes | Yes | No | No | No | Yes | Yes |
 |
 | **devtcp** | `bash` / `ksh` | [GNU Bash] / [ksh93] | MQTT | Barely Implemented | No | No | No | ? maybe ? | No | No | No |
-| **socat** | `socat` | [socat](http://www.dest-unreach.org/socat/) | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | Yes | `SOCKS4` and `HTTP`. Usernames are supported. | ? | ? |
-| **tcpclient** | `tcpclient` | [ucspi-tcp](http://cr.yp.to/ucspi-tcp.html) | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes | Yes |
+| **socat** | `socat` | [socat](http://www.dest-unreach.org/socat/) | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | Yes | `SOCKS4`, `SOCKS4a` and `HTTP`. Usernames are supported. | ? | ? |
 
 _\* Refers to the meta backend itself. A detected backend may not be._
 
@@ -619,6 +617,17 @@ _† Yes, if the detected variant of the backend does._
 _‡ Does not respond to 'Ctrl-C'._
 
 Please note that all backends do not respond well to 'Ctrl-C' being sent to a process group, or `SIGINT` (some die early, some never die). It is best to terminate by sending `TERM` to [bish-bosh], eg using `kill`.
+
+### Unimplemented Backends
+If you have a particular need to use these approaches to connecting to MQTT servers, raise an issue and I'll consider it. None of them are widely used or offer particularl advantages.
+
+| Backend | Filename | Home Page | Notes |
+| ------- | -------- | --------- | ----- |
+| **tcpclient** | `tcpclient` | [ucspi-tcp](http://cr.yp.to/ucspi-tcp.html) | Executes a program on connection, which does not suit our model. Does not offer any proxy support. Not widely used. |
+| **sbd** | ? | [Homepage Dead, but links still around](http://www.usinglinux.org/net/sbd.html) and [here](http://linux.softpedia.com/get/System/Networking/sbd-14900.shtml) | Also known as 'sbd for linux' and 'Shadowinteger's Backdoor'. [Was here](http://tigerteam.se/dl/sbd/) |
+| **cryptcat** | `cryptcat` | - | Encryting variant of netcat, but, because the password is supplied on the command line, insecure. |
+| **pnetcat** | `pnetcat` | [Home](http://stromberg.dnsalias.org/~strombrg/pnetcat.html) | BSD-like licence, but web page infers mis-distribution. Implemented in Python, which whilst interesting, mitigates against the point of [bish-bosh]. |
+| **nc.pl** | ? | ? | There are also perl implementations of netcat. Just as for **pnetcat**, it seems a moot choice. |
 
 ## Limitations
 
@@ -645,6 +654,7 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 ### Useful to do
 * nextPacketIdentifier, set at start, and calculate better
 * Turning off DNS resolution
+* Connection timeouts (`-w` in netcat)
 * [MQTT]S using openssl, socat, gnutls, ncat and others
 * [MQTT] over SSH
 * [MQTT] over WebSockets
@@ -655,10 +665,10 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 	* Investigate [Beastiebox](http://beastiebox.sourceforge.net/)
 	* Investigate proxy support, eg corkscrew
 	* Investigate [Debian uscpi-tcp-ipv6](https://packages.debian.org/wheezy/ucspi-tcp-ipv6)
+	* reverse shell using GAWK! http://www.gnucitizen.org/blog/reverse-shell-with-bash/#comment-122387
 * Need a simple way to send messages from disk on start
 * Need to automatically re-subscribe on start
 * Need to support connecting more than once (ie connection recycling) so that we can script clean-session resets
-* bash backend: exec 3<>/dev/tcp/"$bishbosh_server"/"$bishbosh_port"
 * Fattening and Travis
 
 ### Ideas

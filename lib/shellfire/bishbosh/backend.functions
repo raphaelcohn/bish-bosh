@@ -1,4 +1,4 @@
-core_usesIn bishbosh/backend nc6 ncat nc ncBusyBox ncDebianOpenBSD ncDebianTraditional ncGNU ncMacOSX ncToybox devtcp socat tcpclient
+core_usesIn bishbosh/backend nc6 ncat nc ncBusyBox ncDebianOpenBSD ncDebianTraditional ncGNU ncMacOSX ncToybox socat devtcp
 
 bishbosh_backend_find()
 {

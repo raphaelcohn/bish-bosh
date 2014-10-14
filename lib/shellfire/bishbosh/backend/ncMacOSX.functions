@@ -107,6 +107,10 @@ bishbosh_backend_ncMacOSX_start()
 			_bishbosh_backend_ncMacOSX_start_addProxy '4'
 		;;
 		
+		SOCKS4a)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncMacOSX does not support the 'SOCKS4a' bishbosh_proxyKind."
+		;;
+		
 		SOCKS5)
 			_bishbosh_backend_ncMacOSX_start_addProxy '5'
 		;;

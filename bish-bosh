@@ -32,7 +32,7 @@ _program_entrypoint='bishbosh'
 
 _program_commandLine_parseInitialise()
 {
-	_program_default_backends='ncat,nc6,nc,devtcp,socat,tcpclient'
+	_program_default_backends='ncat,nc6,nc,devtcp,socat'
 	if core_variable_isSet bishbosh_backends; then
 		_program_configurationSet_bishbosh_backends=0
 	else
@@ -226,7 +226,8 @@ if on the PATH."
                             Off by default.
                             Does not work with transport 'unix'.
       --proxy-kind KIND     Use a particular KIND of proxy.
-                            KIND is 'SOCKS4','SOCKS5','HTTP' or 'none'.
+                            KIND is 'SOCKS4','SOCKS4a', 'SOCKS5',
+                            'HTTP' or 'none'.
                             Turn off with 'none'.
                             Off by default.
                             Does not work with transports 'unix' or
@@ -240,7 +241,7 @@ if on the PATH."
       --proxy-port PORT     Connect to a proxy on a given PORT.
                             Turn off with ''.
                             Off by default, but defaults to 1080
-                            for SOCKS4 / SOCKS5 and 3128 for HTTP.
+                            for SOCKS4 / SOCKS4a / SOCKS5 and 3128 for HTTP.
                             Does not work with transports 'unix' or
                             'serial'.
       --proxy-username UN   Connect to a proxy using username UN.
@@ -770,7 +771,7 @@ _program_commandLine_validate()
 			fi
 			if core_variable_isUnset bishbosh_proxyPort; then
 				case "$bishbosh_proxyKind" in
-					SOCKS4|SOCKS5)
+					SOCKS4|SOCKS4a|SOCKS5)
 						bishbosh_proxyPort=1080
 					;;
 					

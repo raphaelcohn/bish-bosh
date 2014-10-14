@@ -70,6 +70,10 @@ bishbosh_backend_ncGNU_start()
 			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncGNU does not support the 'SOCKS4' bishbosh_proxyKind."
 		;;
 		
+		SOCKS4a)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncGNU does not support the 'SOCKS4a' bishbosh_proxyKind."
+		;;
+		
 		SOCKS5)
 			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncGNU does not support the 'SOCKS5' bishbosh_proxyKind."
 		;;
