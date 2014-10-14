@@ -59,7 +59,7 @@ bishbosh_backend_socat_start()
 		;;
 	esac
 	
-	core_variable_array_append options 'STDIO,raw,echo=0'
+	core_variable_array_append options 'STDIO'
 	
 	case "$bishbosh_transport" in
 		
@@ -151,7 +151,7 @@ bishbosh_backend_socat_start()
 			fi
 			
 			# keepidle, keepintvl, keepcnt, linger2, mss, mss-late, syncnt
-			core_variable_array_append options "${addressKind}:${binding}${connectTimeout},keepalive,linger=1,nodelay"
+			core_variable_array_append options "${addressKind}${binding}${connectTimeout},keepalive,linger=1,nodelay"
 		;;
 		
 		*)
@@ -159,4 +159,7 @@ bishbosh_backend_socat_start()
 		;;
 		
 	esac
+	
+	core_variable_array_passToFunctionAsArguments options echo 1>&2
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }
