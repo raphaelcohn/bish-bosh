@@ -22,9 +22,9 @@ _bishbosh_client_plaintext_ncat_start_addProxy()
 	else
 		proxyAddres="$bishbosh_proxyAddress"
 	fi
-	core_variable_array_append options --proxy "$proxyAddress"
+	core_variable_array_appendAsOptionArg options --proxy "$proxyAddress"
 	
-	core_variable_array_append options --proxy-type "$proxyValue"
+	core_variable_array_appendAsOptionArg options --proxy-type "$proxyValue"
 	
 	if core_variable_isSet bishbosh_proxyUsername; then
 		
@@ -48,7 +48,7 @@ _bishbosh_client_plaintext_ncat_start_addProxy()
 			
 		esac
 
-		core_variable_array_append options --proxy-auth "$proxyAuth"
+		core_variable_array_appendAsOptionArg options --proxy-auth "$proxyAuth"
 	fi
 }
 
@@ -66,15 +66,15 @@ bishbosh_client_plaintext_ncat_start()
 			;;
 			
 			inet4)
-				core_variable_array_appendAsOptionArg '-4'
+				core_variable_array_appendAsOptionArg options '-4'
 			;;
 			
 			inet6)
-				core_variable_array_appendAsOptionArg '-6'
+				core_variable_array_appendAsOptionArg options '-6'
 			;;
 			
 			unix)
-				core_variable_array_appendAsOptionArg '-U'
+				core_variable_array_appendAsOptionArg options '-U'
 			;;
 			
 			serial)
@@ -89,11 +89,11 @@ bishbosh_client_plaintext_ncat_start()
 	fi
 	
 	if core_variable_isSet bishbosh_sourceAddress; then
-		bishbosh_client_addOptionWithEmptyMeaningNo '-s' "$bishbosh_sourceAddress"
+		core_variable_array_appendAsOptionArg options '-s' "$bishbosh_sourceAddress"
 	fi
 	
 	if core_variable_isSet bishbosh_sourcePort; then
-		bishbosh_client_addOptionWithEmptyMeaningNo '-p' "$bishbosh_sourcePort"
+		core_variable_array_appendAsOptionArg options '-p' "$bishbosh_sourcePort"
 	fi
 	
 	case "$bishbosh_proxyKind" in
@@ -122,17 +122,17 @@ bishbosh_client_plaintext_ncat_start()
 		;;
 		
 		1)
-			core_variable_array_append options -v
+			core_variable_array_appendAsOptionArg options -v
 		;;
 		
 		*)
-			core_variable_array_append options -v -v
+			core_variable_array_appendAsOptionArg options -v -v
 		;;
 	esac
 
-	core_variable_array_append options $bishbosh_server
+	core_variable_array_appendAsOptionArg options "$bishbosh_server"
 		
-	core_variable_array_append options $bishbosh_port
+	core_variable_array_appendAsOptionArg options "$bishbosh_port"
 	
 	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

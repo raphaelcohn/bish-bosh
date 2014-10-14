@@ -36,7 +36,7 @@ bishbosh_client_plaintext_ncBusyBox_start()
 	#Connect Timeout  core_variable_array_append options -w 30
 	
 	core_TODO 'Allow BusyBox builtins to work by calling nc directly'
-	core_variable_array_append options nc
+	core_variable_array_appendAsOptionArg options nc
 	
 	case "$bishbosh_proxyKind" in
 		
@@ -63,12 +63,12 @@ bishbosh_client_plaintext_ncBusyBox_start()
 				fi
 	
 				if core_variable_isSet bishbosh_sourcePort; then
-					bishbosh_client_addOptionWithEmptyMeaningNo '-p' "$bishbosh_sourcePort"
+					core_variable_array_appendAsOptionArg options '-p' $bishbosh_sourcePort
 				fi
 				
-				core_variable_array_append options $bishbosh_server
+				core_variable_array_appendAsOptionArg options "$bishbosh_server"
 				
-				core_variable_array_append options $bishbosh_port
+				core_variable_array_appendAsOptionArg options "$bishbosh_port"
 			;;
 			
 			inet4)
@@ -84,7 +84,7 @@ bishbosh_client_plaintext_ncBusyBox_start()
 			;;
 			
 			serial)
-				core_variable_array_append options -f "$bishbosh_server"
+				core_variable_array_appendAsOptionArg options -f "$bishbosh_server"
 			;;
 			
 			*)

@@ -28,7 +28,7 @@ bishbosh_client_plaintext_ncDebianOpenBSD_checkIfNetcatVariant()
 _bishbosh_client_plaintext_ncDebianOpenBSD_start_addProxy()
 {
 	local proxyValue="$1"
-	bishbosh_client_addOptionWithEmptyMeaningNo '-X' "$proxyValue"
+	core_variable_array_appendAsOptionArg options '-X' "$proxyValue"
 	
 	local proxyAddress="$bishbosh_proxyAddress"
 	if core_variable_isSet bishbosh_proxyPort; then
@@ -36,11 +36,11 @@ _bishbosh_client_plaintext_ncDebianOpenBSD_start_addProxy()
 		proxyAddress="${proxyAddress}:${bishbosh_proxyPort}"
 	fi
 	
-	bishbosh_client_addOptionWithEmptyMeaningNo '-x' "$proxyAddress"
+	core_variable_array_appendAsOptionArg options '-x' "$proxyAddress"
 	
 	if core_variable_isSet bishbosh_proxyUsername; then
 		if [ "$proxyValue" = 'connect' ]; then
-			core_variable_array_append options -P "$bishbosh_proxyUsername"
+			core_variable_array_appendAsOptionArg options -P "$bishbosh_proxyUsername"
 		else
 			core_message WARN "The backend ncDebianOpenBSD does not support specifing the proxy username for proxy kinds other than 'HTTP'"
 		fi
@@ -65,15 +65,15 @@ bishbosh_client_plaintext_ncDebianOpenBSD_start()
 			;;
 			
 			inet4)
-				core_variable_array_appendAsOptionArg '-4'
+				core_variable_array_appendAsOptionArg options '-4'
 			;;
 			
 			inet6)
-				core_variable_array_appendAsOptionArg '-6'
+				core_variable_array_appendAsOptionArg options '-6'
 			;;
 			
 			unix)
-				core_variable_array_appendAsOptionArg '-U'
+				core_variable_array_appendAsOptionArg options '-U'
 			;;
 			
 			serial)
@@ -88,11 +88,11 @@ bishbosh_client_plaintext_ncDebianOpenBSD_start()
 	fi
 	
 	if core_variable_isSet bishbosh_sourceAddress; then
-		bishbosh_client_addOptionWithEmptyMeaningNo '-s' "$bishbosh_sourceAddress"
+		core_variable_array_appendAsOptionArg options '-s' "$bishbosh_sourceAddress"
 	fi
 	
 	if core_variable_isSet bishbosh_sourcePort; then
-		bishbosh_client_addOptionWithEmptyMeaningNo '-p' "$bishbosh_sourcePort"
+		core_variable_array_appendAsOptionArg options '-p' "$bishbosh_sourcePort"
 	fi
 	
 	case "$bishbosh_proxyKind" in
@@ -121,17 +121,17 @@ bishbosh_client_plaintext_ncDebianOpenBSD_start()
 		;;
 		
 		1)
-			core_variable_array_append options -v
+			core_variable_array_appendAsOptionArg options -v
 		;;
 		
 		*)
-			core_variable_array_append options -v -v
+			core_variable_array_appendAsOptionArg options -v -v
 		;;
 	esac
 
-	core_variable_array_append options $bishbosh_server
+	core_variable_array_appendAsOptionArg options "$bishbosh_server"
 		
-	core_variable_array_append options $bishbosh_port
+	core_variable_array_appendAsOptionArg options "$bishbosh_port"
 	
 	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
 	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
