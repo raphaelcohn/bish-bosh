@@ -64,6 +64,8 @@ core_usesIn core variable variable/array
 bishbosh_backend_ncMacOSX_start()
 {
 	local options
+	local options_initialised
+	core_variable_array_initialise options
 	
 	case "$bishbosh_transport" in
 		

@@ -628,6 +628,7 @@ If you have a particular need to use these approaches to connecting to MQTT serv
 | **cryptcat** | `cryptcat` | - | Encryting variant of netcat, but, because the password is supplied on the command line, insecure. |
 | **pnetcat** | `pnetcat` | [Home](http://stromberg.dnsalias.org/~strombrg/pnetcat.html) | BSD-like licence, but web page infers mis-distribution. Implemented in Python, which whilst interesting, mitigates against the point of [bish-bosh]. |
 | **nc.pl** | ? | ? | There are also perl implementations of netcat. Just as for **pnetcat**, it seems a moot choice. |
+| **ncSslCapable** | `scnc` | [SSL-capable netcat](http://www.gomor.org/bin/view/GomorOrg/SslNetcat) | Another perl implementation. Might be worth adding if only for the SSL support. |
 
 ## Limitations
 
@@ -666,6 +667,7 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 	* Investigate proxy support, eg corkscrew
 	* Investigate [Debian uscpi-tcp-ipv6](https://packages.debian.org/wheezy/ucspi-tcp-ipv6)
 	* reverse shell using GAWK! http://www.gnucitizen.org/blog/reverse-shell-with-bash/#comment-122387
+	* Investigate 
 * Need a simple way to send messages from disk on start
 * Need to automatically re-subscribe on start
 * Need to support connecting more than once (ie connection recycling) so that we can script clean-session resets

@@ -37,6 +37,8 @@ core_usesIn core variable variable/array
 bishbosh_backend_ncToybox_start()
 {
 	local options
+	local options_initialised
+	core_variable_array_initialise options
 
 	#Disable DNS  not supported
 	#Connect Timeout  core_variable_array_append options -w 30

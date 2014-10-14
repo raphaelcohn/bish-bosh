@@ -16,6 +16,8 @@ core_usesIn core variable variable/array
 bishbosh_backend_nc6_start()
 {
 	local options
+	local options_initialised
+	core_variable_array_initialise options
 	
 	case "$bishbosh_transport" in
 		
@@ -44,7 +46,6 @@ bishbosh_backend_nc6_start()
 		;;
 		
 	esac
-	fi
 	
 	if core_variable_isSet bishbosh_sourceAddress; then
 		core_variable_array_append options '-s' "$bishbosh_sourceAddress"
