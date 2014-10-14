@@ -17,34 +17,33 @@ bishbosh_backend_nc6_start()
 {
 	local options
 	
-	if core_variable_isSet bishbosh_transport; then
-		case "$bishbosh_transport" in
-			
-			inet)
-				:
-			;;
-			
-			inet4)
-				core_variable_array_append options '-4'
-			;;
-			
-			inet6)
-				core_variable_array_append options '-6'
-			;;
-			
-			unix)
-				core_exitError $core_commandLine_exitCode_CONFIG "The backend nc6 does not support the 'unix' transport."
-			;;
-			
-			serial)
-				core_exitError $core_commandLine_exitCode_CONFIG "The backend nc6 does not support the 'serial' transport."
-			;;
-			
-			*)
-				core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
-			;;
-			
-		esac
+	case "$bishbosh_transport" in
+		
+		inet)
+			:
+		;;
+		
+		inet4)
+			core_variable_array_append options '-4'
+		;;
+		
+		inet6)
+			core_variable_array_append options '-6'
+		;;
+		
+		unix)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend nc6 does not support the 'unix' transport."
+		;;
+		
+		serial)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend nc6 does not support the 'serial' transport."
+		;;
+		
+		*)
+			core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
+		;;
+		
+	esac
 	fi
 	
 	if core_variable_isSet bishbosh_sourceAddress; then

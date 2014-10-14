@@ -52,41 +52,38 @@ _bishbosh_backend_ncat_start_addProxy()
 	fi
 }
 
-# Also -K tclass and -F options are in the commandline help (but not the man page)!
 core_usesIn core variable variable/array
 bishbosh_backend_ncat_start()
 {
 	local options
 	
-	if core_variable_isSet bishbosh_transport; then
-		case "$bishbosh_transport" in
-			
-			inet)
-				:
-			;;
-			
-			inet4)
-				core_variable_array_append options '-4'
-			;;
-			
-			inet6)
-				core_variable_array_append options '-6'
-			;;
-			
-			unix)
-				core_variable_array_append options '-U'
-			;;
-			
-			serial)
-				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncat does not support the 'serial' transport."
-			;;
-			
-			*)
-				core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
-			;;
-			
-		esac
-	fi
+	case "$bishbosh_transport" in
+		
+		inet)
+			:
+		;;
+		
+		inet4)
+			core_variable_array_append options '-4'
+		;;
+		
+		inet6)
+			core_variable_array_append options '-6'
+		;;
+		
+		unix)
+			core_variable_array_append options '-U'
+		;;
+		
+		serial)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncat does not support the 'serial' transport."
+		;;
+		
+		*)
+			core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
+		;;
+		
+	esac
 	
 	if core_variable_isSet bishbosh_sourceAddress; then
 		core_variable_array_append options '-s' "$bishbosh_sourceAddress"

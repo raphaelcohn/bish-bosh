@@ -32,35 +32,33 @@ bishbosh_backend_ncDebianTraditional_start()
 {
 	local options
 	
-	if core_variable_isSet bishbosh_transport; then
-		case "$bishbosh_transport" in
-			
-			inet)
-				:
-			;;
-			
-			inet4)
-				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncDebianTraditional does not support the 'inet4' transport explicitly."
-			;;
-			
-			inet6)
-				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncDebianTraditional does not support the 'inet6' transport explicitly."
-			;;
-			
-			unix)
-				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncDebianTraditional does not support the 'unix' transport."
-			;;
-			
-			serial)
-				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncDebianTraditional does not support the 'serial' transport."
-			;;
-			
-			*)
-				core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
-			;;
-			
-		esac
-	fi
+	case "$bishbosh_transport" in
+		
+		inet)
+			:
+		;;
+		
+		inet4)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncDebianTraditional does not support the 'inet4' transport explicitly."
+		;;
+		
+		inet6)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncDebianTraditional does not support the 'inet6' transport explicitly."
+		;;
+		
+		unix)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncDebianTraditional does not support the 'unix' transport."
+		;;
+		
+		serial)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncDebianTraditional does not support the 'serial' transport."
+		;;
+		
+		*)
+			core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
+		;;
+		
+	esac
 	
 	if core_variable_isSet bishbosh_sourceAddress; then
 		core_variable_array_append options '-s' "$bishbosh_sourceAddress"

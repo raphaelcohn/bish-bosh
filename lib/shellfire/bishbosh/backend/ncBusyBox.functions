@@ -54,45 +54,43 @@ bishbosh_backend_ncBusyBox_start()
 		
 	esac
 	
-	if core_variable_isSet bishbosh_transport; then
-		case "$bishbosh_transport" in
+	case "$bishbosh_transport" in
+		
+		inet)
+			if core_variable_isSet bishbosh_sourceAddress; then
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncBusyBox does not support setting 'bishbosh_sourceAddress' (--source-address)."
+			fi
+
+			if core_variable_isSet bishbosh_sourcePort; then
+				core_variable_array_append options '-p' $bishbosh_sourcePort
+			fi
 			
-			inet)
-				if core_variable_isSet bishbosh_sourceAddress; then
-					core_exitError $core_commandLine_exitCode_CONFIG "The backend ncBusyBox does not support setting 'bishbosh_sourceAddress' (--source-address)."
-				fi
-	
-				if core_variable_isSet bishbosh_sourcePort; then
-					core_variable_array_append options '-p' $bishbosh_sourcePort
-				fi
-				
-				core_variable_array_append options "$bishbosh_server"
-				
-				core_variable_array_append options "$bishbosh_port"
-			;;
+			core_variable_array_append options "$bishbosh_server"
 			
-			inet4)
-				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncBusyBox does not support the 'inet4' transport explicitly."
-			;;
-			
-			inet6)
-				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncBusyBox does not support the 'inet6' transport explicitly."
-			;;
-			
-			unix)
-				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncBusyBox does not support the 'unix' transport."
-			;;
-			
-			serial)
-				core_variable_array_append options -f "$bishbosh_server"
-			;;
-			
-			*)
-				core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
-			;;
-			
-		esac
-	fi
+			core_variable_array_append options "$bishbosh_port"
+		;;
+		
+		inet4)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncBusyBox does not support the 'inet4' transport explicitly."
+		;;
+		
+		inet6)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncBusyBox does not support the 'inet6' transport explicitly."
+		;;
+		
+		unix)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncBusyBox does not support the 'unix' transport."
+		;;
+		
+		serial)
+			core_variable_array_append options -f "$bishbosh_server"
+		;;
+		
+		*)
+			core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
+		;;
+		
+	esac
 	
 	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

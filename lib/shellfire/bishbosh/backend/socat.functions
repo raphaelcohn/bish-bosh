@@ -10,3 +10,115 @@ bishbosh_backend_socat_check()
 		return 0
 	fi
 }
+
+core_usesIn core variable variable/array
+bishbosh_backend_socat_start()
+{
+	local options
+
+	# Forces error messages to stderr
+	core_variable_array_append options -ls
+	
+	# Makes socat appear to be bish-bosh
+	core_variable_array_append options -lp${_program_name}
+	
+	case $(core_init_verbosity) in
+		
+		0)
+			:
+		;;
+		
+		1)
+			core_variable_array_append options -d
+		;;
+		
+		2)
+			core_variable_array_append options -d -d
+		;;
+		
+		3)
+			core_variable_array_append options -d -d -d
+		;;
+		
+		4)
+			core_variable_array_append options -d -d -d -d
+		;;
+	esac
+
+	# Forces 4 or 6, because we can not always use 'TCP4/6'
+	case "$bishbosh_transport" in
+		
+		inet4)
+			core_variable_array_append options '-4'
+		;;
+		
+		inet6)
+			core_variable_array_append options '-6'
+		;;
+	esac
+	
+	core_variable_array_append options 'STDIO,raw,echo=0'
+	
+	case "$bishbosh_transport" in
+		
+		# Timeout with  connect-timeout=<seconds> (also for Unix)
+		# keepalive
+		inet)
+			core_variable_array_append options "TCP:${bishbosh_server}:${bishbosh_port}"
+		;;
+		
+		inet4)
+			core_variable_array_append options "TCP4:${bishbosh_server}:${bishbosh_port}"
+		;;
+		
+		inet6)
+			core_variable_array_append options "TCP6:${bishbosh_server}:${bishbosh_port}"
+		;;
+		
+		unix)
+			core_variable_array_append options "UNIX-CONNECT:${bishbosh_server}"
+		;;
+		
+		serial)
+			core_variable_array_append options "${bishbosh_server},raw,echo=0"
+		;;
+		
+		*)
+			core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
+		;;
+		
+	esac
+	
+	if core_variable_isSet bishbosh_sourceAddress; then
+		core_variable_array_append options '-s' "$bishbosh_sourceAddress"
+	fi
+	
+	if core_variable_isSet bishbosh_sourcePort; then
+		core_variable_array_append options '-p' "$bishbosh_sourcePort"
+	fi
+	
+	case "$bishbosh_proxyKind" in
+		
+		SOCKS4)
+			_bishbosh_backend_socat_start_addProxy '4'
+		;;
+		
+		SOCKS5)
+			_bishbosh_backend_socat_start_addProxy '5'
+		;;
+		
+		HTTP)
+			_bishbosh_backend_socat_start_addProxy 'connect'
+		;;
+		
+	esac
+	
+	#Disable DNS  core_variable_array_append -n
+
+	core_variable_array_append options "$bishbosh_server"
+		
+	core_variable_array_append options "$bishbosh_port"
+	
+	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+}
