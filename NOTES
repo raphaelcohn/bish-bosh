@@ -1,3 +1,12 @@
+
+
+TODO: DNS disablment
+TODO: Connection timeout
+TODO: devtcp client
+TODO: socat client
+TODO: tcpclient client
+
+TODO: SSL with ncat, openssl or gnutls
 	
 Useful Info
 # reverse bash shell http://www.gnucitizen.org/blog/reverse-shell-with-bash/

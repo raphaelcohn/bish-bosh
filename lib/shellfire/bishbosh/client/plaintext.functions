@@ -1,4 +1,4 @@
-core_usesIn bishbosh/client/plaintext bash nc6 ncat nc ncBusyBox ncDebianOpenBSD ncDebianTraditional ncGNU ncMacOSX ncToybox socat tcpclient
+core_usesIn bishbosh/client/plaintext nc6 ncat nc ncBusyBox ncDebianOpenBSD ncDebianTraditional ncGNU ncMacOSX ncToybox devtcp socat tcpclient
 
 bishbosh_client_plaintext_find()
 {

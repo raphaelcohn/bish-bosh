@@ -32,7 +32,7 @@ _program_entrypoint='bishbosh'
 
 _program_commandLine_parseInitialise()
 {
-	_program_default_backends='ncat,nc6,nc,bash,socat,tcpclient'
+	_program_default_backends='ncat,nc6,nc,devtcp,socat,tcpclient'
 	if core_variable_isSet bishbosh_backends; then
 		_program_configurationSet_bishbosh_backends=0
 	else
@@ -316,7 +316,7 @@ the globals specified:-
   bishbosh_connection_handler_noControlPacketsRead()
 "
 	_program_commandLine_helpMessage_examples="
-  ${_program_name} --server test.mosquitto.org --backends ncMacOSX,bash --client-id 12 -- /path/to/connection-details.scriptlet
+  ${_program_name} --server test.mosquitto.org --backends nc,devtcp --client-id 12 -- /path/to/connection-details.scriptlet
 "
 }
 

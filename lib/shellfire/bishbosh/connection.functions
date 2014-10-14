@@ -12,12 +12,17 @@ bishbosh_connection_mkdir()
 	printf '%s' "$folderPath"
 }
 
-core_dependency_requires '*' mkfifo
+core_dependency_oneOf '*' mkfifo mknod
 bishbosh_connection_mkfifo()
 {
 	local fifoName="$1"
 	local fifoPath="$bishbosh_connection_fifoFolder"/"$fifoName"
-	mkfifo -m 0600 "$fifoPath"
+	if core_compatibility_whichNoOutput mkfifo; then
+		mkfifo -m 0600 "$fifoPath"
+	elif core_compatibility_whichNoOutput mknod; then
+		# Not compatible with BSD-derived mknod (but then mkfifo is only likely to be missing on embedded systems)
+		mknod -m 0600 "$fifoPath" p
+	fi
 	printf '%s' "$fifoPath"
 }
 

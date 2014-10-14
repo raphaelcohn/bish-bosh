@@ -1,0 +1,85 @@
+core_usesIn core functions
+core_functions_register _bishbosh_client_plaintext_registration devtcp
+
+bishbosh_client_plaintext_devtcp_check()
+{
+	case "$core_init_preferredShell" in
+		
+		# but not pdksh or mksh
+		bash|ksh|ksh93)
+			bishbosh_client_plaintext=devtcp
+			bishbosh_client_plaintextPath=''
+			return 0
+		;;
+	esac
+	
+	return 1
+}
+
+# Supported by ksh93, too
+core_usesIn core variable variable/array
+bishbosh_client_plaintext_devtcp_start()
+{
+	local options
+	
+	if core_variable_isSet bishbosh_transport; then
+		case "$bishbosh_transport" in
+			
+			inet)
+				:
+			;;
+			
+			inet4)
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend devtcp does not support the 'inet4' transport explicitly."
+			;;
+			
+			inet6)
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend devtcp does not support the 'inet6' transport explicitly."
+			;;
+			
+			unix)
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend devtcp does not support the 'unix' transport."
+			;;
+			
+			serial)
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend devtcp does not support the 'serial' transport."
+			;;
+			
+			*)
+				core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
+			;;
+			
+		esac
+	fi
+
+	if core_variable_isSet bishbosh_sourceAddress; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The backend devtcp does not support setting 'bishbosh_sourceAddress' (--source-address)."
+	fi
+
+	if core_variable_isSet bishbosh_sourcePort; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The backend devtcp does not support setting 'bishbosh_sourcePort' (--source-port)."
+	fi
+	
+	case "$bishbosh_proxyKind" in
+		
+		SOCKS4)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend devtcp does not support the 'SOCKS4' bishbosh_proxyKind."
+		;;
+		
+		SOCKS5)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend devtcp does not support the 'SOCKS5' bishbosh_proxyKind."
+		;;
+		
+		HTTP)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend devtcp does not support the 'HTTP' bishbosh_proxyKind."
+		;;
+		
+	esac
+	
+	core_variable_array_append options $bishbosh_server
+		
+	core_variable_array_append options $bishbosh_port
+	
+	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+}

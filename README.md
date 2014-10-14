@@ -256,7 +256,7 @@ _ \* This value is a boolean. Use `0` for false, `1` for true ._
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-b`, `--backends` | `A,B,...` | `bishbosh_backends` | `ncat,nc6,nc,bash,socat,tcpclient` | [Backends](#status-of-supported-backends) are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. |
+| `-b`, `--backends` | `A,B,...` | `bishbosh_backends` | `ncat,nc6,nc,devtcp,socat,tcpclient` | [Backends](#status-of-supported-backends) are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. |
 
 A backend is the strategy [bish-bosh] uses to connect to a [MQTT] server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. [bish-bosh] ships with a large number of [backends](#status-of-supported-backends) to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
 
@@ -399,7 +399,6 @@ All of these should be present even on the most minimal system. Usage is restric
 * `head`
 * `kill` (only if not built in to shell)
 * `mkdir`
-* `mkfifo`
 * `mktemp`
 * `rm`
 * `rmdir`
@@ -414,6 +413,9 @@ If cloning from [GitHub], then you'll also need to make sure you have `git`.
 ### Either Or Dependencies (one is required)
 These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and feature detection to try to find an optimum dependency. Making some choices, however, influences others (eg `hexdump` and `od` preferences change when `stdbuf` is discovered, to try to use GNU `od`). Some choices are sub-optimal, and may cause operational irritation (mostly, bishbosh responds far more slowly to signals and socket disconnections).
 
+* Creating FIFOs (named pipes)
+* `mkfifo`, any POSIX compliant
+* `mknod`, most except BSD-derived (GNU coreutils, [BusyBox] and [Toybox] are known to work)
 * Binary to Hexadecimal conversion
   * `hexdump`, BSD-derived (part of the `bsdmainutils` package in Debian/Ubuntu; usually installed by default)
   * `hexdump`, in [BusyBox]
@@ -437,6 +439,7 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * `nc`, [BusyBox]
   * `nc`, [Toybox]
   * `bash` (if compiled with socket support; this is true for Mac OS X Snow Leopard+, Mac OS X + Homebrew, RHEL 6+, Centos 6+, Debian 6+, and Ubuntu 10.04 LTS +)
+  * `ksh` ([ksh93], however [ksh93] doesn't work with other script features at this time)
   * `socat`
   * `tcpclient`, part of D J Bernstein's [`ucspi-tcp`](http://cr.yp.to/ucspi-tcp.html) package (available as `ucspi-tcp` on Debian/Ubuntu and Mac OS X + Homebrew)
 * Keep Alives (only required if `bishbosh_connection_write_CONNECT_keepAlive` is not `0`)
@@ -461,7 +464,9 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * The shell's RANDOM psuedo-environment variable: not cryptographically robust
   * `awk` (any POSIX compliant-version): not cryptographically robust
   * Nothing, if random client-ids are not needed
-
+* Coloured text (only when running on a terminal)
+  * `tput` (assumes the `terminfo` database defined by POSIX; `termcap` is obsolete)
+  * fallback to ANSI escape sequences, which should work on anything modern
 
 ### A word on [GNU Bash] versions
 Unfortunately, there are a lot of [GNU Bash] versions that are still in common use. Versions 3 and 4 of Bash differ in their support of key features (such as associative arrays). Even then, Bash 4.1 is arguably not particularly useful with associative arrays, though, as its declare syntax lacks the `-g` global setting. [bish-bosh] tries to maintain compatibility with `bash` as at version 3.1/3.2, even though it's obsolescent, because it occurs on two common platforms. A quick guide to common bash version occurrence is below.
@@ -601,11 +606,11 @@ The following shells are untested and unsupported:-
 | **ncDebianOpenBSD** | `nc.openbsd` | [Debian OpenBSD](https://packages.debian.org/wheezy/netcat-openbsd) | MQTT | Fully functional‡ | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames only for `HTTP`. | Yes | Yes |
 | **ncBusyBox** | `nc` / `busybox nc` | [BusyBox] | MQTT | Fully functional‡ | No | No | No | Yes | No | No | Yes |
 | **ncToybox** | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] | MQTT | Fully functional‡ | No | No | No | Yes | No | Yes | Yes |
-| **nc6** | `nc6` | [netcat6](http://www.deepspace6.net/projects/netcat6.html) | MQTT | Fully functional‡ | Yes | Yes | No | No | No | Yes | Yes |
-| **ncat** | `ncat`| [Nmap ncat](http://nmap.org/ncat/) | MQTT / MQTTS | Fully functional‡ | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames and passwords supported for `HTTP`, usernames only for SOCKS. | Yes | Yes |
+| **ncat** | `ncat`| [Nmap ncat](http://nmap.org/ncat/) | MQTT / MQTTS | Fully functional‡ | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames and passwords supported for `HTTP`, usernames only for SOCKS. | Yes | Yes | **nc6** | `nc6` | [netcat6](http://www.deepspace6.net/projects/netcat6.html) | MQTT | Fully functional‡ | Yes | Yes | No | No | No | Yes | Yes |
+|
+| **devtcp** | `bash` / `ksh` | [GNU Bash] / [ksh93] | MQTT | Barely Implemented | No | No | No | ? maybe ? | No | No | No |
 | **socat** | `socat` | [socat](http://www.dest-unreach.org/socat/) | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | Yes | `SOCKS4` and `HTTP`. Usernames are supported. | ? | ? |
 | **tcpclient** | `tcpclient` | [ucspi-tcp](http://cr.yp.to/ucspi-tcp.html) | MQTT | Barely Implemented | Yes | Yes | No | No | No | Yes | Yes |
-| **bash** | `bash` | [GNU Bash] | MQTT | Barely Implemented | No | No | No | ? | No | No | No |
 
 _\* Refers to the meta backend itself. A detected backend may not be._
 
@@ -646,6 +651,8 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 * More tools
 	* [MQTT] over cryptcat
 	* Investigate suckless tools
+	* This listis an useful perspective on minimal system tools: <http://elinux.org/Busybox_replacement>
+	* Investigate [Beastiebox](http://beastiebox.sourceforge.net/)
 	* Investigate proxy support, eg corkscrew
 	* Investigate [Debian uscpi-tcp-ipv6](https://packages.debian.org/wheezy/ucspi-tcp-ipv6)
 * Need a simple way to send messages from disk on start
