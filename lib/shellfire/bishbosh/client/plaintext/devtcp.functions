@@ -20,8 +20,6 @@ bishbosh_client_plaintext_devtcp_check()
 core_usesIn core variable variable/array
 bishbosh_client_plaintext_devtcp_start()
 {
-	local options
-	
 	if core_variable_isSet bishbosh_transport; then
 		case "$bishbosh_transport" in
 			
@@ -76,10 +74,5 @@ bishbosh_client_plaintext_devtcp_start()
 		
 	esac
 	
-	core_variable_array_append options $bishbosh_server
-		
-	core_variable_array_append options $bishbosh_port
-	
-	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
-	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	exec 4<>/dev/tcp/"$bishbosh_server"/$bishbosh_port
 }

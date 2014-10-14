@@ -36,7 +36,7 @@ bishbosh_connection_foreground_recordBackgroundJob()
 bishbosh_connection_foreground_monitorForChildExit()
 {
 	core_message DEBUG "Our Pid is $$"
-	core_message NOTICE "Terminate ${_program_name} with $(core_terminal_effect reversed) kill $$ "
+	core_message NOTICE "Terminate ${_program_name} with $(core_terminal_effect 2 reversed) kill $$ "
 	
 	while true
 	do
@@ -77,17 +77,19 @@ bishbosh_connection_foreground_monitorForChildExit()
 		# core_exitError $core_commandLine_exitCode_TEMPFAIL "Could not connect"
 		# bishbosh_client_* is dead, either because the connection wasn't established (so exitCode is usually 1), or the processLoop cleanly exited
 		# Seems if server closes connection, exit code is 0 for nc.
-		if ! kill -0 $bishbosh_connection_clientPid 2>/dev/null; then
-			set +e
-			wait $bishbosh_connection_clientPid
-			local exitCode=$?
-			set -e
-			if [ $exitCode -ne 0 ]; then
-				core_exitError $core_commandLine_exitCode_TEMPFAIL "Could not connect to '$bishbosh_server'"
+		if [ $bishbosh_connection_clientPid -ne -1 ]; then
+			if ! kill -0 $bishbosh_connection_clientPid 2>/dev/null; then
+				set +e
+				wait $bishbosh_connection_clientPid
+				local exitCode=$?
+				set -e
+				if [ $exitCode -ne 0 ]; then
+					core_exitError $core_commandLine_exitCode_TEMPFAIL "Could not connect to '$bishbosh_server'"
+				fi
+				exit 0
 			fi
-			exit 0
 		fi
-	
+		
 		sleep "$bishbosh_readLatency_inFractionalSeconds"
 	done
 }

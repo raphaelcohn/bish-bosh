@@ -1,5 +1,10 @@
 core_usesIn bishbosh/connection ping
 
+bishbosh_connection_background_client()
+{
+	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
+}
+
 core_dependency_requires '*' grep
 core_dependency_oneOf '*' stdbuf od hexdump dd unbuffer
 bishbosh_connection_background_hexConversion()
@@ -74,7 +79,11 @@ bishbosh_connection_background_hexConversion()
 		core_exitError $core_commandLine_exitCode_OSFILE "Could not find a means of doing Hex Conversion"
 	done
 	
-	"$@" <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo" &
+	if [ "${bishbosh_client_plaintext}" = 'devtcp' ]; then
+		"$@" <&4 >"$bishbosh_connection_fromHexConversionFifo" &
+	else
+		"$@" <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo" &
+	fi
 }
 
 _bishbosh_connection_background_hexConversion_dd()
@@ -111,6 +120,7 @@ _bishbosh_connection_background_processLoop_trapHandlerPIPE()
 
 bishbosh_connection_background_processLoop()
 {
+	_bishbosh_connection_background_processLoop_body()
 	{
 		trap '' TERM INT HUP ABRT QUIT
 		bishbosh_connection_continue=true
@@ -172,7 +182,13 @@ bishbosh_connection_background_processLoop()
 		core_message INFO "Writing DISCONNECT"
 		trap _bishbosh_connection_background_processLoop_trapHandlerPIPE PIPE
 		bishbosh_connection_write_DISCONNECT
-	} >"$bishbosh_connection_toServerFifo" 5<"$bishbosh_connection_fromHexConversionFifo" &
+	}
+	
+	if [ "${bishbosh_client_plaintext}" = 'devtcp' ]; then
+		_bishbosh_connection_background_processLoop_body >&4 3<"$bishbosh_connection_fromHexConversionFifo" &
+	else
+		_bishbosh_connection_background_processLoop_body >"$bishbosh_connection_toServerFifo" 3<"$bishbosh_connection_fromHexConversionFifo" &
+	fi
 }
 
 # Only needed for dash, pdksh
@@ -199,11 +215,4 @@ bishbosh_connection_background_processingLoopReadInterrupter()
 		} 1>/dev/null </dev/null &
 		bishbosh_connection_foreground_recordBackgroundJob bishbosh_connection_processingLoopReadInterrupterPid
 	fi
-}
-
-bishbosh_connection_background_client()
-{
-	trap '' INT HUP ABRT QUIT USR1 USR2
-	
-	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
 }

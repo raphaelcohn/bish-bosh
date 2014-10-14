@@ -233,6 +233,14 @@ bishbosh_connection_makeClientConnection()
 	# We can not open for writing using a file descriptor or redirection operator (>) a FIFO unless someone is already reading from it; we will be blocked
 	# We can not open for reading using a file descriptor or redirection operator (<) a FIFO unless someone is already writing to it; we will be blocked
 	
+	# Background <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" UNLESS devtcp, in which case 3<>
+	bishbosh_connection_background_client
+	if [ "${bishbosh_client_plaintext}" = 'devtcp' ]; then
+		bishbosh_connection_clientPid=-1
+	else
+		bishbosh_connection_foreground_recordBackgroundJob bishbosh_connection_clientPid
+	fi
+	
 	# Background <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo"
 	bishbosh_connection_background_hexConversion
 	bishbosh_connection_foreground_recordBackgroundJob bishbosh_connection_hexConversionPid
@@ -240,10 +248,6 @@ bishbosh_connection_makeClientConnection()
 	# Background >"$bishbosh_connection_toServerFifo" <"$bishbosh_connection_fromHexConversionFifo"
 	bishbosh_connection_background_processLoop
 	bishbosh_connection_foreground_recordBackgroundJob bishbosh_connection_processLoopPid
-	
-	# Background <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo"
-	bishbosh_connection_background_client
-	bishbosh_connection_foreground_recordBackgroundJob bishbosh_connection_clientPid
 	
 	# Background process, if required, to interrupt processingLoopRead
 	bishbosh_connection_background_processingLoopReadInterrupter

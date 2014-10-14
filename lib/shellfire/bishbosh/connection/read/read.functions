@@ -4,15 +4,15 @@ core_usesIn bishbosh/connection/read controlpacket byte
 bishbosh_connection_read_nonBlockingFeatureTest()
 {
 	local testFifoPath="$(bishbosh_connection_mkfifo 'non-blocking-read-feature-test')"
-	exec 5<>"$testFifoPath"
-	printf '%s\n' 'test' >&5
+	exec 3<>"$testFifoPath"
+	printf '%s\n' 'test' >&3
 	
 	local testVariable=''
 	set +e
 	read -r -u 5 -t $bishbosh_readLatency_inFractionalSeconds testVariable 2>/dev/null
 	set -e
-	exec 5>&-
-	exec 5<&-
+	exec 3>&-
+	exec 3<&-
 
 	if [ -z "$testVariable" ]; then
 		bishbosh_connection_supportsNonBlockingRead=0
@@ -23,13 +23,13 @@ bishbosh_connection_read_nonBlockingFeatureTest()
 	fi
 
 	local timeoutExitCodeFifoPath="$(bishbosh_connection_mkfifo 'non-blocking-read-timeout-exit-code-feature-test')"
-	exec 5<>"$testFifoPath"
+	exec 3<>"$testFifoPath"
 	local exitCodeForTimeout
 	set +e
 	read -r -u 5 -t $bishbosh_readLatency_inFractionalSeconds testVariable 
 	bishbosh_connection_exitCodeForReadTimeout=$?
-	exec 5>&-
-	exec 5<&-
+	exec 3>&-
+	exec 3<&-
 	set -e
 }
 
