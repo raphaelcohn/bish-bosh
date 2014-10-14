@@ -42,7 +42,7 @@ bishbosh_backend_ncToybox_start()
 	#Connect Timeout  core_variable_array_append options -w 30
 	
 	core_TODO 'Allow Toybox builtins to work by calling nc directly'
-	core_variable_array_appendAsOptionArg options nc
+	core_variable_array_append options nc
 	
 	case "$bishbosh_proxyKind" in
 		
@@ -65,16 +65,16 @@ bishbosh_backend_ncToybox_start()
 			
 			inet)
 				if core_variable_isSet bishbosh_sourceAddress; then
-					core_variable_array_appendAsOptionArg options '-s' "$bishbosh_sourceAddress"
+					core_variable_array_append options '-s' "$bishbosh_sourceAddress"
 				fi
 	
 				if core_variable_isSet bishbosh_sourcePort; then
-					core_variable_array_appendAsOptionArg options '-p' "$bishbosh_sourcePort"
+					core_variable_array_append options '-p' "$bishbosh_sourcePort"
 				fi
 				
-				core_variable_array_appendAsOptionArg options "$bishbosh_server"
+				core_variable_array_append options "$bishbosh_server"
 				
-				core_variable_array_appendAsOptionArg options "$bishbosh_port"
+				core_variable_array_append options "$bishbosh_port"
 			;;
 			
 			inet4)

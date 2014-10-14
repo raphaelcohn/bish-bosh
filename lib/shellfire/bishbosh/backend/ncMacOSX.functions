@@ -39,7 +39,7 @@ bishbosh_backend_ncMacOSX_checkIfNetcatVariant()
 _bishbosh_backend_ncMacOSX_start_addProxy()
 {
 	local proxyValue="$1"
-	core_variable_array_appendAsOptionArg options '-X' "$proxyValue"
+	core_variable_array_append options '-X' "$proxyValue"
 	
 	local proxyAddress
 	if core_variable_isSet bishbosh_proxyPort; then
@@ -49,7 +49,7 @@ _bishbosh_backend_ncMacOSX_start_addProxy()
 		proxyAddress="$bishbosh_proxyAddress"
 	fi
 	
-	core_variable_array_appendAsOptionArg options '-x' "$proxyAddress"
+	core_variable_array_append options '-x' "$proxyAddress"
 	
 	if core_variable_isSet bishbosh_proxyUsername; then
 		core_message WARN "The backend ncMacOSX does not support specifing the proxy username"
@@ -73,15 +73,15 @@ bishbosh_backend_ncMacOSX_start()
 			;;
 			
 			inet4)
-				core_variable_array_appendAsOptionArg options '-4'
+				core_variable_array_append options '-4'
 			;;
 			
 			inet6)
-				core_variable_array_appendAsOptionArg options '-6'
+				core_variable_array_append options '-6'
 			;;
 			
 			unix)
-				core_variable_array_appendAsOptionArg options '-U'
+				core_variable_array_append options '-U'
 			;;
 			
 			serial)
@@ -96,11 +96,11 @@ bishbosh_backend_ncMacOSX_start()
 	fi
 	
 	if core_variable_isSet bishbosh_sourceAddress; then
-		core_variable_array_appendAsOptionArg options '-s' "$bishbosh_sourceAddress"
+		core_variable_array_append options '-s' "$bishbosh_sourceAddress"
 	fi
 	
 	if core_variable_isSet bishbosh_sourcePort; then
-		core_variable_array_appendAsOptionArg options '-p' "$bishbosh_sourcePort"
+		core_variable_array_append options '-p' "$bishbosh_sourcePort"
 	fi
 	
 	case "$bishbosh_proxyKind" in
@@ -129,17 +129,17 @@ bishbosh_backend_ncMacOSX_start()
 		;;
 		
 		1)
-			core_variable_array_appendAsOptionArg options -v
+			core_variable_array_append options -v
 		;;
 		
 		*)
-			core_variable_array_appendAsOptionArg options -v -v
+			core_variable_array_append options -v -v
 		;;
 	esac
 
-	core_variable_array_appendAsOptionArg options "$bishbosh_server"
+	core_variable_array_append options "$bishbosh_server"
 		
-	core_variable_array_appendAsOptionArg options "$bishbosh_port"
+	core_variable_array_append options "$bishbosh_port"
 	
 	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
 	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &

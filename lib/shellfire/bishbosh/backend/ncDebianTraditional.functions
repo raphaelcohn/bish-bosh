@@ -63,11 +63,11 @@ bishbosh_backend_ncDebianTraditional_start()
 	fi
 	
 	if core_variable_isSet bishbosh_sourceAddress; then
-		core_variable_array_appendAsOptionArg options '-s' "$bishbosh_sourceAddress"
+		core_variable_array_append options '-s' "$bishbosh_sourceAddress"
 	fi
 	
 	if core_variable_isSet bishbosh_sourcePort; then
-		core_variable_array_appendAsOptionArg options '-p' "$bishbosh_sourcePort"
+		core_variable_array_append options '-p' "$bishbosh_sourcePort"
 	fi
 	
 	case "$bishbosh_proxyKind" in
@@ -96,17 +96,17 @@ bishbosh_backend_ncDebianTraditional_start()
 		;;
 		
 		1)
-			core_variable_array_appendAsOptionArg options -v
+			core_variable_array_append options -v
 		;;
 		
 		*)
-			core_variable_array_appendAsOptionArg options -v -v
+			core_variable_array_append options -v -v
 		;;
 	esac
 
-	core_variable_array_appendAsOptionArg options "$bishbosh_server"
+	core_variable_array_append options "$bishbosh_server"
 		
-	core_variable_array_appendAsOptionArg options "$bishbosh_port"
+	core_variable_array_append options "$bishbosh_port"
 	
 	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
 	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
