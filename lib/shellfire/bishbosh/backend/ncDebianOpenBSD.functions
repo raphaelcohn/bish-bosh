@@ -51,7 +51,6 @@ _bishbosh_backend_ncDebianOpenBSD_start_addProxy()
 	fi
 }
 
-# Also -K tclass and -F options are in the commandline help (but not the man page)!
 core_usesIn core variable variable/array
 bishbosh_backend_ncDebianOpenBSD_start()
 {
