@@ -52,7 +52,7 @@ _program_commandLine_parseInitialise()
 		_program_configurationSet_bishbosh_port=1
 	fi
 	
-	_program_default_bishbosh_randomClientId=0
+	_program_default_randomClientId=0
 	if core_variable_isSet bishbosh_randomClientId; then
 		_program_configurationSet_bishbosh_randomClientId=0
 	else
@@ -64,6 +64,13 @@ _program_commandLine_parseInitialise()
 		_program_configurationSet_bishbosh_pingTimeout=0
 	else
 		_program_configurationSet_bishbosh_pingTimeout=1
+	fi
+
+	_program_default_connectTimeout=30
+	if core_variable_isSet bishbosh_connectTimeout; then
+		_program_configurationSet_bishbosh_connectTimeout=0
+	else
+		_program_configurationSet_bishbosh_connectTimeout=1
 	fi
 	
 	_program_default_clientPath="${_program_varPath}"/lib/"$_program_name"/client
@@ -187,6 +194,11 @@ if on the PATH."
   -t, --ping-timeout SECS   Maximum time to wait in SECS seconds for a
                             PINGRESP packet if keep-alive is non-zero.
                             Defaults to '${_program_default_pingTimeout}'
+  -w, --connect-timeout SECS  Maximum time in 'SECS' seconds to wait to try
+                            to connect. Not all backends support this.
+                            Some older netcats interpret this as also
+                            being an idle timeout. 0 is infinity.
+                            Defaults to '${_program_default_connectTimeout}'
   -b, --backends A,B,...    Backend types A,B,... to talk to MQTT server.
                             Ordered in preference order. First found used.
                             Comma separated.
@@ -265,6 +277,7 @@ if on the PATH."
   bishbosh_clientId       Equivalent to --client-id
   bishbosh_randomClientId Equivalent to --random-client-id
   bishbosh_pingTimeout    Equivalent to --ping-timeout
+  bishbosh_connectTimeout  Equalivant to --connect-timeout
   bishbosh_backends       Equivalent to --backends
   bishbosh_clientPath     Equivalent to --clients-path
   bishbosh_sessionPath    Equivalent to --session-path
@@ -342,6 +355,10 @@ _program_commandLine_optionExists()
 		;;
 		
 		t|ping-timeout)
+			echo 'yes-argumented'
+		;;
+		
+		w|connect-timeout)
 			echo 'yes-argumented'
 		;;
 		
@@ -442,6 +459,11 @@ _program_commandLine_processOptionWithArgument()
 		t|ping-timeout)
 			bishbosh_validate_unsignedIntegerUpto65535Inclusive $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_pingTimeout=$optionValue
+		;;
+		
+		w|connect-timeout)
+			bishbosh_validate_unsignedIntegerUpto65535Inclusive $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_connectTimeout=$optionValue
 		;;
 		
 		b|backends)
@@ -662,7 +684,7 @@ _program_commandLine_validate()
 	fi
 	
 	if core_variable_isUnset bishbosh_randomClientId; then
-		bishbosh_randomClientId=1
+		bishbosh_randomClientId=$_program_default_randomClientId
 	else
 		bishbosh_validate_boolean $core_commandLine_exitCode_USAGE 'configuration setting' 'bishbosh_randomClientId' "$bishbosh_randomClientId"
 	fi
@@ -672,7 +694,13 @@ _program_commandLine_validate()
 	else
 		bishbosh_validate_unsignedIntegerUpto65535Inclusive $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_pingTimeout' "$bishbosh_pingTimeout"
 	fi
-		
+	
+	if core_variable_isUnset bishbosh_connectTimeout; then
+		bishbosh_connectTimeout=$_program_default_connectTimeout
+	else
+		bishbosh_validate_unsignedIntegerUpto65535Inclusive $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_connectTimeout' "$bishbosh_connectTimeout"
+	fi
+	
 	if core_variable_isUnset bishbosh_clientPath; then
 		bishbosh_clientPath="$_program_default_clientPath"
 		core_validate_folderPathReadableAndSearchableAndWritable $core_commandLine_exitCode_CONFIG 'defaulted value for' '--client-path' "$bishbosh_clientPath"

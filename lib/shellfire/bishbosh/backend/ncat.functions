@@ -115,8 +115,9 @@ bishbosh_backend_ncat_start()
 		
 	esac
 	
-	#Disable DNS  core_variable_array_append -n
-	#Connect Timeout  core_variable_array_append options -w 30
+	if [ $bishbosh_connectTimeout -ne 0 ]; then
+		core_variable_array_append options -w $bishbosh_connectTimeout
+	fi
 	
 	case $(core_init_verbosity) in
 		

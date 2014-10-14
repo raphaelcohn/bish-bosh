@@ -73,26 +73,7 @@ bishbosh_backend_socat_start()
 			core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 		;;
 		
-		# Timeout with  connect-timeout=<seconds> (also for Unix)
 		inet*)
-		
-			local binding
-			if core_variable_isSet bishbosh_sourceAddress; then
-				binding=",bind=$bishbosh_sourceAddress"
-				if core_variable_isSet bishbosh_sourcePort; then
-					binding="${binding}:${bishbosh_sourcePort}"
-				fi
-			elif core_variable_isSet bishbosh_sourcePort; then
-				binding=",sourceport=${bishbosh_sourcePort}"
-			fi
-			
-			local connectTimeout
-			if [ $bishbosh_connectTimeout -ne 0 ]; then
-				connectTimeout=",connect-timeout=${bishbosh_connectTimeout}"
-			else
-				connectTimeout=''
-			fi
-
 			local addressKind
 			case "$bishbosh_proxyKind" in
 				
@@ -151,6 +132,23 @@ bishbosh_backend_socat_start()
 				;;
 		
 			esac
+			
+			local binding
+			if core_variable_isSet bishbosh_sourceAddress; then
+				binding=",bind=$bishbosh_sourceAddress"
+				if core_variable_isSet bishbosh_sourcePort; then
+					binding="${binding}:${bishbosh_sourcePort}"
+				fi
+			elif core_variable_isSet bishbosh_sourcePort; then
+				binding=",sourceport=${bishbosh_sourcePort}"
+			fi
+			
+			local connectTimeout
+			if [ $bishbosh_connectTimeout -ne 0 ]; then
+				connectTimeout=",connect-timeout=${bishbosh_connectTimeout}"
+			else
+				connectTimeout=''
+			fi
 			
 			# keepidle, keepintvl, keepcnt, linger2, mss, mss-late, syncnt
 			core_variable_array_append options "${addressKind}:${binding}${connectTimeout},keepalive,linger=1,nodelay"

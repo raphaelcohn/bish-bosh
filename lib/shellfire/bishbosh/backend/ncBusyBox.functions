@@ -33,9 +33,10 @@ bishbosh_backend_ncBusyBox_start()
 	local options
 	local options_initialised
 	core_variable_array_initialise options
-
-	#Disable DNS  not supported
-	#Connect Timeout  core_variable_array_append options -w 30
+	
+	if [ $bishbosh_connectTimeout -ne 0 ]; then
+		core_variable_array_append options -w $bishbosh_connectTimeout
+	fi
 	
 	core_TODO 'Allow BusyBox builtins to work by calling nc directly'
 	core_variable_array_append options nc
