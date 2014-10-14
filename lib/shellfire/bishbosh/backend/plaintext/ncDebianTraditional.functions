@@ -1,8 +1,8 @@
 core_usesIn core functions
-core_functions_register _bishbosh_client_plaintext_registration ncDebianTraditional
+core_functions_register _bishbosh_backend_registration ncDebianTraditional
 
 # Default on Debian, lacks -e and -c (execute program / script)
-bishbosh_client_plaintext_ncDebianTraditional_check()
+bishbosh_backend_ncDebianTraditional_check()
 {
 	if core_compatibility_whichNoOutput nc.traditional; then
 		bishbosh_client_plaintext=ncDebianTraditional
@@ -15,7 +15,7 @@ bishbosh_client_plaintext_ncDebianTraditional_check()
 core_dependency_requires '*' grep
 core_dependency_requires '*' head
 core_dependency_requires '*' tail
-bishbosh_client_plaintext_ncDebianTraditional_checkIfNetcatVariant()
+bishbosh_backend_ncDebianTraditional_checkIfNetcatVariant()
 {
 	# eg [v1.10-40] \n connect to somewhere:   nc [-options] hostname port[s] [ports] ...
 	if "$binary" -h 2>&1 | head -n 2 | tail -n 1 | grep -q -E '^connect to somewhere:	nc \[-'; then
@@ -28,7 +28,7 @@ bishbosh_client_plaintext_ncDebianTraditional_checkIfNetcatVariant()
 
 # Almost identical to ncGNU
 core_usesIn core variable variable/array
-bishbosh_client_plaintext_ncDebianTraditional_start()
+bishbosh_backend_ncDebianTraditional_start()
 {
 	local options
 	

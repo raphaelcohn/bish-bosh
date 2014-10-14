@@ -3,11 +3,11 @@
 _program()
 {
 	core_usesIn core temporaryFiles
-	core_usesIn bishbosh validate client filesize
+	core_usesIn bishbosh validate filesize backend
 	
 	bishbosh()
 	{
-		bishbosh_client_plaintext_find
+		bishbosh_backend_find
 		
 		local TMP_FOLDER
 		core_temporaryFiles_newFolderToRemoveOnExit

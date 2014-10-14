@@ -1,8 +1,8 @@
 core_usesIn core functions
-core_functions_register _bishbosh_client_plaintext_registration ncToybox
+core_functions_register _bishbosh_backend_registration ncToybox
 
 core_dependency_requires '*' grep uname
-bishbosh_client_plaintext_ncToybox_check()
+bishbosh_backend_ncToybox_check()
 {
 	local binary
 	local toyboxName
@@ -22,7 +22,7 @@ bishbosh_client_plaintext_ncToybox_check()
 
 core_dependency_requires '*' grep
 core_dependency_requires '*' head
-bishbosh_client_plaintext_ncToybox_checkIfNetcatVariant()
+bishbosh_backend_ncToybox_checkIfNetcatVariant()
 {
 	# eg  'usage: netcat [-tu] [-lL COMMAND...] [-wpq #] [-s addr] {IPADDR PORTNUM|-f FILENAME}'
 	if "$binary" 2>&1 | head -n 1 | grep -q -E '^usage: netcat \[-tu\] '; then
@@ -34,7 +34,7 @@ bishbosh_client_plaintext_ncToybox_checkIfNetcatVariant()
 }
 
 core_usesIn core variable variable/array
-bishbosh_client_plaintext_ncToybox_start()
+bishbosh_backend_ncToybox_start()
 {
 	local options
 

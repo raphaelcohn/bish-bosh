@@ -1,7 +1,7 @@
 core_usesIn core functions
-core_functions_register _bishbosh_client_plaintext_registration devtcp
+core_functions_register _bishbosh_backend_registration devtcp
 
-bishbosh_client_plaintext_devtcp_check()
+bishbosh_backend_devtcp_check()
 {
 	case "$core_init_preferredShell" in
 		
@@ -18,7 +18,7 @@ bishbosh_client_plaintext_devtcp_check()
 
 # Supported by ksh93, too
 core_usesIn core variable variable/array
-bishbosh_client_plaintext_devtcp_start()
+bishbosh_backend_devtcp_start()
 {
 	if core_variable_isSet bishbosh_transport; then
 		case "$bishbosh_transport" in

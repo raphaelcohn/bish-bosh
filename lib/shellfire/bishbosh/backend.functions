@@ -1,6 +1,6 @@
-core_usesIn bishbosh/client/plaintext nc6 ncat nc ncBusyBox ncDebianOpenBSD ncDebianTraditional ncGNU ncMacOSX ncToybox devtcp socat tcpclient
+core_usesIn bishbosh/backend nc6 ncat nc ncBusyBox ncDebianOpenBSD ncDebianTraditional ncGNU ncMacOSX ncToybox devtcp socat tcpclient
 
-bishbosh_client_plaintext_find()
+bishbosh_backend_find()
 {
 	local originalIFS="$IFS"
 	local IFS=','
@@ -14,7 +14,7 @@ bishbosh_client_plaintext_find()
 	local checkFunction
 	for checkFunction in $@
 	do
-		if bishbosh_client_plaintext_${checkFunction}_check; then
+		if bishbosh_backend_${checkFunction}_check; then
 			core_message INFO "Using plaintext backend '$bishbosh_client_plaintext' on path '$bishbosh_client_plaintextPath'"
 			return 0
 		fi

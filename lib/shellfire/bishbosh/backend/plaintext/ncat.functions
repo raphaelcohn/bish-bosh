@@ -1,7 +1,7 @@
 core_usesIn core functions
-core_functions_register _bishbosh_client_plaintext_registration ncat
+core_functions_register _bishbosh_backend_registration ncat
 
-bishbosh_client_plaintext_ncat_check()
+bishbosh_backend_ncat_check()
 {
 	# ncat, part of nmap; provides built-in ssl support; offered as separate RPM (but debian and homebrew bundle it with nmap)
 	if core_compatibility_whichNoOutput ncat; then
@@ -12,7 +12,7 @@ bishbosh_client_plaintext_ncat_check()
 	return 1
 }
 
-_bishbosh_client_plaintext_ncat_start_addProxy()
+_bishbosh_backend_ncat_start_addProxy()
 {
 	local proxyValue="$1"
 	
@@ -54,7 +54,7 @@ _bishbosh_client_plaintext_ncat_start_addProxy()
 
 # Also -K tclass and -F options are in the commandline help (but not the man page)!
 core_usesIn core variable variable/array
-bishbosh_client_plaintext_ncat_start()
+bishbosh_backend_ncat_start()
 {
 	local options
 	
@@ -99,15 +99,15 @@ bishbosh_client_plaintext_ncat_start()
 	case "$bishbosh_proxyKind" in
 		
 		SOCKS4)
-			_bishbosh_client_plaintext_ncat_start_addProxy 'socks4'
+			_bishbosh_backend_ncat_start_addProxy 'socks4'
 		;;
 		
 		SOCKS5)
-			_bishbosh_client_plaintext_ncat_start_addProxy 'socks5'
+			_bishbosh_backend_ncat_start_addProxy 'socks5'
 		;;
 		
 		HTTP)
-			_bishbosh_client_plaintext_ncat_start_addProxy 'http'
+			_bishbosh_backend_ncat_start_addProxy 'http'
 		;;
 		
 	esac

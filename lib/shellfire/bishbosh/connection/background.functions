@@ -2,7 +2,7 @@ core_usesIn bishbosh/connection ping
 
 bishbosh_connection_background_client()
 {
-	bishbosh_client_plaintext_${bishbosh_client_plaintext}_start
+	bishbosh_backend_${bishbosh_client_plaintext}_start
 }
 
 core_dependency_requires '*' grep

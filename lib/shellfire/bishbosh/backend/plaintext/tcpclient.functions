@@ -1,9 +1,9 @@
 core_usesIn core functions
-core_functions_register _bishbosh_client_plaintext_registration tcpclient
+core_functions_register _bishbosh_backend_registration tcpclient
 
 # DJB's tcpclient / tcpserver (part of ucspi-tcp)
 # Homebrew, Debian
-bishbosh_client_plaintext_tcpclient_check()
+bishbosh_backend_tcpclient_check()
 {
 	if core_compatibility_whichNoOutput tcpclient; then
 		bishbosh_client_plaintext=tcpclient

@@ -6,15 +6,15 @@ bishbosh_validate_backends()
 	local value="$4"
 
 	if [ ${#value} -eq 0 ]; then
-		core_validate_exit "The $category '$name' must specify at least one backend. Valid backends are '$(core_variable_array_string _bishbosh_client_plaintext_registration ',')'."
+		core_validate_exit "The $category '$name' must specify at least one backend. Valid backends are '$(core_variable_array_string _bishbosh_backend_registration ',')'."
 	fi
 	
 	local IFS=','
 	local backend
 	for backend in $value
 	do
-		if ! core_variable_array_contains _bishbosh_client_plaintext_registration "$backend"; then
-			core_validate_exit "The $category '$name' specifies a backend '$backend' which is not known. Valid backends are '$(core_variable_array_string _bishbosh_client_plaintext_registration ',')'."
+		if ! core_variable_array_contains _bishbosh_backend_registration "$backend"; then
+			core_validate_exit "The $category '$name' specifies a backend '$backend' which is not known. Valid backends are '$(core_variable_array_string _bishbosh_backend_registration ',')'."
 			return 0
 		fi
 	done

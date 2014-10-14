@@ -1,59 +1,67 @@
 core_usesIn core functions
-core_functions_register _bishbosh_client_plaintext_registration ncDebianOpenBSD
+core_functions_register _bishbosh_backend_registration ncMacOSX
 
-# Not installed by default on Ubuntu/Debian (the version by Hobbit, last updated 2004 on freecode, now points to GNU netcat)
-bishbosh_client_plaintext_ncDebianOpenBSD_check()
+core_dependency_requires '*' grep
+core_dependency_requires '*' head
+bishbosh_backend_ncMacOSX_check()
 {
-	if core_compatibility_whichNoOutput nc.openbsd; then
-		bishbosh_client_plaintext=ncDebianOpenBSD
-		bishbosh_client_plaintextPath="$(core_compatibility_which nc.openbsd)"
-		return 0
-	fi
+	local binary
+	for binary in /usr/bin/nc "$(core_compatibility_which nc)"
+	do
+		if [ -z "$binary" ]; then
+			continue
+		fi
+		if [ ! -x "$binary" ]; then
+			continue
+		fi
+		if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^usage: nc \[-'; then
+			bishbosh_client_plaintext=ncMacOSX
+			bishbosh_client_plaintextPath="$binary"
+			return 0
+		fi
+	done
 	return 1
 }
 
 core_dependency_requires '*' grep
 core_dependency_requires '*' head
-bishbosh_client_plaintext_ncDebianOpenBSD_checkIfNetcatVariant()
+bishbosh_backend_ncMacOSX_checkIfNetcatVariant()
 {
-	# eg  'OpenBSD netcat (Debian patchlevel 1.105-7ubuntu1)'
-	if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^OpenBSD netcat \(Debian '; then
-		bishbosh_client_plaintext=ncDebianOpenBSD
+	# eg  'usage: nc [-46AcCDdFhklnrtUuvz] [-K tc] [-b boundif] [-i interval] [-p source_port]'
+	if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^usage: nc \[-'; then
+		bishbosh_client_plaintext=ncMacOSX
 		bishbosh_client_plaintextPath="$binary"
 		return 0
 	fi
 	return 1
 }
 
-_bishbosh_client_plaintext_ncDebianOpenBSD_start_addProxy()
+_bishbosh_backend_ncMacOSX_start_addProxy()
 {
 	local proxyValue="$1"
 	core_variable_array_appendAsOptionArg options '-X' "$proxyValue"
 	
-	local proxyAddress="$bishbosh_proxyAddress"
+	local proxyAddress
 	if core_variable_isSet bishbosh_proxyPort; then
 		# Note, if using an IPv6 address, we'll need surrounding []
 		proxyAddress="${proxyAddress}:${bishbosh_proxyPort}"
+	else
+		proxyAddress="$bishbosh_proxyAddress"
 	fi
 	
 	core_variable_array_appendAsOptionArg options '-x' "$proxyAddress"
 	
 	if core_variable_isSet bishbosh_proxyUsername; then
-		if [ "$proxyValue" = 'connect' ]; then
-			core_variable_array_appendAsOptionArg options -P "$bishbosh_proxyUsername"
-		else
-			core_message WARN "The backend ncDebianOpenBSD does not support specifing the proxy username for proxy kinds other than 'HTTP'"
-		fi
+		core_message WARN "The backend ncMacOSX does not support specifing the proxy username"
 	fi
-	
 	if core_variable_isSet bishbosh_proxyPassword; then
-		core_message WARN "The backend ncDebianOpenBSD does not support specifing the proxy password"
+		core_message WARN "The backend ncMacOSX does not support specifing the proxy password"
 	fi
 }
 
 # Also -K tclass and -F options are in the commandline help (but not the man page)!
 core_usesIn core variable variable/array
-bishbosh_client_plaintext_ncDebianOpenBSD_start()
+bishbosh_backend_ncMacOSX_start()
 {
 	local options
 	
@@ -77,7 +85,7 @@ bishbosh_client_plaintext_ncDebianOpenBSD_start()
 			;;
 			
 			serial)
-				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncDebianOpenBSD does not support the 'serial' transport."
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend ncMacOSX does not support the 'serial' transport."
 			;;
 			
 			*)
@@ -98,15 +106,15 @@ bishbosh_client_plaintext_ncDebianOpenBSD_start()
 	case "$bishbosh_proxyKind" in
 		
 		SOCKS4)
-			_bishbosh_client_plaintext_ncDebianOpenBSD_start_addProxy '4'
+			_bishbosh_backend_ncMacOSX_start_addProxy '4'
 		;;
 		
 		SOCKS5)
-			_bishbosh_client_plaintext_ncDebianOpenBSD_start_addProxy '5'
+			_bishbosh_backend_ncMacOSX_start_addProxy '5'
 		;;
 		
 		HTTP)
-			_bishbosh_client_plaintext_ncDebianOpenBSD_start_addProxy 'connect'
+			_bishbosh_backend_ncMacOSX_start_addProxy 'connect'
 		;;
 		
 	esac

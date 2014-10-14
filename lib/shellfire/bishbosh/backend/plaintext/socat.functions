@@ -1,8 +1,8 @@
 core_usesIn core functions
-core_functions_register _bishbosh_client_plaintext_registration socat
+core_functions_register _bishbosh_backend_registration socat
 
 # Homebrew, Debian
-bishbosh_client_plaintext_socat_check()
+bishbosh_backend_socat_check()
 {
 	if core_compatibility_whichNoOutput socat; then
 		bishbosh_client_plaintext=socat

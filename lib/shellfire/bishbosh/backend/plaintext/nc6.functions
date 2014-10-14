@@ -1,8 +1,8 @@
 core_usesIn core functions
-core_functions_register _bishbosh_client_plaintext_registration nc6
+core_functions_register _bishbosh_backend_registration nc6
 
 # nc6 is widely available but abandoned in favour of Nmap's ncat
-bishbosh_client_plaintext_nc6_check()
+bishbosh_backend_nc6_check()
 {
 	if core_compatibility_whichNoOutput nc6; then
 		bishbosh_client_plaintext=nc6
@@ -13,7 +13,7 @@ bishbosh_client_plaintext_nc6_check()
 }
 
 core_usesIn core variable variable/array
-bishbosh_client_plaintext_nc6_start()
+bishbosh_backend_nc6_start()
 {
 	local options
 	

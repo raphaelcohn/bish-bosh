@@ -1,7 +1,7 @@
 core_usesIn core functions
-core_functions_register _bishbosh_client_plaintext_registration ncBusyBox
+core_functions_register _bishbosh_backend_registration ncBusyBox
 
-bishbosh_client_plaintext_ncBusyBox_check()
+bishbosh_backend_ncBusyBox_check()
 {
 	if core_compatibility_whichNoOutput busybox; then
 		local binary="$(core_compatibility_which busybox)"
@@ -16,7 +16,7 @@ bishbosh_client_plaintext_ncBusyBox_check()
 
 core_dependency_requires '*' grep
 core_dependency_requires '*' head
-bishbosh_client_plaintext_ncBusyBox_checkIfNetcatVariant()
+bishbosh_backend_ncBusyBox_checkIfNetcatVariant()
 {
 	# eg  'BusyBox v1.21.1 (Ubuntu 1:1.21.0-1ubuntu1) multi-call binary.'
 	if "$binary" 2>&1 | head -n 1 | grep -q -E '^BusyBox v'; then
@@ -28,7 +28,7 @@ bishbosh_client_plaintext_ncBusyBox_checkIfNetcatVariant()
 }
 
 core_usesIn core variable variable/array
-bishbosh_client_plaintext_ncBusyBox_start()
+bishbosh_backend_ncBusyBox_start()
 {
 	local options
 
