@@ -727,7 +727,7 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 * More tools
 	* [MQTT] over cryptcat
 	* Investigate suckless tools
-	* This listis an useful perspective on minimal system tools: <http://elinux.org/Busybox_replacement>
+	* This list is an useful perspective on minimal system tools: <http://elinux.org/Busybox_replacement>
 	* Investigate [Beastiebox](http://beastiebox.sourceforge.net/)
 	* Investigate proxy support, eg corkscrew
 	* Investigate [Debian uscpi-tcp-ipv6](https://packages.debian.org/wheezy/ucspi-tcp-ipv6)
