@@ -282,6 +282,29 @@ if on the PATH."
                             'serial'.
                             Insecure - use configuration instead.
                             Not all proxies support this option.
+      --tunnel-tls-ca-path PATH  Folder PATH containing certificate
+                            authorities in PEM format with OpenSSL
+                            hashes. Must not be specified if 
+                            --tunnel-tls-ca-bundle is.
+      --tunnel-tls-ca-bundle FILE  PEM-encoded FILE file containing
+                            all trusted certificate authorities.
+                            Must not be specified if 
+                            --tunnel-tls-ca-path is.
+      --tunnel-tls-certificate FILE  TLS certificate FILE for client
+                            authentication. Must be PEM-encoded.
+                            Required if --tunnel-tls-key
+                            is specified.
+      --tunnel-tls-key FILE  TLS key FILE for client
+                            authentication. Must be PEM-encoded.
+                            Required if --tunnel-tls-certificate
+                            is specified.
+      --tunnel-tls-verify [BOOL]  Boolean BOOL (0/1,on/off) to enable
+                            verification of server certificates.
+                            Defaults to on (verification).
+      --tunnel-tls-ciphers STR  Cipher string. Format is specific to
+                            backend. For openssl-based backends
+                            (most) see man 5 ciphers. For GnuTLS
+                            see man gnutls-cli. 
       --tunnel-cryptcat-password PWD  Password for cryptcat."
     _program_commandLine_helpMessage_optionsSpacing='   '
 	_program_commandLine_helpMessage_configurationKeys="
@@ -307,6 +330,16 @@ if on the PATH."
   bishbosh_proxyPort      Equivalent to --proxy-port
   bishbosh_proxyUsername  Equivalent to --proxy-username
   bishbosh_proxyPassword  Equivalent to --proxy-password
+  
+The following values control the tunnel 'tls'
+  bishbosh_tunnelTlsCaPath       Equivalent to --tunnel-tls-ca-path
+  bishbosh_tunnelTlsCaBundle     Equivalent to --tunnel-tls-ca-bundle
+  bishbosh_tunnelTlsCertificate  Equivalent to --tunnel-tls-certificate
+  bishbosh_tunnelTlsKey          Equivalent to --tunnel-tls-key
+  bishbosh_tunnelTlsVerify       Equivalent to --tunnel-tls-verify
+  bishbosh_tunnelTlsCiphers      Equivalent to --tunnel-tls-ciphers
+  
+The following values control the tunnel 'cryptcat'
   bishbosh_tunnelCryptcatPassword  Equivalent to --tunnel-cryptcat-password
   
 These may also be set in the SCRIPTLETS.
@@ -441,6 +474,30 @@ _program_commandLine_optionExists()
 			echo 'yes-argumented'
 		;;
 		
+		tunnel-tls-ca-path)
+			echo 'yes-argumented'
+		;;
+		
+		tunnel-tls-ca-bundle)
+			echo 'yes-argumented'
+		;;
+		
+		tunnel-tls-certificate)
+			echo 'yes-argumented'
+		;;
+		
+		tunnel-tls-key)
+			echo 'yes-argumented'
+		;;
+		
+		tunnel-tls-verify)
+			echo 'yes-optionally-argumented'
+		;;
+		
+		tunnel-tls-ciphers)
+			echo 'yes-argumented'
+		;;
+		
 		tunnel-cryptcat-password)
 			echo 'yes-argumented'
 		;;
@@ -454,7 +511,13 @@ _program_commandLine_optionExists()
 
 _program_commandLine_processOptionWithoutArgument()
 {
-	:
+	case "$optionName" in
+		
+		tunnel-tls-verify)
+			bishbosh_tunnelTlsVerify=1
+		;;
+		
+	esac
 }
 
 _program_commandLine_processOptionWithArgument()
@@ -572,6 +635,35 @@ _program_commandLine_processOptionWithArgument()
 			core_message WARN "Specifying the option '--proxy-password' on the command line is insecure"
 			bishbosh_proxyPassword="$optionValue"
 			_program_configurationSet_bishbosh_proxyPassword=0
+		;;
+		
+		tunnel-tls-ca-path)
+			core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_tunnelTlsCaPath="$optionValue"
+		;;
+		
+		tunnel-tls-ca-bundle)
+			core_validate_filePathReadable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_tunnelTlsCaBundle="$optionValue"
+		;;
+		
+		tunnel-tls-certificate)
+			core_validate_filePathReadable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_tunnelTlsCertificate="$optionValue"
+		;;
+		
+		tunnel-tls-key)
+			core_validate_filePathReadable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_tunnelTlsKey="$optionValue"
+		;;
+		
+		tunnel-tls-verify)
+			core_validate_isBoolean $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_tunnelTlsVerify="$optionValue"
+		;;
+		
+		tunnel-tls-ciphers)
+			bishbosh_tunnelTlsCiphers="$optionValue"
 		;;
 		
 		tunnel-cryptcat-password)
@@ -856,6 +948,61 @@ _program_commandLine_validate()
 		_program_commandLine_validateProxySetting 'unspecified' bishbosh_proxyUsername '--proxy-username' 'proxy username' $_program_configurationSet_bishbosh_proxyUsername
 		_program_commandLine_validateProxySetting 'unspecified' bishbosh_proxyPassword '--proxy-password' 'proxy password' $_program_configurationSet_bishbosh_proxyPassword
 		bishbosh_proxyKind='none'
+	fi
+	
+	# tunnel specific checks
+	
+	if [ "$bishbosh_tunnel" = 'tls' ]; then
+
+		if core_variable_isSet bishbosh_tunnelTlsCaBundle; then
+			core_exitError $core_commandLine_exitCode_CONFIG "When the option '--tunnel' (or configuration setting 'bishbosh_tunnel') is '$bishbosh_tunnel', and the option '--tunnel-tls-ca-path' (or configuration setting 'bishbosh_tunnelTlsCaPath') is specified, then the option '--tunnel-tls-ca-bundle' (or configuration setting 'bishbosh_tunnelTlsCaBundle' must not be specified)"
+		fi
+		core_validate_folderPathReadableAndSearchable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_tunnelTlsCaPath' "$bishbosh_tunnelTlsCaPath"
+
+		if core_variable_isSet bishbosh_tunnelTlsCaPath; then
+			core_exitError $core_commandLine_exitCode_CONFIG "When the option '--tunnel' (or configuration setting 'bishbosh_tunnel') is '$bishbosh_tunnel', and the option '--tunnel-tls-ca-bundle' (or configuration setting 'bishbosh_tunnelTlsCaBundle') is specified, then the option '--tunnel-tls-ca-path' (or configuration setting 'bishbosh_tunnelTlsCaPath' must not be specified)"
+		fi
+		core_validate_filePathReadable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_tunnelTlsCaBundle' "$bishbosh_tunnelTlsCaPath"
+		
+		# Client authentication
+		if core_variable_isSet bishbosh_tunnelTlsCertificate; then
+			if core_variable_isUnset bishbosh_tunnelTlsKey; then
+				core_exitError $core_commandLine_exitCode_CONFIG "When the option '--tunnel' (or configuration setting 'bishbosh_tunnel') is '$bishbosh_tunnel', and the option '--tunnel-tls-certificate' (or configuration setting 'bishbosh_tunnelTlsCertificate') is specified, then the option '--tunnel-tls-key' (or configuration setting 'bishbosh_tunnelTlsKey' must be specified)"
+			fi
+			core_validate_filePathReadable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_tunnelTlsCertificate' "$bishbosh_tunnelTlsCertificate"
+			core_validate_filePathReadable $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_tunnelTlsKey' "$bishbosh_tunnelTlsKey"
+		elif core_variable_isSet bishbosh_tunnelTlsKey; then
+			core_exitError $core_commandLine_exitCode_CONFIG "When the option '--tunnel' (or configuration setting 'bishbosh_tunnel') is '$bishbosh_tunnel', and the option '--tunnel-tls-key' (or configuration setting 'bishbosh_tunnelTlsKey') is specified, then the option '--tunnel-tls-certificate' (or configuration setting 'bishbosh_tunnelTlsCertificate' must be specified)"
+		fi
+
+		core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_tunnelTlsVerify' "$bishbosh_tunnelTlsVerify"
+	else
+		if core_variable_isSet bishbosh_tunnelTlsCaPath; then
+			core_exitError $codeServer "When the option '--tunnel' (or configuration setting 'bishbosh_tunnel') is '$bishbosh_tunnel', then the option '--tunnel-tls-ca-path' (or configuration setting 'bishbosh_tunnelTlsCaPath') must not be specified."
+		fi
+		if core_variable_isSet bishbosh_tunnelTlsCaBundle; then
+			core_exitError $codeServer "When the option '--tunnel' (or configuration setting 'bishbosh_tunnel') is '$bishbosh_tunnel', then the option '--tunnel-tls-ca-bundle' (or configuration setting 'bishbosh_tunnelTlsCaBundle') must not be specified."
+		fi
+		if core_variable_isSet bishbosh_tunnelTlsCertificate; then
+			core_exitError $codeServer "When the option '--tunnel' (or configuration setting 'bishbosh_tunnel') is '$bishbosh_tunnel', then the option '--tunnel-tls-certificate' (or configuration setting 'bishbosh_tunnelTlsCertificate') must not be specified."
+		fi
+		if core_variable_isSet bishbosh_tunnelTlsKey; then
+			core_exitError $codeServer "When the option '--tunnel' (or configuration setting 'bishbosh_tunnel') is '$bishbosh_tunnel', then the option '--tunnel-tls-key' (or configuration setting 'bishbosh_tunnelTlsKey') must not be specified."
+		fi
+		if core_variable_isSet bishbosh_tunnelTlsVerify; then
+			core_exitError $codeServer "When the option '--tunnel' (or configuration setting 'bishbosh_tunnel') is '$bishbosh_tunnel', then the option '--tunnel-tls-verify' (or configuration setting 'bishbosh_tunnelTlsVerify') must not be specified."
+		fi
+		if core_variable_isSet bishbosh_tunnelTlsCiphers; then
+			core_exitError $codeServer "When the option '--tunnel' (or configuration setting 'bishbosh_tunnel') is '$bishbosh_tunnel', then the option '--tunnel-tls-ciphers' (or configuration setting 'bishbosh_tunnelTlsCiphers') must not be specified."
+		fi
+	fi
+	
+	if [ "$bishbosh_tunnel" = 'cryptcat' ]; then
+		:
+	else
+		if core_variable_isSet bishbosh_tunnel_cryptcatPassword; then
+			core_exitError $codeServer "When the option '--tunnel' (or configuration setting 'bishbosh_tunnel') is '$bishbosh_tunnel', then the option '--tunnel-cryptcat-password' (or configuration setting 'bishbosh_tunnelCryptcatPassword') must not be specified."
+		fi
 	fi
 }
 

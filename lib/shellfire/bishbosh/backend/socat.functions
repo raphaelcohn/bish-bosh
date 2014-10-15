@@ -87,11 +87,17 @@ bishbosh_backend_socat_start()
 	case "$bishbosh_transport" in
 		
 		unix)
+			if [ "$bishbosh_tunnel" = 'tls' ]; then
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend socat does not support the 'unix' transport when the tunnel is 'tls'"
+			fi
 			core_variable_array_append options "UNIX-CONNECT:${bishbosh_server}"
 			core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 		;;
 		
 		serial)
+			if [ "$bishbosh_tunnel" = 'tls' ]; then
+				core_exitError $core_commandLine_exitCode_CONFIG "The backend socat does not support the 'serial' transport when the tunnel is 'tls'"
+			fi
 			core_variable_array_append options "${bishbosh_server},raw,echo=0"
 			core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 		;;
@@ -101,6 +107,11 @@ bishbosh_backend_socat_start()
 			case "$bishbosh_proxyKind" in
 				
 				SOCKS4|SOCKS4a)
+
+					if [ "$bishbosh_tunnel" = 'tls' ]; then
+						core_exitError $core_commandLine_exitCode_CONFIG "The backend socat does not support the '$bishbosh_proxyKind' proxy kind when the tunnel is 'tls'"
+					fi
+					
 					addressKind="${$bishbosh_proxyKind}:${bishbosh_proxyAddress}:${bishbosh_server}:${bishbosh_port}"
 					if core_variable_isSet bishbosh_proxyPort; then
 						addressKind="${addressKind},socksport=${bishbosh_proxyPort}"
@@ -120,6 +131,10 @@ bishbosh_backend_socat_start()
 				;;
 		
 				HTTP)
+					if [ "$bishbosh_tunnel" = 'tls' ]; then
+						core_exitError $core_commandLine_exitCode_CONFIG "The backend socat does not support the '$bishbosh_proxyKind' proxy kind when the tunnel is 'tls'"
+					fi
+					
 					addressKind="PROXY:${bishbosh_proxyAddress}:${bishbosh_server}:${bishbosh_port}"
 					if core_variable_isSet bishbosh_proxyPort; then
 						addressKind="${addressKind},socksport=${bishbosh_proxyPort}"
@@ -128,28 +143,63 @@ bishbosh_backend_socat_start()
 						if core_variable_isSet bishbosh_proxyPassword; then
 							addressKind="${addressKind},proxyauth=${bishbosh_proxyUsername}:${bishbosh_proxyPassword}"
 						else
-							core_message WATN $core_commandLine_exitCode_CONFIG "The backend socat requires 'bishbosh_proxyUsername' and 'bishbosh_proxyPassword' for the 'HTTP' bishbosh_proxyKind."
+							core_message WARN $core_commandLine_exitCode_CONFIG "The backend socat requires 'bishbosh_proxyUsername' and 'bishbosh_proxyPassword' for the 'HTTP' bishbosh_proxyKind."
 						fi
 					elif core_variable_isSet bishbosh_proxyPassword; then
-						core_message WATN $core_commandLine_exitCode_CONFIG "The backend socat requires 'bishbosh_proxyUsername' and 'bishbosh_proxyPassword' for the 'HTTP' bishbosh_proxyKind."
+						core_message WARN $core_commandLine_exitCode_CONFIG "The backend socat requires 'bishbosh_proxyUsername' and 'bishbosh_proxyPassword' for the 'HTTP' bishbosh_proxyKind."
 					fi
 				;;
 				
 				*)
-					case "$bishbosh_transport" in
+					if [ "$bishbosh_tunnel" = 'tls' ]; then
+						core_exitError $core_commandLine_exitCode_CONFIG "The backend socat does not support the '$bishbosh_proxyKind' proxy kind when the tunnel is 'tls'"
+						# We do not specify method=TLSv1. This is because this DISABLES support for TLSv1.1 and TLSv1.2
+						# Instead, if one uses OpenSSL's SSLv23_method(), then there is support for TLSv1.2 (counter-intuitively).
+						addressKind='OPENSSL,compress=none'
+		
+						if core_variable_isSet bishbosh_tunnelTlsCertificate; then
+							addressKind="${addressKind},cert=$bishbosh_tunnelTlsCertificate"
+						fi
 						
-						inet)
-							addressKind='TCP'
-						;;
+						if core_variable_isSet bishbosh_tunnelTlsKey; then
+							addressKind="${addressKind},key=$bishbosh_tunnelTlsKey"
+						fi
+						
+						if core_variable_isSet bishbosh_tunnelTlsCaFile; then
+							addressKind="${addressKind},file=$bishbosh_tunnelTlsCaFile"
+						fi
+						
+						if core_variable_isSet bishbosh_tunnelTlsCaBundle; then
+							addressKind="${addressKind},capath=$bishbosh_tunnelTlsCaBundle"
+						fi
+						
+						if core_variable_isSet bishbosh_tunnelTlsVerify; then
+							if core_variable_isTrue bishbosh_tunnelTlsVerify; then
+								addressKind="${addressKind},verify=1"
+							else
+								addressKind="${addressKind},verify=0"
+							fi
+						fi
+						if core_variable_isSet bishbosh_tunnelTlsCiphers; then
+							addressKind="${addressKind},cipher=$bishbosh_tunnelTlsCiphers"
+						fi
+						
+					else
+						case "$bishbosh_transport" in
+						
+							inet)
+								addressKind='TCP'
+							;;
 		
-						inet4)
-							addressKind='TCP4'
-						;;
+							inet4)
+								addressKind='TCP4'
+							;;
 		
-						inet6)
-							addressKind='TCP6'
-						;;
-					esac
+							inet6)
+								addressKind='TCP6'
+							;;
+						esac
+					fi
 					
 					addressKind="${addressKind}:${bishbosh_server}:${bishbosh_port}"
 				;;
