@@ -306,6 +306,9 @@ When using a proxy, you won't be able to use Unix domain sockets ([`--transport 
 
 _\* Not running proxies myself, I can't test many of these settings combinations._
 
+##### Alternative
+It may be possible to hook proxy support into several of the backends using [proxychains-ng](https://github.com/rofl0r/proxychains-ng). If you have an use case for this, please get in touch.
+
 #### Tunnel Settings
 
 ##### `tls` tunnel settings
@@ -473,8 +476,9 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * `stdbuf`, FreeBSD
   * `unbuffer`, from the expect package (known as `expect-dev` on Debian/Ubuntu)
   * `dd`, any POSIX-compliant version.
-* Network Connections (can be configured with the `--backends` option to use a different preference order)
+* Unencrypted Network Connections (can be configured with the `--backends` option to use a different preference order)
   * `ncat`, part of the `nmap` package (available as `nmap` on Debian/Ubuntu and Mac OS X + Homebrew)
+  * `socat` (not the beta version 2.0)
   * `nc6`, a predecessor of `ncat` (available as `nc6` on Debian/Ubuntu and Mac OS X + Homebrew)
   * `nc`, Debian Traditional variant (available as the `netcat-traditional` package on Debian/Ubuntu)
   * `nc`, Debian OpenBSD variant (available as the `netcat-openbsd` package on Debian/Ubuntu; usually installed by default)
@@ -484,7 +488,16 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * `nc`, [Toybox]
   * `bash` (if compiled with socket support; this is true for Mac OS X Snow Leopard+, Mac OS X + Homebrew, RHEL 6+, Centos 6+, Debian 6+, and Ubuntu 10.04 LTS +)
   * `ksh` ([ksh93], however [ksh93] doesn't work with other script features at this time)
+* TLS-encrypted backends
+  * `ncat`,
   * `socat`
+  * `openssl` from [LibreSSL](http://www.libressl.org/)
+  * `openssl` from [OpenSSL](https://www.openssl.org/)
+  * `gnutls-cli`, from [GnuTLS](http://gnutls.org/)
+  * none, if not using MQTTS
+* cryptcat-encrypted backends
+  * `cryptcat`
+  * none, if not using `cryptcat`
 * Keep Alives (only required if `bishbosh_connection_write_CONNECT_keepAlive` is not `0`)
   * `SECONDS` pseudo-environment variable if your shell supports it [GNU Bash], [mksh] and [pdksh] do)
     * Works slightly differently on [ksh93], as it uses 3 decimal places, but still effective
@@ -529,6 +542,9 @@ Unfortunately, there are a lot of [GNU Bash] versions that are still in common u
 * bash 4.3
   * Ubuntu 14.04 LTS
   * Mac OS X + Homebrew
+
+### A word on [suckless]
+[bish-bosh] hasn't been tested with them, but should work using [suckless sbase](http://tools.suckless.org/sbase) and [suckless ubase](http://tools.suckless.org/ubase) for dependencies.
 
 ## Configurations
 The widely varying list of dependencies and preferences can be confusing, so here's a little guidance.
@@ -718,14 +734,9 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 	* With OpenSSH local port forwarding
 * [MQTT] over WebSockets
 * More tools
-	* [MQTT] over cryptcat
-	* Investigate suckless tools
-	* This list is an useful perspective on minimal system tools: <http://elinux.org/Busybox_replacement>
-	* Investigate [Beastiebox](http://beastiebox.sourceforge.net/)
-	* Investigate proxy support, eg corkscrew
+	* Investigate suckless tools (sbase)
 	* Investigate [Debian uscpi-tcp-ipv6](https://packages.debian.org/wheezy/ucspi-tcp-ipv6)
 	* reverse shell using GAWK! http://www.gnucitizen.org/blog/reverse-shell-with-bash/#comment-122387
-	* Investigate 
 * Need a simple way to send messages from disk on start
 * Need to automatically re-subscribe on start
 * Need to support connecting more than once (ie connection recycling) so that we can script clean-session resets
