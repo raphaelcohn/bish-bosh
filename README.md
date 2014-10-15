@@ -702,13 +702,6 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 * Connection timeouts (`-w` in netcat)
 * [MQTT]S
 	* In
-		* ncat ssl
-			* verify
-			* cafile only [but has built in]
-		* socat ssl (a bit dated)
-			* TLSv1 only
-			* cafile or capath
-			* verify
 		* openssl, in openssl
 		* openssl, in libressl
 		* gnutls-cli
