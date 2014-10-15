@@ -5,6 +5,10 @@ core_dependency_requires '*' grep
 core_dependency_requires '*' head
 bishbosh_backend_ncMacOSX_check()
 {
+	if [ "$bishbosh_tunnel" != 'MQTT' ]; then
+		return 1
+	fi
+	
 	local binary
 	for binary in /usr/bin/nc "$(core_compatibility_which nc)"
 	do
@@ -15,8 +19,8 @@ bishbosh_backend_ncMacOSX_check()
 			continue
 		fi
 		if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^usage: nc \[-'; then
-			bishbosh_client_plaintext=ncMacOSX
-			bishbosh_client_plaintextPath="$binary"
+			bishbosh_backend_name=ncMacOSX
+			bishbosh_backend_path="$binary"
 			return 0
 		fi
 	done
@@ -29,11 +33,16 @@ bishbosh_backend_ncMacOSX_checkIfNetcatVariant()
 {
 	# eg  'usage: nc [-46AcCDdFhklnrtUuvz] [-K tc] [-b boundif] [-i interval] [-p source_port]'
 	if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^usage: nc \[-'; then
-		bishbosh_client_plaintext=ncMacOSX
-		bishbosh_client_plaintextPath="$binary"
+		bishbosh_backend_name=ncMacOSX
+		bishbosh_backend_path="$binary"
 		return 0
 	fi
 	return 1
+}
+
+bishbosh_backend_ncMacOSX_port()
+{
+	printf '%s' 1883
 }
 
 _bishbosh_backend_ncMacOSX_start_addProxy()
@@ -147,5 +156,5 @@ bishbosh_backend_ncMacOSX_start()
 	core_variable_array_append options "$bishbosh_port"
 	
 	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
-	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

@@ -4,6 +4,10 @@ core_usesIn bishbosh/backend ncGNU ncDebianOpenBSD ncDebianTraditional ncMacOSX
 
 bishbosh_backend_nc_check()
 {
+	if [ "$bishbosh_tunnel" != 'MQTT' ]; then
+		return 1
+	fi
+	
 	if ! core_compatibility_whichNoOutput nc; then
 		return 1
 	fi
@@ -19,4 +23,9 @@ bishbosh_backend_nc_check()
 	done
 	core_message WARN "Could not determine which netcat (nc, at path '$binary') you have installed."
 	return 1
+}
+
+bishbosh_backend_nc_port()
+{
+	printf '%s' 1883
 }

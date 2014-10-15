@@ -20,6 +20,30 @@ bishbosh_validate_backends()
 	done
 }
 
+bishbosh_validate_tunnel()
+{
+	local code=$1
+	local category="$2"
+	local name="$3"
+	local value="$4"
+	
+	case "$value" in
+		
+		MQTT)
+			:
+		;;
+		
+		MQTTS)
+			:
+		;;
+		
+		cryptcat)
+			:
+		;;
+		
+	esac
+}
+
 bishbosh_validate_unsignedIntegerUpto65535Inclusive()
 {
 	local code=$1

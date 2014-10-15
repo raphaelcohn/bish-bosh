@@ -4,9 +4,13 @@ core_functions_register _bishbosh_backend_registration ncDebianTraditional
 # Default on Debian, lacks -e and -c (execute program / script)
 bishbosh_backend_ncDebianTraditional_check()
 {
+	if [ "$bishbosh_tunnel" != 'MQTT' ]; then
+		return 1
+	fi
+	
 	if core_compatibility_whichNoOutput nc.traditional; then
-		bishbosh_client_plaintext=ncDebianTraditional
-		bishbosh_client_plaintextPath="$(core_compatibility_which nc.traditional)"
+		bishbosh_backend_name=ncDebianTraditional
+		bishbosh_backend_path="$(core_compatibility_which nc.traditional)"
 		return 0
 	fi
 	return 1
@@ -19,11 +23,16 @@ bishbosh_backend_ncDebianTraditional_checkIfNetcatVariant()
 {
 	# eg [v1.10-40] \n connect to somewhere:   nc [-options] hostname port[s] [ports] ...
 	if "$binary" -h 2>&1 | head -n 2 | tail -n 1 | grep -q -E '^connect to somewhere:	nc \[-'; then
-		bishbosh_client_plaintext=ncDebianTraditional
-		bishbosh_client_plaintextPath="$binary"
+		bishbosh_backend_name=ncDebianTraditional
+		bishbosh_backend_path="$binary"
 		return 0
 	fi
 	return 1
+}
+
+bishbosh_backend_ncDebianTraditional_port()
+{
+	printf '%s' 1883
 }
 
 # Almost identical to ncGNU
@@ -114,5 +123,5 @@ bishbosh_backend_ncDebianTraditional_start()
 	core_variable_array_append options "$bishbosh_port"
 	
 	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
-	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

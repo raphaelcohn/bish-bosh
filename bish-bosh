@@ -32,13 +32,13 @@ _program_entrypoint='bishbosh'
 
 _program_commandLine_parseInitialise()
 {
-	_program_default_backends='ncat,nc6,nc,devtcp,socat'
-	if core_variable_isSet bishbosh_backends; then
-		_program_configurationSet_bishbosh_backends=0
+	_program_default_tunnel='MQTT'
+	if core_variable_isSet bishbosh_tunnel; then
+		_program_configurationSet_bishbosh_tunnel=0
 	else
-		_program_configurationSet_bishbosh_backends=1
+		_program_configurationSet_bishbosh_tunnel=1
 	fi
-
+	
 	_program_default_server='test.mosquitto.org'
 	if core_variable_isSet bishbosh_server; then
 		_program_configurationSet_bishbosh_server=0
@@ -71,6 +71,13 @@ _program_commandLine_parseInitialise()
 		_program_configurationSet_bishbosh_connectTimeout=0
 	else
 		_program_configurationSet_bishbosh_connectTimeout=1
+	fi
+	
+	_program_default_backends='ncat,nc6,nc,devtcp,socat'
+	if core_variable_isSet bishbosh_backends; then
+		_program_configurationSet_bishbosh_backends=0
+	else
+		_program_configurationSet_bishbosh_backends=1
 	fi
 	
 	_program_default_clientPath="${_program_varPath}"/lib/"$_program_name"/client
@@ -175,6 +182,10 @@ _program_commandLine_helpMessage()
 May be used as a command interpreter in scripts starting #!/usr/bin/env ${_program_name}
 if on the PATH."
 	_program_commandLine_helpMessage_options="
+  -t, --tunnel TUNNEL       Network tunnel TUNNEL to use. One of 'MQTT', 'MQTTS',
+                            'cryptcat'. Defaults to '${_program_default_tunnel}'.
+                            'WebSockets', 'WebSocketsSecure', 'SSH' and 'telnet'
+                            are unimplemented but possible if there's demand.
   -s, --server HOST         Server hostname, HOST, is a hostname,
                             IPv4 address, IPv6 address, unix domain socket
                             path or serial character device path.
@@ -191,7 +202,7 @@ if on the PATH."
                             of an empty one if Clean Session is 1 and
                             --client-id isn't specified. Invalid if
                             Clean Session is 0.
-  -t, --ping-timeout SECS   Maximum time to wait in SECS seconds for a
+  -x, --ping-timeout SECS   Maximum time to wait in SECS seconds for a
                             PINGRESP packet if keep-alive is non-zero.
                             Defaults to '${_program_default_pingTimeout}'
   -w, --connect-timeout SECS  Maximum time in 'SECS' seconds to wait to try
@@ -201,7 +212,8 @@ if on the PATH."
                             Defaults to '${_program_default_connectTimeout}'
   -b, --backends A,B,...    Backend types A,B,... to talk to MQTT server.
                             Ordered in preference order. First found used.
-                            Comma separated.
+                            Comma separated. Most backends do not support
+                            tunnels TUNNEL other than 'MQTT'.
                             Defaults to '${_program_default_backends}'.
   -c, --client-path PATH    PATH to folder containing client scriptlets.
                             Defaults to '${_program_default_clientPath}'.
@@ -272,6 +284,7 @@ if on the PATH."
                             Not all proxies support this option."
     _program_commandLine_helpMessage_optionsSpacing='   '
 	_program_commandLine_helpMessage_configurationKeys="
+  bishbosh_tunnel         Equivalent to --tunnel
   bishbosh_server         Equivalent to --server
   bishbosh_port           Equivalent to --port
   bishbosh_clientId       Equivalent to --client-id
@@ -338,6 +351,10 @@ _program_commandLine_optionExists()
 {
 	case "$optionName" in
 		
+		t|tunnel)
+			echo 'yes-argumented'
+		;;
+		
 		s|server)
 			echo 'yes-argumented'
 		;;
@@ -354,7 +371,7 @@ _program_commandLine_optionExists()
 			echo 'no'
 		;;
 		
-		t|ping-timeout)
+		x|ping-timeout)
 			echo 'yes-argumented'
 		;;
 		
@@ -438,6 +455,11 @@ _program_commandLine_processOptionWithArgument()
 {
 	case "$optionName" in
 		
+		t|tunnel)
+			bishbosh_validate_tunnel $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_tunnel="$optionValue"
+		;;
+		
 		s|server)
 			bishbosh_validate_address $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_server="$optionValue"
@@ -456,7 +478,7 @@ _program_commandLine_processOptionWithArgument()
 			bishbosh_randomClientId=1
 		;;
 		
-		t|ping-timeout)
+		x|ping-timeout)
 			bishbosh_validate_unsignedIntegerUpto65535Inclusive $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_pingTimeout=$optionValue
 		;;
@@ -675,6 +697,12 @@ _program_commandLine_validate()
 		bishbosh_backends="$_program_default_backends"
 	else
 		bishbosh_validate_backends $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_backends' "$bishbosh_backends"
+	fi
+	
+	if core_variable_isUnset bishbosh_tunnel; then
+		bishbosh_tunnel="$_program_default_tunnel"
+	else
+		bishbosh_validate_tunnel $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_tunnel' "$bishbosh_tunnel"
 	fi
 	
 	if core_variable_isUnset bishbosh_server; then

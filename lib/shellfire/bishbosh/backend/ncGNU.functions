@@ -3,6 +3,10 @@ core_functions_register _bishbosh_backend_registration ncGNU
 
 bishbosh_backend_ncGNU_check()
 {
+	if [ "$bishbosh_tunnel" != 'MQTT' ]; then
+		return 1
+	fi
+	
 	local binary="$(core_compatibility_which nc)"
 	if [ -z "$binary" ]; then
 		return 1
@@ -16,11 +20,16 @@ bishbosh_backend_ncGNU_checkIfNetcatVariant()
 {
 	# eg  'GNU netcat 0.7.1, a rewrite of the famous networking tool.'
 	if "$binary" -h | head -n 1 | grep -q -E '^GNU netcat '; then
-		bishbosh_client_plaintext=ncGNU
-		bishbosh_client_plaintextPath="$binary"
+		bishbosh_backend_name=ncGNU
+		bishbosh_backend_path="$binary"
 		return 0
 	fi
 	return 1
+}
+
+bishbosh_backend_ncGNU_port()
+{
+	printf '%s' 1883
 }
 
 core_usesIn core variable variable/array
@@ -110,5 +119,5 @@ bishbosh_backend_ncGNU_start()
 	core_variable_array_append options "$bishbosh_port"
 	
 	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
-	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

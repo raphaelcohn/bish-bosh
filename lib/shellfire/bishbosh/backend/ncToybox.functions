@@ -4,6 +4,10 @@ core_functions_register _bishbosh_backend_registration ncToybox
 core_dependency_requires '*' grep uname
 bishbosh_backend_ncToybox_check()
 {
+	if [ "$bishbosh_tunnel" != 'MQTT' ]; then
+		return 1
+	fi
+	
 	local binary
 	local toyboxName
 	for toyboxName in toybox toybox-"$(uname -m)"
@@ -11,8 +15,8 @@ bishbosh_backend_ncToybox_check()
 		if core_compatibility_whichNoOutput "$toyboxName"; then
 			binary="$(core_compatibility_which "$toyboxName")"
 			if "$binary" 2>/dev/null | grep -q -E '^nc$| nc | nc$'; then
-				bishbosh_client_plaintext=ncToybox
-				bishbosh_client_plaintextPath="$binary"
+				bishbosh_backend_name=ncToybox
+				bishbosh_backend_path="$binary"
 				return 0
 			fi
 		fi
@@ -26,11 +30,16 @@ bishbosh_backend_ncToybox_checkIfNetcatVariant()
 {
 	# eg  'usage: netcat [-tu] [-lL COMMAND...] [-wpq #] [-s addr] {IPADDR PORTNUM|-f FILENAME}'
 	if "$binary" 2>&1 | head -n 1 | grep -q -E '^usage: netcat \[-tu\] '; then
-		bishbosh_client_plaintext=ncBusyBox
-		bishbosh_client_plaintextPath="$binary"
+		bishbosh_backend_name=ncBusyBox
+		bishbosh_backend_path="$binary"
 		return 0
 	fi
 	return 1
+}
+
+bishbosh_backend_ncToybox_port()
+{
+	printf '%s' 1883
 }
 
 core_usesIn core variable variable/array
@@ -105,5 +114,5 @@ bishbosh_backend_ncToybox_start()
 		
 	esac
 	
-	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

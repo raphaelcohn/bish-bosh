@@ -2,7 +2,7 @@ core_usesIn bishbosh/connection ping
 
 bishbosh_connection_background_client()
 {
-	bishbosh_backend_${bishbosh_client_plaintext}_start
+	bishbosh_backend_${bishbosh_backend_name}_start
 }
 
 core_dependency_requires '*' grep
@@ -79,7 +79,7 @@ bishbosh_connection_background_hexConversion()
 		core_exitError $core_commandLine_exitCode_OSFILE "Could not find a means of doing Hex Conversion"
 	done
 	
-	if [ "${bishbosh_client_plaintext}" = 'devtcp' ]; then
+	if [ "${bishbosh_backend_name}" = 'devtcp' ]; then
 		"$@" <&4 >"$bishbosh_connection_fromHexConversionFifo" &
 	else
 		"$@" <"$bishbosh_connection_fromServerFifo" >"$bishbosh_connection_fromHexConversionFifo" &
@@ -184,7 +184,7 @@ bishbosh_connection_background_processLoop()
 		bishbosh_connection_write_DISCONNECT
 	}
 	
-	if [ "${bishbosh_client_plaintext}" = 'devtcp' ]; then
+	if [ "${bishbosh_backend_name}" = 'devtcp' ]; then
 		_bishbosh_connection_background_processLoop_body >&4 3<"$bishbosh_connection_fromHexConversionFifo" &
 	else
 		_bishbosh_connection_background_processLoop_body >"$bishbosh_connection_toServerFifo" 3<"$bishbosh_connection_fromHexConversionFifo" &

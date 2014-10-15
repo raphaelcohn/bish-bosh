@@ -4,12 +4,21 @@ core_functions_register _bishbosh_backend_registration nc6
 # nc6 is widely available but abandoned in favour of Nmap's ncat
 bishbosh_backend_nc6_check()
 {
+	if [ "$bishbosh_tunnel" != 'MQTT' ]; then
+		return 1
+	fi
+	
 	if core_compatibility_whichNoOutput nc6; then
-		bishbosh_client_plaintext=nc6
-		bishbosh_client_plaintextPath="$(core_compatibility_which nc6)"
+		bishbosh_backend_name=nc6
+		bishbosh_backend_path="$(core_compatibility_which nc6)"
 		return 0
 	fi
 	return 1
+}
+
+bishbosh_backend_nc6_port()
+{
+	printf '%s' 1883
 }
 
 core_usesIn core variable variable/array
@@ -101,5 +110,5 @@ bishbosh_backend_nc6_start()
 	core_variable_array_append options "$bishbosh_port"
 	
 	# Problem: SIGINT is ignored!
-	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

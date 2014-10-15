@@ -3,11 +3,15 @@ core_functions_register _bishbosh_backend_registration ncBusyBox
 
 bishbosh_backend_ncBusyBox_check()
 {
+	if [ "$bishbosh_tunnel" != 'MQTT' ]; then
+		return 1
+	fi
+	
 	if core_compatibility_whichNoOutput busybox; then
 		local binary="$(core_compatibility_which busybox)"
 		if $binary --list 2>/dev/null | grep -q '^nc$'; then
-			bishbosh_client_plaintext=ncBusyBox
-			bishbosh_client_plaintextPath="$binary"
+			bishbosh_backend_name=ncBusyBox
+			bishbosh_backend_path="$binary"
 			return 0
 		fi
 	fi
@@ -20,11 +24,16 @@ bishbosh_backend_ncBusyBox_checkIfNetcatVariant()
 {
 	# eg  'BusyBox v1.21.1 (Ubuntu 1:1.21.0-1ubuntu1) multi-call binary.'
 	if "$binary" 2>&1 | head -n 1 | grep -q -E '^BusyBox v'; then
-		bishbosh_client_plaintext=ncBusyBox
-		bishbosh_client_plaintextPath="$binary"
+		bishbosh_backend_name=ncBusyBox
+		bishbosh_backend_path="$binary"
 		return 0
 	fi
 	return 1
+}
+
+bishbosh_backend_ncBusyBox_port()
+{
+	printf '%s' 1883
 }
 
 core_usesIn core variable variable/array
@@ -99,5 +108,5 @@ bishbosh_backend_ncBusyBox_start()
 		
 	esac
 	
-	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

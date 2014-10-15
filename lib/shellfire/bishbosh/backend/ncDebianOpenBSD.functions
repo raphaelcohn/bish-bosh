@@ -4,9 +4,13 @@ core_functions_register _bishbosh_backend_registration ncDebianOpenBSD
 # Not installed by default on Ubuntu/Debian (the version by Hobbit, last updated 2004 on freecode, now points to GNU netcat)
 bishbosh_backend_ncDebianOpenBSD_check()
 {
+	if [ "$bishbosh_tunnel" != 'MQTT' ]; then
+		return 1
+	fi
+	
 	if core_compatibility_whichNoOutput nc.openbsd; then
-		bishbosh_client_plaintext=ncDebianOpenBSD
-		bishbosh_client_plaintextPath="$(core_compatibility_which nc.openbsd)"
+		bishbosh_backend_name=ncDebianOpenBSD
+		bishbosh_backend_path="$(core_compatibility_which nc.openbsd)"
 		return 0
 	fi
 	return 1
@@ -20,11 +24,16 @@ bishbosh_backend_ncDebianOpenBSD_checkIfNetcatVariant()
 {
 	# eg  'OpenBSD netcat (Debian patchlevel 1.105-7ubuntu1)'
 	if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^OpenBSD netcat '; then
-		bishbosh_client_plaintext=ncDebianOpenBSD
-		bishbosh_client_plaintextPath="$binary"
+		bishbosh_backend_name=ncDebianOpenBSD
+		bishbosh_backend_path="$binary"
 		return 0
 	fi
 	return 1
+}
+
+bishbosh_backend_ncDebianOpenBSD_port()
+{
+	printf '%s' 1883
 }
 
 _bishbosh_backend_ncDebianOpenBSD_start_addProxy()
@@ -140,5 +149,5 @@ bishbosh_backend_ncDebianOpenBSD_start()
 	core_variable_array_append options "$bishbosh_port"
 	
 	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
-	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

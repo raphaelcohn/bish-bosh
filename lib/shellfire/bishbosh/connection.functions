@@ -235,7 +235,7 @@ bishbosh_connection_makeClientConnection()
 	
 	# Background <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" UNLESS devtcp, in which case 3<>
 	bishbosh_connection_background_client
-	if [ "${bishbosh_client_plaintext}" = 'devtcp' ]; then
+	if [ "${bishbosh_backend_name}" = 'devtcp' ]; then
 		bishbosh_connection_clientPid=-1
 	else
 		bishbosh_connection_foreground_recordBackgroundJob bishbosh_connection_clientPid

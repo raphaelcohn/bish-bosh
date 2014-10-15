@@ -3,17 +3,26 @@ core_functions_register _bishbosh_backend_registration devtcp
 
 bishbosh_backend_devtcp_check()
 {
+	if [ "$bishbosh_tunnel" != 'MQTT' ]; then
+		return 1
+	fi
+	
 	case "$core_init_preferredShell" in
 		
 		# but not pdksh or mksh
 		bash|ksh|ksh93)
-			bishbosh_client_plaintext=devtcp
-			bishbosh_client_plaintextPath=''
+			bishbosh_backend_name=devtcp
+			bishbosh_backend_path=''
 			return 0
 		;;
 	esac
 	
 	return 1
+}
+
+bishbosh_backend_devtcp_port()
+{
+	printf '%s' 1883
 }
 
 # Supported by ksh93, too

@@ -4,11 +4,32 @@ core_functions_register _bishbosh_backend_registration socat
 # Homebrew, Debian
 bishbosh_backend_socat_check()
 {
+	case "$bishbosh_tunnel" in
+		
+		MQTT|MQTTS)
+			:
+		;;
+		
+		*)
+			return 1
+		;;
+		
+	esac
+	
 	if core_compatibility_whichNoOutput socat; then
-		bishbosh_client_plaintext=socat
-		bishbosh_client_plaintextPath="$(core_compatibility_which socat)"
+		bishbosh_backend_name=socat
+		bishbosh_backend_path="$(core_compatibility_which socat)"
 		return 0
 	fi
+}
+
+bishbosh_backend_socat_port()
+{
+	if [ "$bishbosh_tunnel" = 'MQTT' ]; then
+		printf '%s' 1883
+	elif [ "$bishbosh_tunnel" = 'MQTTS' ]; then
+		printf '%s' 8883
+	fi	
 }
 
 core_usesIn core variable variable/array
@@ -65,12 +86,12 @@ bishbosh_backend_socat_start()
 		
 		unix)
 			core_variable_array_append options "UNIX-CONNECT:${bishbosh_server}"
-			core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+			core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 		;;
 		
 		serial)
 			core_variable_array_append options "${bishbosh_server},raw,echo=0"
-			core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+			core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 		;;
 		
 		inet*)
@@ -161,5 +182,5 @@ bishbosh_backend_socat_start()
 	esac
 	
 	core_variable_array_passToFunctionAsArguments options echo 1>&2
-	core_variable_array_passToFunctionAsArguments options "$bishbosh_client_plaintextPath" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

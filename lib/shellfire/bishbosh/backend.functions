@@ -1,4 +1,4 @@
-core_usesIn bishbosh/backend nc6 ncat nc ncBusyBox ncDebianOpenBSD ncDebianTraditional ncGNU ncMacOSX ncToybox socat devtcp
+core_usesIn bishbosh/backend nc6 ncat nc ncBusyBox ncDebianOpenBSD ncDebianTraditional ncGNU ncMacOSX ncToybox socat devtcp telnet
 
 bishbosh_backend_find()
 {
@@ -11,11 +11,12 @@ bishbosh_backend_find()
 		bishbosh_port=1883
 	fi
 	
-	local checkFunction
-	for checkFunction in $@
+	local backendName
+	for backendName in $@
 	do
-		if bishbosh_backend_${checkFunction}_check; then
-			core_message INFO "Using plaintext backend '$bishbosh_client_plaintext' on path '$bishbosh_client_plaintextPath'"
+		if bishbosh_backend_${backendName}_check; then
+			core_message INFO "Using plaintext backend '$bishbosh_backend_name' on path '$bishbosh_backend_path'"
+			bishbosh_port=$(bishbosh_backend_${backendName}_port)
 			return 0
 		fi
 	done
