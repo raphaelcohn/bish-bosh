@@ -17,6 +17,19 @@ bishbosh_backend_devtcp_check()
 		;;
 	esac
 	
+	if core_variable_isSet BASH_VERSION; then
+		bishbosh_backend_name=devtcp
+		bishbosh_backend_path=''
+		return 0
+	fi
+	
+	# '@(#)' is the case for mksh and pdksh
+	if ! core_variable_startsWith "$KSH_VERSION" '@(#)'; then
+		bishbosh_backend_name=devtcp
+		bishbosh_backend_path=''
+		return 0
+	fi	
+	
 	return 1
 }
 

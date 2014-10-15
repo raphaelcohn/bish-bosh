@@ -73,7 +73,7 @@ _program_commandLine_parseInitialise()
 		_program_configurationSet_bishbosh_connectTimeout=1
 	fi
 	
-	_program_default_backends='ncat,nc6,nc,socat,devtcp,cryptcat'
+	_program_default_backends='gnutls,openssl,socat,ncat,nc6,nc,ncDebianOpenBSD,ncMacOSX,ncDebianTraditional,ncGNU,ncToybox,ncBusyBox,devtcp,cryptcat'
 	if core_variable_isSet bishbosh_backends; then
 		_program_configurationSet_bishbosh_backends=0
 	else
@@ -174,6 +174,7 @@ _program_commandLine_parseInitialise()
 		_program_configurationSet_bishbosh_proxyPassword=0
 	fi
 	
+	_program_default_bishbosh_tunnelTlsUseDer=off
 	_program_default_bishbosh_tunnelTlsVerify=on
 }
 
@@ -300,13 +301,17 @@ if on the PATH."
                             authentication. Must be PEM-encoded.
                             Required if --tunnel-tls-certificate
                             is specified.
+      --tunnel-tls-use-der [BOOL]  Boolean BOOL (0/1,on/off) to enable
+                            interpretation of certificate and key as
+                            DER encoded.
+                            Defaults to ${_program_default_bishbosh_tunnelTlsUseDer}.
       --tunnel-tls-verify [BOOL]  Boolean BOOL (0/1,on/off) to enable
                             verification of server certificates.
                             Defaults to ${_program_default_bishbosh_tunnelTlsVerify} (verification).
       --tunnel-tls-ciphers STR  Cipher string. Format is specific to
                             backend. For openssl-based backends
                             (most) see man 5 ciphers. For GnuTLS
-                            see man gnutls-cli. 
+                            see man gnutls. 
       --tunnel-cryptcat-password PWD  Password for cryptcat."
     _program_commandLine_helpMessage_optionsSpacing='   '
 	_program_commandLine_helpMessage_configurationKeys="
@@ -338,6 +343,7 @@ The following values control the tunnel 'tls'
   bishbosh_tunnelTlsCaBundle     Equivalent to --tunnel-tls-ca-bundle
   bishbosh_tunnelTlsCertificate  Equivalent to --tunnel-tls-certificate
   bishbosh_tunnelTlsKey          Equivalent to --tunnel-tls-key
+  bishbosh_tunnelTlsUseDer       Equivalent to --tunnel-tls-use-der
   bishbosh_tunnelTlsVerify       Equivalent to --tunnel-tls-verify
   bishbosh_tunnelTlsCiphers      Equivalent to --tunnel-tls-ciphers
   
@@ -492,6 +498,10 @@ _program_commandLine_optionExists()
 			echo 'yes-argumented'
 		;;
 		
+		tunnel-tls-use-der)
+			echo 'yes-optionally-argumented'
+		;;
+		
 		tunnel-tls-verify)
 			echo 'yes-optionally-argumented'
 		;;
@@ -514,6 +524,14 @@ _program_commandLine_optionExists()
 _program_commandLine_processOptionWithoutArgument()
 {
 	case "$optionName" in
+		
+		r|random-client-id)
+			bishbosh_randomClientId=1
+		;;
+
+		tunnel-tls-use-der)
+			bishbosh_tunnelTlsUseDer=1
+		;;
 		
 		tunnel-tls-verify)
 			bishbosh_tunnelTlsVerify=1
@@ -543,10 +561,6 @@ _program_commandLine_processOptionWithArgument()
 		
 		i|client-id)
 			bishbosh_clientId="$optionValue"
-		;;
-		
-		r|random-client-id)
-			bishbosh_randomClientId=1
 		;;
 		
 		x|ping-timeout)
@@ -657,6 +671,11 @@ _program_commandLine_processOptionWithArgument()
 		tunnel-tls-key)
 			core_validate_filePathReadable $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_tunnelTlsKey="$optionValue"
+		;;
+
+		tunnel-tls-use-der)
+			core_validate_isBoolean $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+			bishbosh_tunnelTlsUseDer="$optionValue"
 		;;
 		
 		tunnel-tls-verify)
@@ -953,7 +972,9 @@ _program_commandLine_validate()
 	fi
 	
 	# tunnel specific checks
-	
+
+	core_validate_isBoolean $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
+	bishbosh_tunnelTlsVerify="$optionValue"
 	if [ "$bishbosh_tunnel" = 'tls' ]; then
 
 		if core_variable_isSet bishbosh_tunnelTlsCaBundle; then
@@ -981,6 +1002,12 @@ _program_commandLine_validate()
 			core_exitError $core_commandLine_exitCode_CONFIG "When the option '--tunnel' (or configuration setting 'bishbosh_tunnel') is '$bishbosh_tunnel', and the option '--tunnel-tls-key' (or configuration setting 'bishbosh_tunnelTlsKey') is specified, then the option '--tunnel-tls-certificate' (or configuration setting 'bishbosh_tunnelTlsCertificate' must be specified)"
 		fi
 		
+		if core_variable_isSet bishbosh_tunnelTlsUseDer; then
+			core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_tunnelTlsUseDer' "$bishbosh_tunnelTlsUseDer"
+		else
+			bishbosh_tunnelTlsUseDer=${_program_default_bishbosh_tunnelTlsVerify}
+		fi
+		
 		if core_variable_isSet bishbosh_tunnelTlsVerify; then
 			core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_tunnelTlsVerify' "$bishbosh_tunnelTlsVerify"
 		else
@@ -998,6 +1025,9 @@ _program_commandLine_validate()
 		fi
 		if core_variable_isSet bishbosh_tunnelTlsKey; then
 			core_exitError $codeServer "When the option '--tunnel' (or configuration setting 'bishbosh_tunnel') is '$bishbosh_tunnel', then the option '--tunnel-tls-key' (or configuration setting 'bishbosh_tunnelTlsKey') must not be specified."
+		fi
+		if core_variable_isSet bishbosh_tunnelTlsUseDer; then
+			core_exitError $codeServer "When the option '--tunnel' (or configuration setting 'bishbosh_tunnel') is '$bishbosh_tunnel', then the option '--tunnel-tls-use-der' (or configuration setting 'bishbosh_tunnelTlsUseDer') must not be specified."
 		fi
 		if core_variable_isSet bishbosh_tunnelTlsVerify; then
 			core_exitError $codeServer "When the option '--tunnel' (or configuration setting 'bishbosh_tunnel') is '$bishbosh_tunnel', then the option '--tunnel-tls-verify' (or configuration setting 'bishbosh_tunnelTlsVerify') must not be specified."

@@ -158,9 +158,13 @@ bishbosh_backend_ncat_start()
 	esac
 	
 	if [ "$bishbosh_tunnel" = 'tls' ]; then
-
+		
 		if core_variable_isSet bishbosh_tunnelTlsCaPath; then
 			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncat does not support the option '--tunnel-tls-ca-path' (or configuration setting 'bishbosh_tunnelTlsCaPath')."
+		fi
+		
+		if core_variable_isTrue "$bishbosh_tunnelTlsUseDer"; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncat does not support DER certificates and keys."
 		fi
 		
 		core_variable_array_append options --ssl
@@ -182,7 +186,7 @@ bishbosh_backend_ncat_start()
 		fi
 		
 		if core_variable_isSet bishbosh_tunnelTlsCiphers; then
-			addressKind="${addressKind},cipher=$bishbosh_tunnelTlsCiphers"
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncat does not support the option '--tunnel-tls-ciphers' (or configuration setting 'bishbosh_tunnelTlsCiphers')."
 		fi
 		
 	fi

@@ -152,6 +152,11 @@ bishbosh_backend_socat_start()
 				
 				*)
 					if [ "$bishbosh_tunnel" = 'tls' ]; then
+						
+						if core_variable_isTrue "$bishbosh_tunnelTlsUseDer"; then
+							core_exitError $core_commandLine_exitCode_CONFIG "The backend socat does not support DER certificates and keys."
+						fi
+						
 						# We do not specify method=TLSv1. This is because this DISABLES support for TLSv1.1 and TLSv1.2
 						# Instead, if one uses OpenSSL's SSLv23_method(), then there is support for TLSv1.2 (counter-intuitively).
 						addressKind="OPENSSL:${bishbosh_server}:${bishbosh_port},compress=none"

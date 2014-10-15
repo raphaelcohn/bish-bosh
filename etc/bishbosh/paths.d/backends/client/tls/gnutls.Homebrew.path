@@ -1,1 +1,1 @@
-gnutls-bin gnutls-cli /usr/local/bin/gnutls-cli
+gnutls-bin gnutls /usr/local/bin/gnutls

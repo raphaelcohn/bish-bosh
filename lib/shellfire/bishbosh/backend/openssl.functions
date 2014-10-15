@@ -1,0 +1,145 @@
+core_usesIn core functions
+core_functions_register _bishbosh_backend_registration openssl
+
+bishbosh_backend_openssl_check()
+{
+	if [ "$bishbosh_tunnel" != 'tls' ]; then
+		return 1
+	fi
+	
+	if core_compatibility_whichNoOutput openssl; then
+		bishbosh_backend_name=openssl
+		bishbosh_backend_path="$(core_compatibility_which openssl)"
+		return 0
+	fi
+	return 1
+}
+
+bishbosh_backend_openssl_port()
+{
+	printf '%s' 8883
+}
+
+core_usesIn core variable variable/array
+bishbosh_backend_openssl_start()
+{
+	local options
+	local options_initialised
+	core_variable_array_initialise options
+
+	core_variable_array_append options s_client -bugs -ign_eof -nbio -no_ssl2 -no_ssl3
+	
+	case "$bishbosh_transport" in
+		
+		inet)
+			:
+		;;
+		
+		inet4)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend openssl does not support the 'inet4' transport explicitly."
+		;;
+		
+		inet6)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend openssl does not support the 'inet6' transport explicitly."
+		;;
+		
+		unix)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend openssl does not support the 'unix' transport."
+		;;
+		
+		serial)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend openssl does not support the 'serial' transport."
+		;;
+		
+		*)
+			core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
+		;;
+		
+	esac
+	
+	if core_variable_isSet bishbosh_sourceAddress; then
+		core_message WARN "The backend openssl does not support the option '--source-address' (or the configuration setting 'bishbosh_sourceAddress')"
+	fi
+	
+	if core_variable_isSet bishbosh_sourcePort; then
+		core_message WARN "The backend openssl does not support the option '--source-port' (or the configuration setting 'bishbosh_sourcePort')"
+	fi
+	
+	case "$bishbosh_proxyKind" in
+		
+		SOCKS4)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend openssl does not support the 'SOCKS4' bishbosh_proxyKind."
+		;;
+		
+		SOCKS4a)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend openssl does not support the 'SOCKS4a' bishbosh_proxyKind."
+		;;
+		
+		SOCKS5)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend openssl does not support the 'SOCKS5' bishbosh_proxyKind."
+		;;
+		
+		HTTP)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend openssl does not support the 'HTTP' bishbosh_proxyKind."
+		;;
+		
+	esac
+	
+	if [ $bishbosh_connectTimeout -ne 0 ]; then
+		core_message WARN "The backend openssl does not support the option '--connect-timeout' (or the configuration setting 'bishbosh_connectTimeout')"
+	fi
+	
+	case $(core_init_verbosity) in
+		
+		0)
+			core_variable_array_append options -quiet
+		;;
+		
+		1)
+			core_variable_array_append options -prexit
+		;;
+		
+		2)
+			core_variable_array_append options -prexit -showcerts -state
+		;;
+		
+		*)
+			core_variable_array_append options -prexit -showcerts -state -debug -msg
+		;;
+	esac
+	
+	local encoding
+	if core_variable_isTrue "$bishbosh_tunnelTlsUseDer"; then
+		encoding=DER
+	else
+		encoding=PEM
+	fi
+	
+	if core_variable_isSet bishbosh_tunnelTlsCertificate; then
+		core_variable_array_append options -cert "$bishbosh_tunnelTlsCertificate" -certform "$encoding"
+	fi
+	
+	if core_variable_isSet bishbosh_tunnelTlsKey; then
+		core_variable_array_append options -key "$bishbosh_tunnelTlsKey" -keyform "$encoding"
+	fi
+
+	if core_variable_isSet bishbosh_tunnelTlsCaPath; then
+		core_variable_array_append options -CApath "$bishbosh_tunnelTlsCaPath"
+	fi
+	
+	if core_variable_isSet bishbosh_tunnelTlsCaBundle; then
+		core_variable_array_append options -CAfile "$bishbosh_tunnelTlsCaBundle"
+	fi
+	
+	if core_variable_isTrue "$bishbosh_tunnelTlsVerify"; then
+		core_variable_array_append options -verify 5
+	fi
+	
+	if core_variable_isSet bishbosh_tunnelTlsCiphers; then
+		core_variable_array_append options -cipher "$bishbosh_tunnelTlsCiphers"
+	fi
+	
+	core_variable_array_append options -connect "$bishbosh_server":"$bishbosh_port"
+	
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+}

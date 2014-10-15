@@ -1,0 +1,145 @@
+core_usesIn core functions
+core_functions_register _bishbosh_backend_registration gnutls
+
+bishbosh_backend_gnutls_check()
+{
+	if [ "$bishbosh_tunnel" != 'tls' ]; then
+		return 1
+	fi
+	
+	if core_compatibility_whichNoOutput gnutls-cli; then
+		bishbosh_backend_name=gnutls
+		bishbosh_backend_path="$(core_compatibility_which gnutls-cli)"
+		return 0
+	fi
+	return 1
+}
+
+bishbosh_backend_gnutls_port()
+{
+	printf '%s' 8883
+}
+
+core_usesIn core variable variable/array
+bishbosh_backend_gnutls_start()
+{
+	local options
+	local options_initialised
+	core_variable_array_initialise options
+
+	core_variable_array_append options --no-tofu --no-strict-tofu --no-dane --no-local-dns --noticket
+	
+	case "$bishbosh_transport" in
+		
+		inet)
+			:
+		;;
+		
+		inet4)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend gnutls does not support the 'inet4' transport explicitly."
+		;;
+		
+		inet6)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend gnutls does not support the 'inet6' transport explicitly."
+		;;
+		
+		unix)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend gnutls does not support the 'unix' transport."
+		;;
+		
+		serial)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend gnutls does not support the 'serial' transport."
+		;;
+		
+		*)
+			core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
+		;;
+		
+	esac
+	
+	if core_variable_isSet bishbosh_sourceAddress; then
+		core_message WARN "The backend gnutls does not support the option '--source-address' (or the configuration setting 'bishbosh_sourceAddress')"
+	fi
+	
+	if core_variable_isSet bishbosh_sourcePort; then
+		core_message WARN "The backend gnutls does not support the option '--source-port' (or the configuration setting 'bishbosh_sourcePort')"
+	fi
+	
+	case "$bishbosh_proxyKind" in
+		
+		SOCKS4)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend gnutls does not support the 'SOCKS4' bishbosh_proxyKind."
+		;;
+		
+		SOCKS4a)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend gnutls does not support the 'SOCKS4a' bishbosh_proxyKind."
+		;;
+		
+		SOCKS5)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend gnutls does not support the 'SOCKS5' bishbosh_proxyKind."
+		;;
+		
+		HTTP)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend gnutls does not support the 'HTTP' bishbosh_proxyKind."
+		;;
+		
+	esac
+	
+	if [ $bishbosh_connectTimeout -ne 0 ]; then
+		core_message WARN "The backend gnutls does not support the option '--connect-timeout' (or the configuration setting 'bishbosh_connectTimeout')"
+	fi
+	
+	case $(core_init_verbosity) in
+		
+		0)
+			core_variable_array_append options -quiet
+		;;
+		
+		1)
+			core_variable_array_append options --verbose
+		;;
+		
+		2)
+			core_variable_array_append options --verbose  --verbose --print-cert
+		;;
+		
+		*)
+			core_variable_array_append options --verbose  --verbose --print-cert -d $(core_init_verbosity)
+		;;
+	esac
+	
+	if core_variable_isTrue "$bishbosh_tunnelTlsUseDer"; then
+		core_variable_array_append options --x509fmtder
+	fi
+	
+	# x509fmtder to support DER certs...
+	if core_variable_isSet bishbosh_tunnelTlsCertificate; then
+		core_variable_array_append options --x509certfile="$bishbosh_tunnelTlsCertificate"
+	fi
+	
+	if core_variable_isSet bishbosh_tunnelTlsKey; then
+		core_variable_array_append options --x509keyfile="$bishbosh_tunnelTlsKey"
+	fi
+
+	if core_variable_isSet bishbosh_tunnelTlsCaPath; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The backend gnutls does not support the option '--tunnel-tls-ca-path' (or configuration setting 'bishbosh_tunnelTlsCaPath')."
+	fi
+	
+	if core_variable_isSet bishbosh_tunnelTlsCaBundle; then
+		core_variable_array_append options --x509cafile "$bishbosh_tunnelTlsCaBundle"
+	fi
+	
+	if core_variable_isTrue "$bishbosh_tunnelTlsVerify"; then
+		core_variable_array_append options --ocsp --ca-verification
+	else
+		core_variable_array_append options --insecure --no-ocsp --no-ca-verification
+	fi
+	
+	if core_variable_isSet bishbosh_tunnelTlsCiphers; then
+		core_variable_array_append options --priority="$bishbosh_tunnelTlsCiphers"
+	fi
+	
+	core_variable_array_append options --port="$bishbosh_port" "$bishbosh_server"
+	
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+}

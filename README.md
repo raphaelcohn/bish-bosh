@@ -258,7 +258,7 @@ _ \* This value is a boolean. Use `0` for false, `1` for true ._
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-b`, `--backends` | `A,B,…` | `bishbosh_backends` | `ncat,nc6,nc,socat,devtcp,cryptcat` | [Backends](#status-of-supported-backends) are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. The backend `nc` represents all the netcat permutations. |
+| `-b`, `--backends` | `A,B,…` | `bishbosh_backends` | `gnutls,openssl,socat,ncat,nc6,nc,ncDebianOpenBSD,ncMacOSX,ncDebianTraditional,ncGNU,ncToybox,ncBusyBox,devtcp,cryptcat` | [Backends](#status-of-supported-backends) are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. The backend `nc` represents all the netcat permutations. |
 
 A backend is the strategy [bish-bosh] uses to connect to a [MQTT] server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. An example of this is the `nc` backend. [bish-bosh] ships with a large number of [backends](#status-of-supported-backends) to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
 
@@ -317,12 +317,28 @@ It may be possible to hook proxy support into several of the backends using [pro
 | ------ | ----- | --------------------- | ------- | ------- |
 | `--tunnel-tls-ca-file` | `FILE` | `bishbosh_tunnelTlsCaPath` | *unset* | A PEM-encoded file `FILE` which contains a Certificate Authority certificate chain. Do not specify this if `--tunnel-tls-ca-path` is specified. Most backends have a default location for this or `--tunnel-tls-ca-file`. |
 | `--tunnel-tls-ca-path` | `PATH` | `bishbosh_tunnelTlsCaPath` | *unset* | A folder `PATH` which contains PEM-encoded Certificate Authority certificates with OpenSSL-compatible hashes. Do not specify this if `--tunnel-tls-ca-file` is specified. Most backends have a default location for this or `--tunnel-tls-ca-path`. |
-| `--tunnel-tls-certificate` | `FILE` | `bishbosh_tunnelTlsCertificate` | *unset* | A PEM-encoded file `FILE` which a certificate to authenticate the client with. Not normally required. If specified, then `--tunnel-tls-key` must also be specified. |
-| `--tunnel-tls-key` | `FILE` | `bishbosh_tunnelTlsKey` | *unset* | A PEM-encoded file `FILE` which contains a private key to authenticate the client with. Not normally required. If specified, then `--tunnel-tls-certificate` must also be specified. |
+| `--tunnel-tls-certificate` | `FILE` | `bishbosh_tunnelTlsCertificate` | *unset* | A PEM-encoded\* file `FILE` which a certificate to authenticate the client with. Not normally required. If specified, then `--tunnel-tls-key` must also be specified. |
+| `--tunnel-tls-key` | `FILE` | `bishbosh_tunnelTlsKey` | *unset* | A PEM-encoded file\* `FILE` which contains a private key to authenticate the client with. Not normally required. If specified, then `--tunnel-tls-certificate` must also be specified. |
+| `--tunnel-tls-use-der` | `BOOL` | `bishbosh_tunnelTlsUseDer` | off | Modifies `--tunnel-tls-certificate` and `--tunnel-tls-key` to expect DER-encoded files. |
 | `--tunnel-tls-verify` | `BOOL` | `bishbosh_tunnelTlsCiphers` | on | A boolean `BOOL` used to enable or disable verification of the MQTT server's X.509 certificate chain. Revocation checks (CRL, OCSP) are not performed by most backends. Some backends (eg `openssl`) do not fail on verification failure. |
-| `--tunnel-tls-ciphers` | `STR` | `bishbosh_tunnelTlsCiphers` | *unset* | A backend specific string `STR`. Nearly all backends use openssl syntax (`man 5 ciphers`), except for `gnutls`, which calls this a 'Priority string' (`info gnutls`, then find section 6.10). |
+| `--tunnel-tls-ciphers` | `STR` | `bishbosh_tunnelTlsCiphers` | *unset* | A backend specific string `STR`. Nearly all backends use openssl syntax (`man 5 ciphers` and `openssl ciphers`), except for `gnutls`, which calls this a 'Priority string' (`info gnutls`, then find section 6.10, and `gnutls-cli --list`). |
 
-At this time, it is not possible to control TLS versions or TLS compression (which is disabled if a backend supports it).
+_\* Can be DER-encoded when `--tunnel-tls-use-der` is `on` . The `socat` and `ncat` backends only support PEM. _
+
+There are a number of limitations at this time:-
+* It is not possible to control TLS versions (although the `openssl` backend has `SSLv2` and `SSLv3` disabled)
+* Diffie-Hellman bits can't be controlled
+* Cipher strings are not normalised to either `openssl` or `gnutls` (although it might be better to use the latter)
+* Compression is disabled wherever possible
+* Automatic conversion of DER files to PEM for those backends that lack DER support (requires [OpenSSL] or GnuTLS, so seems rather moot)
+* Not all backends can support [OpenSSL]-style folders of Certificate Authorities
+* OCSP is turned on wherever possible
+* CRL files are not used
+* SRP and PSK are not supported
+
+In many ways, this list of exclusions typifies the problems of TLS - too many choices, too many options and too many ways of implementing them.
+
+If you need support for any of these features, please contact me - it may be possible to modify [bish-bosh] to accommodate specific needs.
 
 ###### [stunnel] Alternative
 As an alternative to using `tls` tunnel, one can use a `none` tunnel but connect to, say, [stunnel] running on `localhost` with a `stunnel.conf` such as
@@ -493,7 +509,7 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * `socat`
   * `openssl` from [LibreSSL](http://www.libressl.org/)
   * `openssl` from [OpenSSL](https://www.openssl.org/)
-  * `gnutls-cli`, from [GnuTLS](http://gnutls.org/)
+  * `gnutls`, from [GnuTLS](http://gnutls.org/)
   * none, if not using MQTTS
 * cryptcat-encrypted backends
   * `cryptcat`
@@ -656,19 +672,21 @@ The following shells are untested and unsupported:-
 
 ## Status of Supported Backends
 
-| Backend | Filename | Variant | Connectivity | Status | [`--transport inet4`](#source-routing-settings) | [`--transport inet6`](#source-routing-settings) | [`--transport unix`](#source-routing-settings) | [`--transport serial`](#source-routing-settings) | [Proxy](#proxy-settings)  | [`--source-server HOST`](#source-routing-settings) | [`--source-port PORT`](#source-routing-settings) |
+| Backend | Filename | Variant | Tunnels | Status | [`--transport inet4`](#source-routing-settings) | [`--transport inet6`](#source-routing-settings) | [`--transport unix`](#source-routing-settings) | [`--transport serial`](#source-routing-settings) | [Proxy](#proxy-settings)  | [`--source-server HOST`](#source-routing-settings) | [`--source-port PORT`](#source-routing-settings) |
 | ------- | -------- | ------- | ------------ | ------ | ----------------------------------------------- | ----------------------------------------------- | ---------------------------------------------- | ------------------------------------------------ | ------------------------- | -------------------------------------------------- | ------------------------------------------------ |
-| **nc** | 'Meta' backend | Any **nc\*** backend | MQTT | Fully functional* | Yes† | Yes† | Yes† | Yes† | Yes† | Yes† | Yes† |
-| **ncMacOSX** | `nc` | Mac OS X | MQTT | Fully functional | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes | Yes |
-| **ncGNU** | `nc` | [GNU](http://netcat.sourceforge.net/) | MQTT | Fully functional | No | No | No | No | No | Yes | Yes |
-| **ncDebianTraditional** | `nc.traditional` | [Debian Traditional](https://packages.debian.org/wheezy/netcat-traditional) / Hobbit | MQTT | Fully functional | Yes | Yes | No | No | No | Yes | Yes |
-| **ncDebianOpenBSD** | `nc.openbsd` | [Debian OpenBSD](https://packages.debian.org/wheezy/netcat-openbsd) | MQTT | Fully functional‡ | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames only for `HTTP`. | Yes | Yes |
-| **ncBusyBox** | `nc` / `busybox nc` | [BusyBox] | MQTT | Fully functional‡ | No | No | No | Yes | No | No | Yes |
-| **ncToybox** | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] | MQTT | Fully functional‡ | No | No | No | Yes | No | Yes | Yes |
-| **ncat** | `ncat`| [Nmap ncat](http://nmap.org/ncat/) | MQTT / MQTTS | Fully functional‡ | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames and passwords supported for `HTTP`, usernames only for SOCKS. | Yes | Yes | **nc6** | `nc6` | [netcat6](http://www.deepspace6.net/projects/netcat6.html) | MQTT | Fully functional‡ | Yes | Yes | No | No | No | Yes | Yes |
-|
-| **devtcp** | `bash` / `ksh` | [GNU Bash] / [ksh93] | MQTT | Barely Implemented | No | No | No | ? maybe ? | No | No | No |
-| **socat** | `socat` | [socat](http://www.dest-unreach.org/socat/) | MQTT / MQTTS | Barely Implemented | Yes | Yes | Yes | Yes | `SOCKS4`, `SOCKS4a` and `HTTP`. Usernames are supported. | ? | ? |
+| **gnutls** | `gnutls-cli` | - | `tls` | Fully functional | No | No | No | No | No | No | No |
+| **openssl** | `gnutls` | [OpenSSL] / [LibreSSL] | `tls` | Fully functional | No | No | No | No | No | No | No |
+| **ncat** | `ncat`| [Nmap ncat](http://nmap.org/ncat/) | `none`, `tls` | Fully functional‡ | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames and passwords supported for `HTTP`, usernames only for SOCKS. | Yes | Yes | **nc6** | `nc6` | [netcat6](http://www.deepspace6.net/projects/netcat6.html) | `none` | Fully functional‡ | Yes | Yes | No | No | No | Yes | Yes |
+| **socat** | `socat` | [socat](http://www.dest-unreach.org/socat/) | `none`, `tls` | Fully functional | Yes | Yes | Yes | Yes | `SOCKS4`, `SOCKS4a` and `HTTP`. Usernames are supported. | Yes | Yes |
+| **nc** | 'Meta' backend | Any **nc\*** backend | `none` | Fully functional* | Yes† | Yes† | Yes† | Yes† | Yes† | Yes† | Yes† |
+| **ncMacOSX** | `nc` | Mac OS X | `none` | Fully functional | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes | Yes |
+| **ncDebianOpenBSD** | `nc.openbsd` | [Debian OpenBSD](https://packages.debian.org/wheezy/netcat-openbsd) | `none` | Fully functional‡ | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames only for `HTTP`. | Yes | Yes |
+| **ncDebianTraditional** | `nc.traditional` | [Debian Traditional](https://packages.debian.org/wheezy/netcat-traditional) / Hobbit | `none` | Fully functional | Yes | Yes | No | No | No | Yes | Yes |
+| **ncGNU** | `nc` | [GNU](http://netcat.sourceforge.net/) | `none` | Fully functional | No | No | No | No | No | Yes | Yes |
+| **ncToybox** | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] | `none` | Fully functional‡ | No | No | No | Yes | No | Yes | Yes |
+| **ncBusyBox** | `nc` / `busybox nc` | [BusyBox] | `none` | Fully functional‡ | No | No | No | Yes | No | No | Yes |
+| **devtcp** | `bash` / `ksh` | [GNU Bash] / [ksh93] | `none` | Fully functional | No | No | No | ? maybe ? | No | No | No |
+| **cryptcat** | `cryptcat` | - | MQTT Encryting variant of netcat, but, because the password is supplied on the command line, insecure. |
 
 _\* Refers to the meta backend itself. A detected backend may not be._
 
@@ -685,7 +703,6 @@ If you have a particular need to use these approaches to connecting to MQTT serv
 | ------- | -------- | --------- | ----- |
 | **tcpclient** | `tcpclient` | [ucspi-tcp](http://cr.yp.to/ucspi-tcp.html) | Executes a program on connection, which does not suit our model. Does not offer any proxy support. Not widely used. |
 | **sbd** | ? | [Homepage Dead, but links still around](http://www.usinglinux.org/net/sbd.html) and [here](http://linux.softpedia.com/get/System/Networking/sbd-14900.shtml) | Also known as 'sbd for linux' and 'Shadowinteger's Backdoor'. [Was here](http://tigerteam.se/dl/sbd/) |
-| **cryptcat** | `cryptcat` | - | Encryting variant of netcat, but, because the password is supplied on the command line, insecure. |
 | **pnetcat** | `pnetcat` | [Home](http://stromberg.dnsalias.org/~strombrg/pnetcat.html) | BSD-like licence, but web page infers mis-distribution. Implemented in Python, which whilst interesting, mitigates against the point of [bish-bosh]. |
 | **nc.pl** | ? | ? | There are also perl implementations of netcat. Just as for **pnetcat**, it seems a moot choice. |
 | **ncSslCapable** | `scnc` | [SSL-capable netcat](http://www.gomor.org/bin/view/GomorOrg/SslNetcat) | Another perl implementation. Might be worth adding if only for the SSL support. |
@@ -720,7 +737,7 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 	* In
 		* openssl, in openssl
 		* openssl, in libressl
-		* gnutls-cli
+		* gnutls
 	* Out
 		* PolarSSL (WolfSSL), as clients only work with HTTPS
 		* CyaSSL, no clients

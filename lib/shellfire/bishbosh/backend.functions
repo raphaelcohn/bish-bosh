@@ -1,4 +1,4 @@
-core_usesIn bishbosh/backend nc6 ncat nc ncBusyBox ncDebianOpenBSD ncDebianTraditional ncGNU ncMacOSX ncToybox socat devtcp cryptcat
+core_usesIn bishbosh/backend gnutls openssl socat ncat nc6 nc ncBusyBox ncDebianOpenBSD ncDebianTraditional ncGNU ncMacOSX ncToybox devtcp cryptcat
 
 bishbosh_backend_find()
 {
