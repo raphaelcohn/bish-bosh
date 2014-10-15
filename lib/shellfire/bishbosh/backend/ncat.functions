@@ -26,10 +26,12 @@ bishbosh_backend_ncat_check()
 
 bishbosh_backend_ncat_port()
 {
-	if [ "$bishbosh_tunnel" = 'MQTT' ]; then
+	if [ "$bishbosh_tunnel" = 'none' ]; then
 		printf '%s' 1883
-	elif [ "$bishbosh_tunnel" = 'MQTTS' ]; then
+	elif [ "$bishbosh_tunnel" = 'tls' ]; then
 		printf '%s' 8883
+	else
+		printf '%s' 'invalid-tunnel'
 	fi
 }
 
