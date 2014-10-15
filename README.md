@@ -18,9 +18,9 @@ bishbosh_connection_handler_PUBLISH()
 }
 ```
 
-Making the above snippet executable (`chmod +x SCRIPT`) creates a fully-fledged [MQTT] driven program. Ideal for one-off testing, system administrators clearing out queues and simple message driven apps that can use the Unix/Linux ecosystem and philosphy. Also quite handy for small embedded systems without a compiler toolchain and initrd boot time configuration grabbing...
+Making the above snippet executable (`chmod +x SCRIPT`) creates a fully-fledged [MQTT] driven program. Ideal for one-off testing, system administrators clearing out queues and simple message driven apps that can use the Unix/Linux ecosystem and philosphy. Also quite handy for small embedded systems without a compiler toolchain and initrd boot time configuration grabbing…
 
-If there's interest, a more advanced version could function as interactive shell driven by ncurses...
+If there's interest, a more advanced version could function as interactive shell driven by ncurses…
 
 ## Download and Quick Start
 [bish-bosh] can be used simply by cloning from [GitHub]. To clone into your home folder, type:-
@@ -258,7 +258,7 @@ _ \* This value is a boolean. Use `0` for false, `1` for true ._
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-b`, `--backends` | `A,B,...` | `bishbosh_backends` | `ncat,nc6,nc,socat,devtcp,cryptcat` | [Backends](#status-of-supported-backends) are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. The backend `nc` represents all the netcat permutations. |
+| `-b`, `--backends` | `A,B,…` | `bishbosh_backends` | `ncat,nc6,nc,socat,devtcp,cryptcat` | [Backends](#status-of-supported-backends) are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. The backend `nc` represents all the netcat permutations. |
 
 A backend is the strategy [bish-bosh] uses to connect to a [MQTT] server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. An example of this is the `nc` backend. [bish-bosh] ships with a large number of [backends](#status-of-supported-backends) to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
 
@@ -308,15 +308,24 @@ _\* Not running proxies myself, I can't test many of these settings combinations
 
 #### Tunnel Settings
 
+##### `tls` tunnel settings
+
+| Switch | Value | Configuration Setting | Default | Purpose |
+| ------ | ----- | --------------------- | ------- | ------- |
+| `--tunnel-tls-ca-file` | `FILE` | `bishbosh_tunnelTlsCaPath` | *unset* | A PEM-encoded file `FILE` which contains a Certificate Authority certificate chain. Do not specify this if `--tunnel-tls-ca-path` is specified. Most backends have a default location for this or `--tunnel-tls-ca-file`. |
+| `--tunnel-tls-ca-path` | `PATH` | `bishbosh_tunnelTlsCaPath` | *unset* | A folder `PATH` which contains PEM-encoded Certificate Authority certificates with OpenSSL-compatible hashes. Do not specify this if `--tunnel-tls-ca-file` is specified. Most backends have a default location for this or `--tunnel-tls-ca-path`. |
+| `--tunnel-tls-certificate` | `FILE` | `bishbosh_tunnelTlsCertificate` | *unset* | A PEM-encoded file `FILE` which a certificate to authenticate the client with. Not normally required. If specified, then `--tunnel-tls-key` must also be specified. |
+| `--tunnel-tls-key` | `FILE` | `bishbosh_tunnelTlsKey` | *unset* | A PEM-encoded file `FILE` which contains a private key to authenticate the client with. Not normally required. If specified, then `--tunnel-tls-certificate` must also be specified. |
+| `--tunnel-tls-verify` | `BOOL` | `bishbosh_tunnelTlsCiphers` | *unset* | A boolean `BOOL` used to enable or disable verification of the MQTT server's X.509 certificate chain. Revocation checks (CRL, OCSP) are not performed by most backends. Some backends (eg `openssl`) do not fail on verification failure. Default of *unset* is interpreted as verify. |
+| `--tunnel-tls-ciphers` | `STR` | `bishbosh_tunnelTlsCiphers` | *unset* | A backend specific string `STR`. Nearly all backends use openssl syntax (`man 5 ciphers`), except for `gnutls`, which calls this a 'Priority string' (`info gnutls`, then find section 6.10). |
+
+At this time, it is not possible to control TLS versions or TLS compression (which is disabled if a backend supports it).
+
 ##### `cryptcat` tunnel settings
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `--tunnel-cryptcat-password` | `PWD` | `bishbosh_tunnelCryptcatPassword` | *unset* | Should be specified if using the `cryptcat` backend |
-
-##### `tls` tunnel settings
-
-None yet.
+| `--tunnel-cryptcat-password` | `PWD` | `bishbosh_tunnelCryptcatPassword` | *unset* | Should ideally be set using configuration, as it's insecure to set on the command line. However, `cryptcat` itself exposes the password on the command-line… |
 
 ## Exit Codes
 [bish-bosh] tries to follow the BSD exit code conventions. A non-zero exit code is indicative of failure. Typical codes are:-
@@ -357,7 +366,7 @@ Anything you can do with a command line switch, you can do as configuration. But
   1. The file in the environment variable `bishbosh_RC` (if the environment variable is set and the path is readable)
   2. Any files in the folder in the environment variable `bishbosh_RC_D` (if the environment variable is set and the path is searchable)
 4. In `SCRIPTLETS`
-  * Scriptlets are parsed in order they are found on the command line (`bish-bosh -- [SCRIPTLETS]...`)
+  * Scriptlets are parsed in order they are found on the command line (`bish-bosh -- [SCRIPTLETS]…`)
 5. Under the configuration setting `bishbosh_clientPath` or switch [`--client-path`](#configuration-tweaks)
   1. The file `servers/${bishbosh_server}/rc` where `bishbosh_server` is a configuration setting or the switch [`--server`](#mqtt-big-hitters)†
   2. Any files in the folder `servers/${bishbosh_server}/rc.d`†
