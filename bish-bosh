@@ -441,6 +441,10 @@ _program_commandLine_optionExists()
 			echo 'yes-argumented'
 		;;
 		
+		tunnel-cryptcat-password)
+			echo 'yes-argumented'
+		;;
+		
 		*)
 			echo 'no'
 		;;
@@ -568,6 +572,11 @@ _program_commandLine_processOptionWithArgument()
 			core_message WARN "Specifying the option '--proxy-password' on the command line is insecure"
 			bishbosh_proxyPassword="$optionValue"
 			_program_configurationSet_bishbosh_proxyPassword=0
+		;;
+		
+		tunnel-cryptcat-password)
+			core_message WARN "Specifying the option '--tunnel-cryptcat-password' on the command line is insecure"
+			bishbosh_tunnelCryptcatPassword="$optionValue"
 		;;
 		
 	esac
