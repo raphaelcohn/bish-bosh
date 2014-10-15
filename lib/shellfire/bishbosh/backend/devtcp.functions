@@ -3,7 +3,7 @@ core_functions_register _bishbosh_backend_registration devtcp
 
 bishbosh_backend_devtcp_check()
 {
-	if [ "$bishbosh_tunnel" != 'MQTT' ]; then
+	if [ "$bishbosh_tunnel" != 'none' ]; then
 		return 1
 	fi
 	

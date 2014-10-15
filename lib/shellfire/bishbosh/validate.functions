@@ -29,11 +29,11 @@ bishbosh_validate_tunnel()
 	
 	case "$value" in
 		
-		MQTT)
+		none)
 			:
 		;;
 		
-		MQTTS)
+		tls)
 			:
 		;;
 		

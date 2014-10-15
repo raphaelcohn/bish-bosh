@@ -244,8 +244,9 @@ _*TODO: Document control packet writers of interest*_
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
+| `-t`, `--tunnel` | `TUNNEL` | `bishbosh_tunnel` | `none` | The tunnel `TUNNEL` controls how a MQTT connection is made. Ordinarily, it's just `none`: MQTT. Values are `none`, `tls` and `cryptcat`. Changing this setting changes how the [backends](#backends) are chosen. Most backends support only `none`; some also support `tls`, and some only `tls`. In the future, if there's demand, support can also be added for `SSH`, `telnet`, `WebSockets` and `WebSocketsSecure`. This is not the same thing as [proxying](#proxy-settings). Additional [tunnel settings](#tunnel-settings) may be required. |
 | `-s`, `--server` | `HOST` | `bishbosh_server` | `test.mosquitto.org` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an [MQTT] server to connect to. If using Unix domain sockets (see [`--transport`](#source-routing-settings)) it is a file path to a readable Unix domain socket. If using serial devices it a file path to a readable serial device file. |
-| `-p`, `--port` | `PORT` | `bishbosh_port` | 1883 for most backends; 8883 if backend is secure | Port your [MQTT] `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix domain sockets or serial device files (see [`--transport`](#source-routing-settings)). |
+| `-p`, `--port` | `PORT` | `bishbosh_port` | By `TUNNEL`: 1883 for `none`, `cryptcat`. 8883 for `tls`. | Port your [MQTT] `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix domain sockets or serial device files (see [`--transport`](#source-routing-settings)). |
 | `-i`, `--client-id` | `ID` | `bishbosh_clientId` | *unset* | [MQTT] ClientId. When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. If *unset*, and [`bishbosh_connection_write_CONNECT_cleanSession`](#being-specific-about-how-a-is-made-connection) is 1, then forced to empty (`''`), which MAY NOT work with some MQTT servers. |
 | `-r`, `--random-client-id` | | `bishbosh_randomClientId`\* | `0` | When specified, `--client-id` isn't and Clean Session is 1, then a random client-id of 16 bytes, base64-encoded, is used, instead of an empty client id. This should work with most MQTT servers. To be compatible with servers that only use a restricted alphanumeric range, the base64 trailing `=` is discarded. Random client-ids with `+` and `/` are discarded and another client id generated. This alogrithm gives similar, but not quite as random, results as using a Type 4 UUID. |
 | `-x`, `--ping-timeout` | `SECS` | `bishbosh_pingTimeout` | `30` | When the client's Keep Alive value is not `0`, this is the 'reasonable time' in `SECS` seconds that the client will wait to receive a **PINGRESP** packet. |
@@ -304,6 +305,18 @@ Personally, I find proxies extremely irritating, and of very limited benefit (es
 When using a proxy, you won't be able to use Unix domain sockets ([`--transport unix`](#source-routing-settings)) or serial devices ([`--transport serial`](#source-routing-settings)). Not every backend supports using a proxy; even those that do don't support every option above (there's a [compatibility table](#status-of-supported-backends)).
 
 _\* Not running proxies myself, I can't test many of these settings combinations._
+
+#### Tunnel Settings
+
+##### `cryptcat` tunnel settings
+
+| Switch | Value | Configuration Setting | Default | Purpose |
+| ------ | ----- | --------------------- | ------- | ------- |
+| `--tunnel-cryptcat-password` | `PWD` | `bishbosh_tunnelCryptcatPassword` | *unset* | Should be specified if using the `cryptcat` backend |
+
+##### `tls` tunnel settings
+
+None yet.
 
 ## Exit Codes
 [bish-bosh] tries to follow the BSD exit code conventions. A non-zero exit code is indicative of failure. Typical codes are:-

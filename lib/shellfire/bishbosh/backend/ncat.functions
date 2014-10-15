@@ -5,7 +5,7 @@ bishbosh_backend_ncat_check()
 {
 	case "$bishbosh_tunnel" in
 		
-		MQTT|MQTTS)
+		none|tls)
 			:
 		;;
 		

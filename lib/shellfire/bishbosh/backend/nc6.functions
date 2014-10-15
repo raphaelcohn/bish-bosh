@@ -4,7 +4,7 @@ core_functions_register _bishbosh_backend_registration nc6
 # nc6 is widely available but abandoned in favour of Nmap's ncat
 bishbosh_backend_nc6_check()
 {
-	if [ "$bishbosh_tunnel" != 'MQTT' ]; then
+	if [ "$bishbosh_tunnel" != 'none' ]; then
 		return 1
 	fi
 	

@@ -6,7 +6,7 @@ bishbosh_backend_socat_check()
 {
 	case "$bishbosh_tunnel" in
 		
-		MQTT|MQTTS)
+		none|tls)
 			:
 		;;
 		

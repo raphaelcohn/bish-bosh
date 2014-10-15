@@ -182,7 +182,7 @@ _program_commandLine_helpMessage()
 May be used as a command interpreter in scripts starting #!/usr/bin/env ${_program_name}
 if on the PATH."
 	_program_commandLine_helpMessage_options="
-  -t, --tunnel TUNNEL       Network tunnel TUNNEL to use. One of 'MQTT', 'MQTTS',
+  -t, --tunnel TUNNEL       Network tunnel TUNNEL to use. One of 'none', 'tls',
                             'cryptcat'. Defaults to '${_program_default_tunnel}'.
                             'WebSockets', 'WebSocketsSecure', 'SSH' and 'telnet'
                             are unimplemented but possible if there's demand.
@@ -191,7 +191,7 @@ if on the PATH."
                             path or serial character device path.
   -p, --port PORT           Server PORT. Ignored for Unix domain sockets and
                             serial devices.
-                            Defaults to 1883 or 8883 depending on backend.
+                            Defaults to 1883 or 8883 depending on --tunnel.
   -i, --client-id ID        Specifies the client id ID to use. Any SCRITPLETS
                             found at --clients-path PATH/ID will then be
                             sourced. SCRIPTLETS control how a connection is
@@ -281,7 +281,8 @@ if on the PATH."
                             Does not work with transports 'unix' or
                             'serial'.
                             Insecure - use configuration instead.
-                            Not all proxies support this option."
+                            Not all proxies support this option.
+      --tunnel-cryptcat-password PWD  Password for cryptcat."
     _program_commandLine_helpMessage_optionsSpacing='   '
 	_program_commandLine_helpMessage_configurationKeys="
   bishbosh_tunnel         Equivalent to --tunnel
@@ -306,6 +307,7 @@ if on the PATH."
   bishbosh_proxyPort      Equivalent to --proxy-port
   bishbosh_proxyUsername  Equivalent to --proxy-username
   bishbosh_proxyPassword  Equivalent to --proxy-password
+  bishbosh_tunnelCryptcatPassword  Equivalent to --tunnel-cryptcat-password
   
 These may also be set in the SCRIPTLETS.
 

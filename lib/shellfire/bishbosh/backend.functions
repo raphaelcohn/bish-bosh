@@ -1,4 +1,4 @@
-core_usesIn bishbosh/backend nc6 ncat nc ncBusyBox ncDebianOpenBSD ncDebianTraditional ncGNU ncMacOSX ncToybox socat devtcp telnet
+core_usesIn bishbosh/backend nc6 ncat nc ncBusyBox ncDebianOpenBSD ncDebianTraditional ncGNU ncMacOSX ncToybox socat devtcp cryptcat
 
 bishbosh_backend_find()
 {
@@ -6,10 +6,6 @@ bishbosh_backend_find()
 	local IFS=','
 	set -- $bishbosh_backends
 	local IFS="$originalIFS"
-	
-	if core_variable_isUnset bishbosh_port; then
-		bishbosh_port=1883
-	fi
 	
 	local backendName
 	for backendName in $@
@@ -21,5 +17,5 @@ bishbosh_backend_find()
 		fi
 	done
 	
-	core_exitError $core_commandLine_exitCode_OSFILE "Could not find a backend to make socket connections that was on the PATH '$PATH'."
+	core_exitError $core_commandLine_exitCode_OSFILE "Could not find a backend to make socket connections with tunnelling '$bishbosh_tunnel' that was on the PATH '$PATH'."
 }

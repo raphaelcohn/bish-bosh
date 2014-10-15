@@ -1,0 +1,117 @@
+core_usesIn core functions
+core_functions_register _bishbosh_backend_registration cryptcat
+
+bishbosh_backend_cryptcat_check()
+{
+	if [ "$bishbosh_tunnel" != 'cryptcat' ]; then
+		return 1
+	fi
+	
+	if core_compatibility_whichNoOutput cryptcat; then
+		bishbosh_backend_name=cryptcat
+		bishbosh_backend_path="$(core_compatibility_which cryptcat)"
+		return 0
+	fi
+	return 1
+}
+
+bishbosh_backend_cryptcat_port()
+{
+	printf '%s' 1883
+}
+
+core_usesIn core variable variable/array
+bishbosh_backend_cryptcat_start()
+{
+	local options
+	local options_initialised
+	core_variable_array_initialise options
+	
+	case "$bishbosh_transport" in
+		
+		inet)
+			:
+		;;
+		
+		inet4)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend cryptcat does not support the 'inet4' transport explicitly."
+		;;
+		
+		inet6)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend cryptcat does not support the 'inet6' transport explicitly."
+		;;
+		
+		unix)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend cryptcat does not support the 'unix' transport."
+		;;
+		
+		serial)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend cryptcat does not support the 'serial' transport."
+		;;
+		
+		*)
+			core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
+		;;
+		
+	esac
+	
+	if core_variable_isSet bishbosh_sourceAddress; then
+		core_variable_array_append options '-s' "$bishbosh_sourceAddress"
+	fi
+	
+	if core_variable_isSet bishbosh_sourcePort; then
+		core_variable_array_append options '-p' "$bishbosh_sourcePort"
+	fi
+	
+	case "$bishbosh_proxyKind" in
+		
+		SOCKS4)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend cryptcat does not support the 'SOCKS4' bishbosh_proxyKind."
+		;;
+		
+		SOCKS4a)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend cryptcat does not support the 'SOCKS4a' bishbosh_proxyKind."
+		;;
+		
+		SOCKS5)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend cryptcat does not support the 'SOCKS5' bishbosh_proxyKind."
+		;;
+		
+		HTTP)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend cryptcat does not support the 'HTTP' bishbosh_proxyKind."
+		;;
+		
+	esac
+	
+	if [ $bishbosh_connectTimeout -ne 0 ]; then
+		core_variable_array_append options -w $bishbosh_connectTimeout
+	fi
+	
+	case $(core_init_verbosity) in
+		
+		0)
+			:
+		;;
+		
+		1)
+			core_variable_array_append options -v
+		;;
+		
+		*)
+			core_variable_array_append options -v -v
+		;;
+	esac
+
+	if core_variable_isUnset bishbosh_tunnelCryptcatPassword; then
+		core_message WARN "Using cryptcat without specifying a password with the configuration setting 'bishbosh_tunnelCryptcatPassword' (or, if you must, the option '--tunnel-cryptcat-password') is insecure, as the default's 'metallica'."
+	else
+		core_variable_array_append options -k "$bishbosh_tunnelCryptcatPassword"
+	fi
+	
+	core_variable_array_append options "$bishbosh_server"
+		
+	core_variable_array_append options "$bishbosh_port"
+	
+	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+}

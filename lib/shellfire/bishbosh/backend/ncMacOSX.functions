@@ -5,7 +5,7 @@ core_dependency_requires '*' grep
 core_dependency_requires '*' head
 bishbosh_backend_ncMacOSX_check()
 {
-	if [ "$bishbosh_tunnel" != 'MQTT' ]; then
+	if [ "$bishbosh_tunnel" != 'none' ]; then
 		return 1
 	fi
 	

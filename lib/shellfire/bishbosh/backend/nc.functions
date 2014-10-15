@@ -4,7 +4,7 @@ core_usesIn bishbosh/backend ncGNU ncDebianOpenBSD ncDebianTraditional ncMacOSX
 
 bishbosh_backend_nc_check()
 {
-	if [ "$bishbosh_tunnel" != 'MQTT' ]; then
+	if [ "$bishbosh_tunnel" != 'none' ]; then
 		return 1
 	fi
 	
