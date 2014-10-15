@@ -152,11 +152,10 @@ bishbosh_backend_socat_start()
 				
 				*)
 					if [ "$bishbosh_tunnel" = 'tls' ]; then
-						core_exitError $core_commandLine_exitCode_CONFIG "The backend socat does not support the '$bishbosh_proxyKind' proxy kind when the tunnel is 'tls'"
 						# We do not specify method=TLSv1. This is because this DISABLES support for TLSv1.1 and TLSv1.2
 						# Instead, if one uses OpenSSL's SSLv23_method(), then there is support for TLSv1.2 (counter-intuitively).
-						addressKind='OPENSSL,compress=none'
-		
+						addressKind="OPENSSL:${bishbosh_server}:${bishbosh_port},compress=none"
+						
 						if core_variable_isSet bishbosh_tunnelTlsCertificate; then
 							addressKind="${addressKind},cert=$bishbosh_tunnelTlsCertificate"
 						fi
@@ -172,14 +171,13 @@ bishbosh_backend_socat_start()
 						if core_variable_isSet bishbosh_tunnelTlsCaBundle; then
 							addressKind="${addressKind},capath=$bishbosh_tunnelTlsCaBundle"
 						fi
-						
-						if core_variable_isSet bishbosh_tunnelTlsVerify; then
-							if core_variable_isTrue bishbosh_tunnelTlsVerify; then
-								addressKind="${addressKind},verify=1"
-							else
-								addressKind="${addressKind},verify=0"
-							fi
+
+						if core_variable_isTrue "$bishbosh_tunnelTlsVerify"; then
+							addressKind="${addressKind},verify=1"
+						else
+							addressKind="${addressKind},verify=0"
 						fi
+						
 						if core_variable_isSet bishbosh_tunnelTlsCiphers; then
 							addressKind="${addressKind},cipher=$bishbosh_tunnelTlsCiphers"
 						fi
@@ -199,9 +197,9 @@ bishbosh_backend_socat_start()
 								addressKind='TCP6'
 							;;
 						esac
-					fi
 					
-					addressKind="${addressKind}:${bishbosh_server}:${bishbosh_port}"
+						addressKind="${addressKind}:${bishbosh_server}:${bishbosh_port}"
+					fi
 				;;
 		
 			esac

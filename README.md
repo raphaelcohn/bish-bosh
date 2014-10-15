@@ -316,10 +316,31 @@ _\* Not running proxies myself, I can't test many of these settings combinations
 | `--tunnel-tls-ca-path` | `PATH` | `bishbosh_tunnelTlsCaPath` | *unset* | A folder `PATH` which contains PEM-encoded Certificate Authority certificates with OpenSSL-compatible hashes. Do not specify this if `--tunnel-tls-ca-file` is specified. Most backends have a default location for this or `--tunnel-tls-ca-path`. |
 | `--tunnel-tls-certificate` | `FILE` | `bishbosh_tunnelTlsCertificate` | *unset* | A PEM-encoded file `FILE` which a certificate to authenticate the client with. Not normally required. If specified, then `--tunnel-tls-key` must also be specified. |
 | `--tunnel-tls-key` | `FILE` | `bishbosh_tunnelTlsKey` | *unset* | A PEM-encoded file `FILE` which contains a private key to authenticate the client with. Not normally required. If specified, then `--tunnel-tls-certificate` must also be specified. |
-| `--tunnel-tls-verify` | `BOOL` | `bishbosh_tunnelTlsCiphers` | *unset* | A boolean `BOOL` used to enable or disable verification of the MQTT server's X.509 certificate chain. Revocation checks (CRL, OCSP) are not performed by most backends. Some backends (eg `openssl`) do not fail on verification failure. Default of *unset* is interpreted as verify. |
+| `--tunnel-tls-verify` | `BOOL` | `bishbosh_tunnelTlsCiphers` | on | A boolean `BOOL` used to enable or disable verification of the MQTT server's X.509 certificate chain. Revocation checks (CRL, OCSP) are not performed by most backends. Some backends (eg `openssl`) do not fail on verification failure. |
 | `--tunnel-tls-ciphers` | `STR` | `bishbosh_tunnelTlsCiphers` | *unset* | A backend specific string `STR`. Nearly all backends use openssl syntax (`man 5 ciphers`), except for `gnutls`, which calls this a 'Priority string' (`info gnutls`, then find section 6.10). |
 
 At this time, it is not possible to control TLS versions or TLS compression (which is disabled if a backend supports it).
+
+###### [stunnel] Alternative
+As an alternative to using `tls` tunnel, one can use a `none` tunnel but connect to, say, [stunnel] running on `localhost` with a `stunnel.conf` such as
+
+    ;stunnel.conf
+	
+	[mqtts]
+	accept = 1883
+	connect = ${bishbosh_server}:${bishbosh_port}
+	foreground = no
+	CApath = ${bishbosh_tunnelTlsCaPath}
+	;Or
+	;CAfile = ${bishbosh_tunnelTlsCaFile}
+	cert = ${bishbosh_tunnelTlsCertificate}
+	key = ${bishbosh_tunnelTlsKey}
+	TIMEOUTconnect = ${bishbosh_connectTimeout}
+	verify = ${bishbosh_verify}
+
+where `${bishbosh_XXX}` relates to a [bish-bosh] configuration setting.
+
+See `man 8 stunnel` for more details. From experience, it can be a bit troublesome to get configured and made to start reliably. It doesn't like configuration values with spaces in.
 
 ##### `cryptcat` tunnel settings
 
@@ -748,3 +769,4 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 [Linux FHS]: http://refspecs.linuxfoundation.org/fhs.shtml "Linux File Hierarchy Standard"
 [GNU glibc]: https://www.gnu.org/software/libc/ "GNU libc"
 [GNU libiconv]: https://www.gnu.org/software/libiconv/ "GNU libiconv"
+[stunnel]: https://www.stunnel.org/index.html "stunnel"

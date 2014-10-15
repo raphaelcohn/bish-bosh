@@ -177,11 +177,7 @@ bishbosh_backend_ncat_start()
 			core_variable_array_append options --ssl-trustfile "$bishbosh_tunnelTlsCaBundle"
 		fi
 		
-		if core_variable_isSet bishbosh_tunnelTlsVerify; then
-			if core_variable_isTrue bishbosh_tunnelTlsVerify; then
-				core_variable_array_append options --ssl-verify
-			fi
-		else
+		if core_variable_isTrue "$bishbosh_tunnelTlsVerify"; then
 			core_variable_array_append options --ssl-verify
 		fi
 		
