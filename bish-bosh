@@ -32,7 +32,7 @@ _program_entrypoint='bishbosh'
 
 _program_commandLine_parseInitialise()
 {
-	_program_default_tunnel='MQTT'
+	_program_default_tunnel='none'
 	if core_variable_isSet bishbosh_tunnel; then
 		_program_configurationSet_bishbosh_tunnel=0
 	else
