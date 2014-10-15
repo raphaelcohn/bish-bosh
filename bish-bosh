@@ -73,7 +73,7 @@ _program_commandLine_parseInitialise()
 		_program_configurationSet_bishbosh_connectTimeout=1
 	fi
 	
-	_program_default_backends='ncat,nc6,nc,devtcp,socat'
+	_program_default_backends='ncat,nc6,nc,socat,devtcp,cryptcat'
 	if core_variable_isSet bishbosh_backends; then
 		_program_configurationSet_bishbosh_backends=0
 	else
