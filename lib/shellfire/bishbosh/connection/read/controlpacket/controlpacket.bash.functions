@@ -50,15 +50,14 @@ bishbosh_connection_read_controlpacket_initialise()
 	else
 		bishbosh_connection_read_controlpacket_handlers[176]=bishbosh_connection_read_controlpacket_UNSUBACK
 	fi
-	
 	if core_variable_isTrue "$isServer"; then
-		bishbosh_connection_read_controlpacket_handlers[192]=bishbosh_connection_read_controlpacket_controlpacket_PINGREQ
+		bishbosh_connection_read_controlpacket_handlers[192]=bishbosh_connection_read_controlpacket_PINGREQ
 	else
-		bishbosh_connection_read_controlpacket_handlers[208]=bishbosh_connection_read_controlpacket_controlpacket_PINGRESP
+		bishbosh_connection_read_controlpacket_handlers[208]=bishbosh_connection_read_controlpacket_PINGRESP
 	fi
 	
 	if core_variable_isTrue "$isServer"; then
-		bishbosh_connection_read_controlpacket_handlers[224]=bishbosh_connection_read_controlpacket_controlpacket_DISCONNECT
+		bishbosh_connection_read_controlpacket_handlers[224]=bishbosh_connection_read_controlpacket_DISCONNECT
 	fi
 }
 
