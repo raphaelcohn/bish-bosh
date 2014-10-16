@@ -42,11 +42,11 @@ bishbosh_connection_sourceScriptlets()
 	fi
 	pushd "$scriptletsFolderPath"
 		set +f
-			for scriptletFilePath in *.scriptlet
+			for scriptletFilePath in *
 			do
 				set -f
 				if ! core_path_isReadableNonEmptyFilePath "$scriptletFilePath"; then
-					if [ "$scriptletFilePath" = '*.scriptlet' ]; then
+					if [ "$scriptletFilePath" = '*' ]; then
 						continue
 					fi
 					core_exitError "The client-id scriptlet file '$scriptletFilePath' is not a readable, non-empty file"

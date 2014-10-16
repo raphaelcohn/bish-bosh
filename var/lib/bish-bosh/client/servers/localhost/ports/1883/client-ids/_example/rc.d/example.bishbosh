@@ -12,9 +12,6 @@ bishbosh_connection_write_CONNECT_keepAlive=5
 #bishbosh_connection_write_CONNECT_username=user
 #bishbosh_connection_write_CONNECT_password=password
 
-echo "BEING SOURCED" 1>&2
-exit 70
-
 bishbosh_connection_handler_CONNACK()
 {	
 	# Set up some subscriptions... another implementation could read from a standard file
