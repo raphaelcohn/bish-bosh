@@ -23,19 +23,31 @@ bishbosh_backend_find()
 	core_exitError $core_commandLine_exitCode_OSFILE "Could not find a backend to make socket connections with tunnelling '$bishbosh_tunnel' that was on the PATH '$PATH'."
 }
 
-core_dependency_requires '*' grep
-core_dependency_requires '*' head
+core_dependency_oneOf '*' sed grep head
 bishbosh_backend_netcatVariantHelpMessageLineExists()
 {
 	local pattern="$1"
 
-	# can be replaced with [ $("$binary" -h 2>&1 | sed -n '/^\[v1\.10/=') -eq 1 ]
-	# but toybox doesn't have sed yet
-	if "$binary" -h 2>&1 | head -n 1 | grep -q -E "$pattern"; then
-		bishbosh_backend_path="$binary"
-		return 0
+	if core_compatibility_whichNoOutput sed; then
+		local result="$("$binary" -h 2>&1 | sed -n "/${pattern}/=")"
+		if [ "$result" = '1' ]; then
+			bishbosh_backend_path="$binary"
+			return 0
+		fi
+		return 1
 	fi
-	return 1
+	
+	if core_compatibility_whichNoOutput grep; then
+		if core_compatibility_whichNoOutput head; then
+			if "$binary" -h 2>&1 | head -n 1 | grep -q -E "$pattern"; then
+				bishbosh_backend_path="$binary"
+				return 0
+			fi
+		fi
+		return 1
+	fi
+	
+	core_exitError $core_commandLine_exitCode_OSFILE "Either 'sed' or 'grep' and 'head' must be present to use the 'nc' meta-backend."
 }
 
 bishbosh_backend_debugOptions()

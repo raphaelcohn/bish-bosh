@@ -457,8 +457,6 @@ We use a `/etc` folder underneath where we're installed. If you've just cloned [
 ### Required Dependencies
 All of these should be present even on the most minimal system. Usage is restricted to those flags known to work across Mac OS X, GNU, BusyBox and Toybox. Even the most minimal system is likely to have these:-
 
-* `grep`
-* `head`
 * `mkdir`
 * `mktemp`
 * `mv`
@@ -482,6 +480,14 @@ If cloning from [GitHub], then you'll also need to make sure you have `git`.
 ### Either Or Dependencies (one is required)
 These are listed in preference order. Ordinarily, [bish-bosh] uses the `PATH` and feature detection to try to find an optimum dependency. Making some choices, however, influences others (eg `hexdump` and `od` preferences change when `stdbuf` is discovered, to try to use GNU `od`). Some choices are sub-optimal, and may cause operational irritation (mostly, bishbosh responds far more slowly to signals and socket disconnections).
 
+* Detecting which variety of netcat (`nc`) is in use by the meta-backend
+  * Option 1
+    * `sed`
+  * Option 2
+    * `head`
+    * `grep`
+  * Option 3
+    * No detection, because the `nc` meta-backend isn't used
 * Publishing messages from files
   * `dd`, any POSIX-compliant version (dd is preferred as it permits larger block sizes)
   * `cat`
