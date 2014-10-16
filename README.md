@@ -192,14 +192,11 @@ Inside any of [bish-bosh]'s handlers, you can publish a message, make a subscrip
 ```bash
 bishbosh_connection_handler_CONNACK()
 {
-	bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
-	bishbosh_connection_incrementNextPacketIdentifier
 	bishbosh_connection_write_SUBSCRIBE \
-		'/topic/1' 0 \
-		'/topic/2' 0
+		'/topic/qos/0' 0 \
+		'/topic/qos/1' 1 \
+		'/topic/qos/3' 1
     
-	bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
-	bishbosh_connection_incrementNextPacketIdentifier
 	bishbosh_connection_write_UNSUBSCRIBE \
 		'/topic/not/wanted' \
 		'/and/also/topic/not/wanted'
@@ -216,12 +213,12 @@ bishbosh_connection_handler_CONNACK()
 	bishbosh_connection_write_PUBLISH_messageFilePath="/path/to/message"
 	bishbosh_connection_write_PUBLISH_messageUnlinkFile=no
 	bishbosh_connection_write_PUBLISH_resetArguments=no
-	bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
+	XXXXX    bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
 	bishbosh_connection_incrementNextPacketIdentifier
 	bishbosh_connection_write_PUBLISH
 	
 	# Publish again - using bishbosh_connection_write_PUBLISH_resetArguments=no allows reuse of settings
-	bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
+	XXXXX    bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
 	bishbosh_connection_incrementNextPacketIdentifier
 	bishbosh_connection_write_PUBLISH
 }
@@ -463,7 +460,7 @@ All of these should be present even on the most minimal system. Usage is restric
 * `rm`
 * `rmdir`
 * `sleep`
-* `touch`
+* `ln`
 * `uname`
 
 The following are needed if not builtin to your shell (except for `kill`, this would be highly unusual):-
@@ -758,6 +755,9 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 * Shell builtins and most common tools do not support parsing lines delimited with anything other than `\n` (eg `sed`). Whilst some tooling (eg GNU coreutils, [GNU Bash]) can handle `\0` terminated lines, support is not consistent enough. Consequently,
   * Topic names can not contain `\n`.
   * Topic filters can not contain `\n`.
+
+#### Retranmission
+* Not currently implemented, and, even if it were, MQTT-4.6.0-1 is violated because we do not timestamp message indicators yet (and so packet identifier wrap-around breaks)
 
 ### Broken but Fixable
 * Unsubscribe handling is broken

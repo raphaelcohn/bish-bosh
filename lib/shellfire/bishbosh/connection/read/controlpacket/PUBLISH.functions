@@ -121,7 +121,7 @@ _bishbosh_connection_read_PUBLISH()
 	else
 		bishbosh_connection_handler_PUBLISH
 		if [ $QoS -eq 2 ]; then
-			touch "$pendingReceiveQoS2PacketIdentifierPath"
+			printf '' >"$pendingReceiveQoS2PacketIdentifierPath"
 		fi
 	fi
 	

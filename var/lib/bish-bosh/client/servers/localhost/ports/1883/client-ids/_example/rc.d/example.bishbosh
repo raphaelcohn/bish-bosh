@@ -15,17 +15,12 @@ bishbosh_connection_write_CONNECT_keepAlive=1
 bishbosh_connection_handler_CONNACK()
 {
 	# Set up some subscriptions... another implementation could read from a standard file
-	bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
-	bishbosh_connection_incrementNextPacketIdentifier
-	
 	bishbosh_connection_write_SUBSCRIBE \
-		'/topic/1' 0 \
-		'/topic/2' 0
+		'/topic/qos/0' 0 \
+		'/topic/qos/1' 1 \
+		'/topic/qos/3' 1
 	
 	# Make sure we're not subscribed to what we don't want here, too - again, we could read from a file
-	bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
-	bishbosh_connection_incrementNextPacketIdentifier
-	
 	bishbosh_connection_write_UNSUBSCRIBE \
 		'/topic/not/wanted' \
 		'/and/also/topic/not/wanted'
@@ -33,7 +28,6 @@ bishbosh_connection_handler_CONNACK()
 	# Publish an arbitary message
 	#bishbosh_connection_write_PUBLISH_dup=0
 	#bishbosh_connection_write_PUBLISH_QoS=0
-	#bishbosh_connection_write_packetIdentifier=$(bishbosh_connection_nextPacketIdentifier)
 	#bishbosh_connection_write_PUBLISH_retain=no
 	bishbosh_connection_write_PUBLISH_topicName='a/b'
 	bishbosh_connection_write_PUBLISH_message='X'

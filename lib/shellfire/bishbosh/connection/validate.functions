@@ -191,11 +191,11 @@ bishbosh_connection_validate_packetIdentifier()
 {
 	core_validate_isUnsignedInteger $core_commandLine_exitCode_CONFIG 'argument' "bishbosh_connection_write_packetIdentifier" "$bishbosh_connection_write_packetIdentifier"
 	
-	if [ $packetIdentifier -eq 0 ]; then
+	if [ $bishbosh_connection_write_packetIdentifier -eq 0 ]; then
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_packetIdentifier' is a packet identifier and so can not be 0"
 	fi
 	
-	if [ $packetIdentifier -gt 65535 ]; then
+	if [ $bishbosh_connection_write_packetIdentifier -gt 65535 ]; then
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_packetIdentifier' is a packet identifier and so can not be greater than 65,535"
 	fi
 }

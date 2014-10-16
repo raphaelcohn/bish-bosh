@@ -4,6 +4,9 @@ core_usesIn bishbosh/connection/write CONNACK CONNECT DISCONNECT PINGREQ PINGRES
 core_dependency_oneOf '*' dd cat tee tail head tr
 bishbosh_connection_write_initialise()
 {
+	# Needs to be persisted in some fashion / derived from on disk messages
+	_bishbosh_connection_write_nextPacketIdentifier=1
+	
 	if core_compatibility_whichNoOutput dd; then
 		bishbosh_connection_write_file()
 		{
@@ -76,4 +79,16 @@ bishbosh_connection_write_twoByteLength()
 	local length=$1
 	bishbosh_connection_write_byte $(( length >> 8 ))
 	bishbosh_connection_write_byte $(( length & 255 ))
+}
+
+bishbosh_connection_write_nextPacketIdentifier()
+{
+	bishbosh_connection_write_packetIdentifier=$_bishbosh_connection_write_nextPacketIdentifier
+	
+	core_TODO "Determine if we need to skip a packet identifier"
+	if [ $_bishbosh_connection_write_nextPacketIdentifier -eq 65535 ]; then
+		_bishbosh_connection_write_nextPacketIdentifier=1
+	else
+		_bishbosh_connection_write_nextPacketIdentifier=$((_bishbosh_connection_write_nextPacketIdentifier+1))
+	fi
 }

@@ -368,9 +368,6 @@ The following values may be used to override client-id based configuration:-
   bishbosh_connection_clientServersPath
   bishbosh_connection_clientServersPortsPath
   bishbosh_connection_clientServersPortsClientIdsPath
-
-  XXX Under review XXX
-  bishbosh_connection_nextPacketIdentifier
   
 The following handlers may be specified as functions in SCRIPTLETS, with
 the globals specified:-

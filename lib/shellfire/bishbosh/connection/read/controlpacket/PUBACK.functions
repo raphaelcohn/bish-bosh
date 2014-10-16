@@ -1,4 +1,6 @@
 core_usesIn bishbosh/connection error
+
+core_dependency_requires '*' rm
 bishbosh_connection_read_controlpacket_PUBACK()
 {
 	bishbosh_connection_error_ifRemainingLengthNot PUBACK 2
@@ -6,13 +8,20 @@ bishbosh_connection_read_controlpacket_PUBACK()
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
 	
-	local pendingSendQoS1PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQoS1PendingSendPath"/"$packetIdentifier"
-	if [ -f "$pendingSendQoS1PacketIdentifierPath" ]; then
+	local QoS=1
+	local unknownPacketIdentifier
+	local alreadySentMessage="$bishbosh_connection_sessionPublicationsPath"/$QoS/"$packetIdentifier"
+	
+	if [ -f "$alreadySentMessage".topic-name ]; then
 		unknownPacketIdentifier=0
 	else
+		# Handle from now on; empty topic-name means we don't know about it
 		unknownPacketIdentifier=1
+		printf '' >"$alreadySentMessage".topic-name
 	fi
 	
 	bishbosh_connection_handler_PUBACK
-	rm "$pendingSendQoS1PacketIdentifierPath"
+	set -f
+	rm -f "$alreadySentMessage".*
+	set +f
 }

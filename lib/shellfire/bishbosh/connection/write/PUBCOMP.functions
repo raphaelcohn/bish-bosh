@@ -5,7 +5,7 @@ bishbosh_connection_write_PUBCOMP()
 	
 	# 7 << 4 in octal, followed by 2 (remaining length)
 	printf '\160\002'
-	bishbosh_connection_write_twoByteLength $packetIdentifier
+	bishbosh_connection_write_twoByteLength $bishbosh_connection_write_packetIdentifier
 	
 	unset bishbosh_connection_write_packetIdentifier
 	

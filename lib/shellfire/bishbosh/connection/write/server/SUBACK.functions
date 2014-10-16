@@ -31,7 +31,7 @@ bishbosh_connection_write_SUBACK()
 	
 	bishbosh_connection_write_remainingLength $remainingLength
 	
-	bishbosh_connection_write_twoByteLength $packetIdentifier
+	bishbosh_connection_write_twoByteLength $bishbosh_connection_write_packetIdentifier
 	
 	for resultCode in "$@"
 	do

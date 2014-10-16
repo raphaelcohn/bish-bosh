@@ -1,14 +1,17 @@
 _bishbosh_connection_write_CONNECT_validateArguments()
 {
 	if core_variable_isUnset bishbosh_connection_write_CONNECT_cleanSession; then
+		bishbosh_connection_write_CONNECT_cleanSession=0
 		cleanSession=0
 	else
 		core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_cleanSession "$bishbosh_connection_write_CONNECT_cleanSession"
 		if core_variable_isTrue "$bishbosh_connection_write_CONNECT_cleanSession"; then
+			bishbosh_connection_write_CONNECT_cleanSession=1
 			cleanSession=1
 			# Clean Session Flag (1<<1)
 			connectFlags=$(( connectFlags + 2 ))
 		else
+			bishbosh_connection_write_CONNECT_cleanSession=0
 			cleanSession=0
 		fi
 	fi

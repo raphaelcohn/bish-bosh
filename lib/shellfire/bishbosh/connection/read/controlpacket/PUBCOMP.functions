@@ -1,5 +1,5 @@
 core_usesIn bishbosh/connection error
-core_dependency_requires '*' mv touch
+core_dependency_requires '*' mv
 bishbosh_connection_read_controlpacket_PUBCOMP()
 {
 	bishbosh_connection_error_ifRemainingLengthNot PUBCOMP 2
@@ -7,15 +7,20 @@ bishbosh_connection_read_controlpacket_PUBCOMP()
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
 	
-	local pendingCompQoS2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQoS2PendingCompPath"/"$packetIdentifier"
-	if [ -f "$pendingCompQoS2PacketIdentifierPath" ]; then
+	local QoS=2
+	local unknownPacketIdentifier
+	local alreadySentMessage="$bishbosh_connection_sessionPublicationsPath"/$QoS/"$bishbosh_connection_write_packetIdentifier"
+	
+	if [ -f "$alreadySentMessage".pubrel-ready ]; then
 		unknownPacketIdentifier=0
 	else
+		# Handle from now on
 		unknownPacketIdentifier=1
+		printf '' >"$alreadySentMessage".pubrel-ready
 	fi
-	rm "$pendingCompQoS2PacketIdentifierPath"
 	
 	bishbosh_connection_handler_PUBCOMP
-	
-	core_TODO 'We should recycle the packet identifier at this point'
+	set -f
+	rm -f "$alreadySentMessage".*
+	set +f
 }

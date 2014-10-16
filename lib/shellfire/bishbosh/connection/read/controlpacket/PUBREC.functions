@@ -1,28 +1,32 @@
 core_usesIn bishbosh/connection error
-core_dependency_requires '*' mv touch
+core_dependency_requires '*' mv
 bishbosh_connection_read_controlpacket_PUBREC()
 {
 	bishbosh_connection_error_ifRemainingLengthNot PUBREC 2
 	
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
-
-	local pendingSendQoS2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQoS2PendingSendPath"/"$packetIdentifier"
-	local pendingCompQoS2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQoS2PendingCompPath"/"$packetIdentifier"
-	if [ -f "$pendingCompQoS2PacketIdentifierPath" ]; then
-		bishbosh_connection_error_any $core_commandLine_exitCode_SOFTWARE "read:PUBREC:Packet identifier $packetIdentifier already exists at pendingCompQoS2PacketIdentifierPath '$pendingCompQoS2PacketIdentifierPath'. How?"
-	fi
 	
-	if [ -f "$pendingSendQoS2PacketIdentifierPath" ]; then
+	local QoS=2
+	local unknownPacketIdentifier
+	local alreadySentMessage="$bishbosh_connection_sessionPublicationsPath"/$QoS/"$bishbosh_connection_write_packetIdentifier"
+	
+	if [ -f "$alreadySentMessage".topic-name ]; then
 		unknownPacketIdentifier=0
-		mv "$pendingSendQoS2PacketIdentifierPath" "$pendingCompQoS2PacketIdentifierPath"
 	else
+		# Handle from now on; empty topic-name means we don't know about it
 		unknownPacketIdentifier=1
-		touch "$pendingCompQoS2PacketIdentifierPath"
+		printf '' >"$alreadySentMessage".topic-name
 	fi
 	
-	bishbosh_connection_handler_PUBREC
-
+	# Seems to be a duplicate PUBREC
+	if [ -f "$alreadySentMessage".pubrel-ready ]; then
+		core_message NOTICE "Duplicate PUBREC for packet identifier '$packetIdentifier'"
+	fi
+	
+	# reply
 	bishbosh_connection_write_packetIdentifier=$packetIdentifier
 	bishbosh_connection_write_PUBREL
+	
+	bishbosh_connection_handler_PUBREC
 }

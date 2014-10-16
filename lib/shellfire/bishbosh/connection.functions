@@ -107,7 +107,10 @@ bishbosh_connection_defaultAndCreateSessionSubFolderPaths()
 	
 	# publications: Can be overridden, but not listed in help or README.md
 	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsPath "$bishbosh_connection_sessionPath" publications
+	
 	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsQoS2PendingReceivePath "$bishbosh_connection_sessionPublicationsPath" QoS2-receive
+	
+	
 	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsQoS1PendingSendPath "$bishbosh_connection_sessionPublicationsPath" QoS1-sent-publish
 	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsQoS2PendingSendPath "$bishbosh_connection_sessionPublicationsPath" QoS2-sent-publish
 	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsQoS2PendingCompPath "$bishbosh_connection_sessionPublicationsPath" QoS2-sent-pubrel
@@ -117,11 +120,7 @@ bishbosh_connection_defaultAndCreateSessionSubFolderPaths()
 }
 
 bishbosh_connection_defaultEssentialState()
-{	
-	# Should have come from session
-	if core_variable_isUnset bishbosh_connection_nextPacketIdentifier; then
-		bishbosh_connection_nextPacketIdentifier=0
-	fi
+{
 	if core_variable_isUnset bishbosh_connection_nextReceivedMessageNumber; then
 		bishbosh_connection_nextReceivedMessageNumber=0
 	fi
@@ -258,13 +257,4 @@ bishbosh_connection_makeClientConnection()
 	
 	# Foreground process to monitor child processes for exit
 	bishbosh_connection_foreground_monitorForChildExit
-}
-
-bishbosh_connection_incrementNextPacketIdentifier()
-{
-	if [ $bishbosh_connection_nextPacketIdentifier -eq 65535 ]; then
-		bishbosh_connection_nextPacketIdentifier=0
-	else
-		bishbosh_connection_nextPacketIdentifier=$((bishbosh_connection_nextPacketIdentifier+1))
-	fi
 }
