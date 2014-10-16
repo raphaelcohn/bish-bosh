@@ -464,7 +464,6 @@ All of these should be present even on the most minimal system. Usage is restric
 * `rm`
 * `rmdir`
 * `sleep`
-* `tail`
 * `uname`
 
 The following are needed if not builtin to your shell (except for `kill`, this would be highly unusual):-
@@ -479,7 +478,7 @@ The following are needed if not builtin to your shell (except for `kill`, this w
 If cloning from [GitHub], then you'll also need to make sure you have `git`.
 
 ### Either Or Dependencies (one is required)
-These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and feature detection to try to find an optimum dependency. Making some choices, however, influences others (eg `hexdump` and `od` preferences change when `stdbuf` is discovered, to try to use GNU `od`). Some choices are sub-optimal, and may cause operational irritation (mostly, bishbosh responds far more slowly to signals and socket disconnections).
+These are listed in preference order. Ordinarily, [bish-bosh] uses the `PATH` and feature detection to try to find an optimum dependency. Making some choices, however, influences others (eg `hexdump` and `od` preferences change when `stdbuf` is discovered, to try to use GNU `od`). Some choices are sub-optimal, and may cause operational irritation (mostly, bishbosh responds far more slowly to signals and socket disconnections).
 
 * Publishing messages from files
   * `dd`, any POSIX-compliant version (dd is preferred as it permits larger block sizes)
@@ -506,7 +505,7 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * `stdbuf`, FreeBSD
   * `unbuffer`, from the expect package (known as `expect-dev` on Debian/Ubuntu)
     * Does not seem to work properly on Mac OS X
-  * `dd`, any POSIX-compliant version.
+  * `dd`, any POSIX-compliant version
 * Unencrypted Network Connections (can be configured with the `--backends` option to use a different preference order)
   * `ncat`, part of the `nmap` package (available as `nmap` on Debian/Ubuntu and Mac OS X + Homebrew)
   * `socat` (not the beta version 2.0)
@@ -519,7 +518,7 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * `nc`, [Toybox]
   * `bash` (if compiled with socket support; this is true for Mac OS X Snow Leopard+, Mac OS X + Homebrew, RHEL 6+, Centos 6+, Debian 6+, and Ubuntu 10.04 LTS +)
   * `ksh` ([ksh93], however [ksh93] doesn't work with other script features at this time)
-  * none, if not using MQTT (unlikely)
+  * none, if not using plain MQTT connections
 * TLS-encrypted backends for MQTTS
   * `ncat`,
   * `socat`,
@@ -546,7 +545,7 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
 * Validating for invalid or restricted characters in topic names, topic filters and client ids
   * `tr`
   * Nothing (validation not performed)
-* File sizes (controlled with [`--filesize-algorithm`](#configuration-tweaks))
+* File sizes (controlled with [`--filesize-algorithm`](#configuration-tweaks), as feature detection is near impossible)
   * `ls`, any, used for file sizes (not efficient, but `ls -L -l -n FILE` is portable)
   * `stat`, from the GNU `coreutils` package
   * `stat`, in [BusyBox]
@@ -566,7 +565,7 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * fallback to ANSI escape sequences, which should work on anything modern
   * Nothing, if not running in a terminal
 
-_\* It may be possible to also use EGD sockets and other programs and sources (eg a TPM or `rng-tools`). Please get in touch._
+_\* It may be possible to also use EGD sockets and other programs and sources (eg a TPM or `rng-tools`). Please get in touch if this is interesting to you._
 
 ### A word on [GNU Bash] versions
 Unfortunately, there are a lot of [GNU Bash] versions that are still in common use. Versions 3 and 4 of Bash differ in their support of key features (such as associative arrays). Even then, Bash 4.1 is arguably not particularly useful with associative arrays, though, as its declare syntax lacks the `-g` global setting. [bish-bosh] tries to maintain compatibility with `bash` as at version 3.1/3.2, even though it's obsolescent, because it occurs on two common platforms. A quick guide to common bash version occurrence is below.
