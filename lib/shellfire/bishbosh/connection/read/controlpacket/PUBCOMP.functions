@@ -7,13 +7,13 @@ bishbosh_connection_read_controlpacket_PUBCOMP()
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
 	
-	local pendingCompQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingCompPath"/"$packetIdentifier"
-	if [ -f "$pendingCompQos2PacketIdentifierPath" ]; then
+	local pendingCompQoS2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQoS2PendingCompPath"/"$packetIdentifier"
+	if [ -f "$pendingCompQoS2PacketIdentifierPath" ]; then
 		unknownPacketIdentifier=0
 	else
 		unknownPacketIdentifier=1
 	fi
-	rm "$pendingCompQos2PacketIdentifierPath"
+	rm "$pendingCompQoS2PacketIdentifierPath"
 	
 	core_TODO 'We should recycle the packet identifier at this point'
 	

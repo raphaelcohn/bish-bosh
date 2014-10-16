@@ -6,13 +6,13 @@ bishbosh_connection_read_controlpacket_PUBACK()
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
 	
-	local pendingSendQos1PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos1PendingSendPath"/"$packetIdentifier"
-	if [ -f "$pendingSendQos1PacketIdentifierPath" ]; then
+	local pendingSendQoS1PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQoS1PendingSendPath"/"$packetIdentifier"
+	if [ -f "$pendingSendQoS1PacketIdentifierPath" ]; then
 		unknownPacketIdentifier=0
 	else
 		unknownPacketIdentifier=1
 	fi
 	
 	bishbosh_connection_handler_PUBACK
-	rm "$pendingSendQos1PacketIdentifierPath"
+	rm "$pendingSendQoS1PacketIdentifierPath"
 }

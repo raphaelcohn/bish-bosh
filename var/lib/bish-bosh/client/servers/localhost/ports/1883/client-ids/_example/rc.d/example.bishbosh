@@ -3,17 +3,22 @@
 #bishbosh_server=test.mosquitto.org
 #bishbosh_clientId=example
 
+if true; then
 #bishbosh_connection_write_CONNECT_cleanSession=1
-bishbosh_connection_write_CONNECT_willTopic='/some/topic'
-bishbosh_connection_write_CONNECT_willMessage='goodbye'
-bishbosh_connection_write_CONNECT_willQos=0
-bishbosh_connection_write_CONNECT_willRetain=1
-bishbosh_connection_write_CONNECT_keepAlive=5
+bishbosh_connection_write_CONNECT_willTopic='X'
+#bishbosh_connection_write_CONNECT_willMessage='goodbye'
+#bishbosh_connection_write_CONNECT_willQoS=0
+#bishbosh_connection_write_CONNECT_willRetain=1
+#bishbosh_connection_write_CONNECT_keepAlive=0
 #bishbosh_connection_write_CONNECT_username=user
 #bishbosh_connection_write_CONNECT_password=password
+:
+fi
 
 bishbosh_connection_handler_CONNACK()
 {	
+	return 0
+	
 	# Set up some subscriptions... another implementation could read from a standard file
 	bishbosh_connection_write_SUBSCRIBE_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
 	bishbosh_connection_incrementNextPacketIdentifier
@@ -32,7 +37,7 @@ bishbosh_connection_handler_CONNACK()
 	
 	# Publish an arbitary message
 	#bishbosh_connection_write_PUBLISH_dup=0
-	#bishbosh_connection_write_PUBLISH_qos=0
+	#bishbosh_connection_write_PUBLISH_QoS=0
 	#bishbosh_connection_write_PUBLISH_packetIdentifier=$(bishbosh_connection_nextPacketIdentifier)
 	#bishbosh_connection_write_PUBLISH_retain=no
 	bishbosh_connection_write_PUBLISH_topicName='a/b'

@@ -19,8 +19,8 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		if core_variable_isSet bishbosh_connection_write_CONNECT_willMessageFilePath; then
 			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_willMessageFilePath' can not be set when 'bishbosh_connection_write_CONNECT_willTopic' is unset"
 		fi
-		if core_variable_isSet bishbosh_connection_write_CONNECT_willQos; then
-			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_willQos' can not be set when 'bishbosh_connection_write_CONNECT_willTopic' is unset"
+		if core_variable_isSet bishbosh_connection_write_CONNECT_willQoS; then
+			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_willQoS' can not be set when 'bishbosh_connection_write_CONNECT_willTopic' is unset"
 		fi
 		if core_variable_isSet bishbosh_connection_write_CONNECT_willRetain; then
 			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_willRetain' can not be set when 'bishbosh_connection_write_CONNECT_willTopic' is unset"
@@ -65,20 +65,20 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 			fi
 		fi
 		bishbosh_connection_validate_fieldLength CONNECT willMessage
-		willTopicFieldLength=${#willMessage}
+		willMessageFieldLength=${#willMessage}
 		remainingLength=$(( remainingLength + 2 + willMessageFieldLength ))
 		
-		# Will Qos
-		if core_variable_isUnset bishbosh_connection_write_CONNECT_willQos; then
-			willQos=0
+		# Will QoS
+		if core_variable_isUnset bishbosh_connection_write_CONNECT_willQoS; then
+			willQoS=0
 		else
-			core_validate_isUnsignedInteger $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_willQos "$bishbosh_connection_write_CONNECT_willQos"
-			if [ $bishbosh_connection_write_CONNECT_willQos -gt 2 ]; then
-				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_willQos' must be between 0 and 2 inclusive"
+			core_validate_isUnsignedInteger $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_willQoS "$bishbosh_connection_write_CONNECT_willQoS"
+			if [ $bishbosh_connection_write_CONNECT_willQoS -gt 2 ]; then
+				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_willQoS' must be between 0 and 2 inclusive"
 			fi
-			willQos=$bishbosh_connection_write_CONNECT_willQos
+			willQoS=$bishbosh_connection_write_CONNECT_willQoS
+			connectFlags=$(( connectFlags + (willQoS << 3) ))
 		fi
-		connectFlags=$(( connectFlags + willQos << 3 ))
 		
 		# Will Retain
 		if core_variable_isSet bishbosh_connection_write_CONNECT_willRetain; then
@@ -164,7 +164,7 @@ bishbosh_connection_write_CONNECT()
 	local willMessage
 	local willMessageFilePath
 	local willMessageFieldLength
-	local willQos
+	local willQoS
 	local keepAlive
 	local clientId
 	local clientIdFieldLength

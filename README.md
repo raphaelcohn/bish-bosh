@@ -137,7 +137,7 @@ These settings relate to [MQTT]'s **CONNACK** packet.
 | --------------------- | ------ | ----------------------- | ----------- |
 | `bishbosh_connection_write_CONNECT_cleanSession` | 0 or 1 \* | 0 (ie persistent) | Clean Session flag |
 | `bishbosh_connection_write_CONNECT_willTopic` | Any valid topic name | No will messages |  Will topic |
-| `bishbosh_connection_write_CONNECT_willQos` | 0 - 2 inclusive | 0 | Will QoS, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
+| `bishbosh_connection_write_CONNECT_willQoS` | 0 - 2 inclusive | 0 | Will QoS, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
 | `bishbosh_connection_write_CONNECT_willRetain` | 0 or 1 \* | 0 | Will Retain flag, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
 | `bishbosh_connection_write_CONNECT_willMessage` | Any valid message, but Unicode `U+0000` is not supported.† | invalid | Will message, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
 | `bishbosh_connection_write_CONNECT_willMessageFilePath` | A path to a valid message | invalid | Will message, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset or `bishbosh_connection_write_CONNECT_willMessage` is set. Must be a regular file (reading from a FIFO, etc, is unsupported), as we need to know the size in advance. Useful if a message might contain Unicode `U+0000`.† |
@@ -177,8 +177,8 @@ You need to be careful if using `printf` or `echo` - by default, all data writte
 | `bishbosh_connection_handler_CONNACK` | **CONNACK** | `bishbosh_connection_sessionPresent` | Invalid packets and non-zero **CONNACK** codes are handled for you |
 | `bishbosh_connection_handler_SUBACK` | **SUBACK** | `packetIdentifier`, `returnCodeCount`, `$@` which is a list of return codes | Invalid and unexpected packets are handled for you; active sessions are tracked on your behalf |
 | `bishbosh_connection_handler_UNSUBACK` | **UNSUBACK** | `packetIdentifier` | Invalid and unexpected packets are handled for you; active sessions are tracked on your behalf |
-| `bishbosh_connection_handler_PUBLISH` | **PUBLISH** | `packetIdentifier`, `retain`, `dup`, `qos`, `topicLength`, `topicName`, `messageLength`, `messageFilePath` | Invalid and unexpected packets and duplicates are handled appropriately. Publication acknowledgments (***PUBACK***, ***PUBCOMP***) likewise are handled. The only thing you need to do is `rm "$messageFilePath"` if you want |
-| `bishbosh_connection_handler_PUBLISH_again` | **PUBLISH** | `packetIdentifier`, `retain`, `dup`, `qos`, `topicLength`, `topicName`, `messageLength`, `messageFilePath` | Called when a QoS 2 message is redelivered |
+| `bishbosh_connection_handler_PUBLISH` | **PUBLISH** | `packetIdentifier`, `retain`, `dup`, `QoS`, `topicLength`, `topicName`, `messageLength`, `messageFilePath` | Invalid and unexpected packets and duplicates are handled appropriately. Publication acknowledgments (***PUBACK***, ***PUBCOMP***) likewise are handled. The only thing you need to do is `rm "$messageFilePath"` if you want |
+| `bishbosh_connection_handler_PUBLISH_again` | **PUBLISH** | `packetIdentifier`, `retain`, `dup`, `QoS`, `topicLength`, `topicName`, `messageLength`, `messageFilePath` | Called when a QoS 2 message is redelivered |
 | `bishbosh_connection_handler_PUBACK` | ***PUBACK*** |  `packetIdentifier` | Invalid and unexpected packets are handled for you. Acknowledgments likewise. |
 | `bishbosh_connection_handler_PUBREC` | ***PUBREC*** |  `packetIdentifier` | Invalid and unexpected packets are handled for you. Acknowledgments likewise. |
 | `bishbosh_connection_handler_PUBREL` | **PUBREL** |  `packetIdentifier` | Invalid and unexpected packets are handled for you. |
@@ -211,7 +211,7 @@ bishbosh_connection_handler_CONNACK()
 	
 	# Publish a duplicate QoS 2 retained message from a file that is to not be deleted (unlinked) after publication
 	bishbosh_connection_write_PUBLISH_dup=1
-	bishbosh_connection_write_PUBLISH_qos=2
+	bishbosh_connection_write_PUBLISH_QoS=2
 	bishbosh_connection_write_PUBLISH_retain=yes
 	bishbosh_connection_write_PUBLISH_messageFilePath="/path/to/message"
 	bishbosh_connection_write_PUBLISH_messageUnlinkFile=no

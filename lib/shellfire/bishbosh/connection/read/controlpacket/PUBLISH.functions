@@ -1,7 +1,7 @@
 bishbosh_connection_read_PUBLISH_0()
 {	
 	local retain=0
-	local qos=0
+	local QoS=0
 	local dup=0
 	_bishbosh_connection_read_PUBLISH
 }
@@ -9,7 +9,7 @@ bishbosh_connection_read_PUBLISH_0()
 bishbosh_connection_read_PUBLISH_1()
 {
 	local retain=1
-	local qos=0
+	local QoS=0
 	local dup=0
 	_bishbosh_connection_read_PUBLISH
 }
@@ -17,7 +17,7 @@ bishbosh_connection_read_PUBLISH_1()
 bishbosh_connection_read_PUBLISH_2()
 {
 	local retain=0
-	local qos=1
+	local QoS=1
 	local dup=0
 	_bishbosh_connection_read_PUBLISH
 }
@@ -25,7 +25,7 @@ bishbosh_connection_read_PUBLISH_2()
 bishbosh_connection_read_PUBLISH_3()
 {
 	local retain=1
-	local qos=1
+	local QoS=1
 	local dup=0
 	_bishbosh_connection_read_PUBLISH
 }
@@ -33,7 +33,7 @@ bishbosh_connection_read_PUBLISH_3()
 bishbosh_connection_read_PUBLISH_4()
 {
 	local retain=0
-	local qos=2
+	local QoS=2
 	local dup=0
 	_bishbosh_connection_read_PUBLISH
 }
@@ -41,7 +41,7 @@ bishbosh_connection_read_PUBLISH_4()
 bishbosh_connection_read_PUBLISH_5()
 {
 	local retain=1
-	local qos=2
+	local QoS=2
 	local dup=0
 	_bishbosh_connection_read_PUBLISH
 }
@@ -49,7 +49,7 @@ bishbosh_connection_read_PUBLISH_5()
 bishbosh_connection_read_PUBLISH_10()
 {
 	local retain=0
-	local qos=1
+	local QoS=1
 	local dup=1
 	_bishbosh_connection_read_PUBLISH
 }
@@ -57,7 +57,7 @@ bishbosh_connection_read_PUBLISH_10()
 bishbosh_connection_read_PUBLISH_11()
 {
 	local retain=1
-	local qos=1
+	local QoS=1
 	local dup=1
 	_bishbosh_connection_read_PUBLISH
 }
@@ -65,7 +65,7 @@ bishbosh_connection_read_PUBLISH_11()
 bishbosh_connection_read_PUBLISH_12()
 {
 	local retain=0
-	local qos=2
+	local QoS=2
 	local dup=1
 	_bishbosh_connection_read_PUBLISH
 }
@@ -73,7 +73,7 @@ bishbosh_connection_read_PUBLISH_12()
 bishbosh_connection_read_PUBLISH_13()
 {
 	local retain=1
-	local qos=2
+	local QoS=2
 	local dup=1
 	_bishbosh_connection_read_PUBLISH
 }
@@ -114,18 +114,18 @@ _bishbosh_connection_read_PUBLISH()
 		remainingMessageLength=$((remainingMessageLength-1))
 	done >"$messageFilePath"
 
-	local pendingReceiveQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingReceivePath"/"$packetIdentifier"
-	if [ -f "$pendingReceiveQos2PacketIdentifierPath" ]; then
+	local pendingReceiveQoS2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQoS2PendingReceivePath"/"$packetIdentifier"
+	if [ -f "$pendingReceiveQoS2PacketIdentifierPath" ]; then
 		# assume we have sent the PUBREC w/o PUBREL being received
 		bishbosh_connection_handler_PUBLISH_again
 	else
 		bishbosh_connection_handler_PUBLISH
-		if [ $qos -eq 2 ]; then
-			touch "$pendingReceiveQos2PacketIdentifierPath"
+		if [ $QoS -eq 2 ]; then
+			touch "$pendingReceiveQoS2PacketIdentifierPath"
 		fi
 	fi
 	
-	case $qos in
+	case $QoS in
 		
 		1)
 			bishbosh_connection_write_PUBACK_packetIdentifier=$packetIdentifier

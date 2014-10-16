@@ -7,18 +7,18 @@ bishbosh_connection_read_controlpacket_PUBREC()
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
 
-	local pendingSendQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingSendPath"/"$packetIdentifier"
-	local pendingCompQos2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQos2PendingCompPath"/"$packetIdentifier"
-	if [ -f "$pendingCompQos2PacketIdentifierPath" ]; then
-		bishbosh_connection_error_any $core_commandLine_exitCode_SOFTWARE "read:PUBREC:Packet identifier $packetIdentifier already exists at pendingCompQos2PacketIdentifierPath '$pendingCompQos2PacketIdentifierPath'. How?"
+	local pendingSendQoS2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQoS2PendingSendPath"/"$packetIdentifier"
+	local pendingCompQoS2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQoS2PendingCompPath"/"$packetIdentifier"
+	if [ -f "$pendingCompQoS2PacketIdentifierPath" ]; then
+		bishbosh_connection_error_any $core_commandLine_exitCode_SOFTWARE "read:PUBREC:Packet identifier $packetIdentifier already exists at pendingCompQoS2PacketIdentifierPath '$pendingCompQoS2PacketIdentifierPath'. How?"
 	fi
 	
-	if [ -f "$pendingSendQos2PacketIdentifierPath" ]; then
+	if [ -f "$pendingSendQoS2PacketIdentifierPath" ]; then
 		unknownPacketIdentifier=0
-		mv "$pendingSendQos2PacketIdentifierPath" "$pendingCompQos2PacketIdentifierPath"
+		mv "$pendingSendQoS2PacketIdentifierPath" "$pendingCompQoS2PacketIdentifierPath"
 	else
 		unknownPacketIdentifier=1
-		touch "$pendingCompQos2PacketIdentifierPath"
+		touch "$pendingCompQoS2PacketIdentifierPath"
 	fi
 	
 	bishbosh_connection_handler_PUBREC

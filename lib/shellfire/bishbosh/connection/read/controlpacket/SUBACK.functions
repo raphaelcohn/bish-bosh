@@ -22,7 +22,7 @@ bishbosh_connection_read_controlpacket_SUBACK()
 	local index=0
 	local returnCode
 	local recordFileTopicFilter
-	local recordFileQos
+	local recordFileQoS
 	while [ $index -ne $returnCodeCount ]
 	do
 		bishbosh_connection_read_byte_blocking returnCode
@@ -42,13 +42,13 @@ bishbosh_connection_read_controlpacket_SUBACK()
 	done
 
 	local pendingSubscriptionIndex
-	local pendingExpectedQos
+	local pendingExpectedQoS
 	local pendingTopicFilter
 	local parsedPendingSubscriptionIndex
 	local core_variable_indirectValue_result
 	local pendingReturnCode
 	local currentSubscriptionIndex
-	local currentExpectedQos
+	local currentExpectedQoS
 	local currentReturnCode
 	local currentTopicFilter
 	local found
@@ -68,7 +68,7 @@ bishbosh_connection_read_controlpacket_SUBACK()
 				continue
 			fi
 			
-			IFS="$bishbosh_connection_read_controlpacket_SUBACK_separator" read -r pendingExpectedQos pendingTopicFilter <"$pendingSubscriptionIndex"
+			IFS="$bishbosh_connection_read_controlpacket_SUBACK_separator" read -r pendingExpectedQoS pendingTopicFilter <"$pendingSubscriptionIndex"
 			
 			# get $1, $2, etc, a return code
 			parsedPendingSubscriptionIndex=$((1${pendingSubscriptionIndex}-1000000000))
@@ -88,9 +88,9 @@ bishbosh_connection_read_controlpacket_SUBACK()
 						continue
 					fi
 					
-					IFS="$bishbosh_connection_read_controlpacket_SUBACK_separator" read -r currentExpectedQos currentReturnCode currentTopicFilter <"$currentSubscriptionIndex"
+					IFS="$bishbosh_connection_read_controlpacket_SUBACK_separator" read -r currentExpectedQoS currentReturnCode currentTopicFilter <"$currentSubscriptionIndex"
 					if [ "$pendingTopicFilter" = "$currentTopicFilter" ]; then
-						printf '%s\t%s\t%s\n' "$pendingExpectedQos" "$pendingReturnCode" "$pendingTopicFilter" >"$currentSubscriptionIndex"
+						printf '%s\t%s\t%s\n' "$pendingExpectedQoS" "$pendingReturnCode" "$pendingTopicFilter" >"$currentSubscriptionIndex"
 						found=1
 						break
 					fi
@@ -100,7 +100,7 @@ bishbosh_connection_read_controlpacket_SUBACK()
 			
 			popd
 			if [ $found -eq 0 ]; then
-				printf '%s\t%s\t%s\n' "$pendingExpectedQos" "$pendingReturnCode" "$pendingTopicFilter" >"$(printf '%09s' $bishbosh_connection_nextSubscriptionIndex)"
+				printf '%s\t%s\t%s\n' "$pendingExpectedQoS" "$pendingReturnCode" "$pendingTopicFilter" >"$(printf '%09s' $bishbosh_connection_nextSubscriptionIndex)"
 				bishbosh_connection_nextSubscriptionIndex=$((bishbosh_connection_nextSubscriptionIndex+1))
 			fi
 			
@@ -111,13 +111,13 @@ bishbosh_connection_read_controlpacket_SUBACK()
 	popd
 
 	unset pendingSubscriptionIndex
-	unset pendingExpectedQos
+	unset pendingExpectedQoS
 	unset pendingTopicFilter
 	unset parsedPendingSubscriptionIndex
 	unset core_variable_indirectValue_result
 	unset pendingReturnCode
 	unset currentSubscriptionIndex
-	unset currentExpectedQos
+	unset currentExpectedQoS
 	unset currentReturnCode
 	unset currentTopicFilter
 	unset found
