@@ -4,6 +4,4 @@ bishbosh_connection_write_PINGRESP()
 	printf '\320\000'
 
 	bishbosh_connection_ping_recordLastSentControlPacketAt
-	
-	bishbosh_connection_pingResponseReceived
 }

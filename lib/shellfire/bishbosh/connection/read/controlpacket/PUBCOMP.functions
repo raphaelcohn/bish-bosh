@@ -15,7 +15,7 @@ bishbosh_connection_read_controlpacket_PUBCOMP()
 	fi
 	rm "$pendingCompQoS2PacketIdentifierPath"
 	
-	core_TODO 'We should recycle the packet identifier at this point'
-	
 	bishbosh_connection_handler_PUBCOMP
+	
+	core_TODO 'We should recycle the packet identifier at this point'
 }
