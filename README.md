@@ -701,11 +701,12 @@ If you have a particular need to use these approaches to connecting to MQTT serv
 
 | Backend | Filename | Home Page | Notes |
 | ------- | -------- | --------- | ----- |
-| **tcpclient** | `tcpclient` | [ucspi-tcp](http://cr.yp.to/ucspi-tcp.html) | Executes a program on connection, which does not suit our model. Does not offer any proxy support. Not widely used. |
+| **tcpclient** | `tcpclient` | [ucspi-tcp](http://cr.yp.to/ucspi-tcp.html) and [Debian uscpi-tcp-ipv6](https://packages.debian.org/wheezy/ucspi-tcp-ipv6) | Executes a program on connection, which does not suit our model. Does not offer any proxy support. Not widely used. |
 | **sbd** | ? | [Homepage Dead, but links still around](http://www.usinglinux.org/net/sbd.html) and [here](http://linux.softpedia.com/get/System/Networking/sbd-14900.shtml) | Also known as 'sbd for linux' and 'Shadowinteger's Backdoor'. [Was here](http://tigerteam.se/dl/sbd/) |
 | **pnetcat** | `pnetcat` | [Home](http://stromberg.dnsalias.org/~strombrg/pnetcat.html) | BSD-like licence, but web page infers mis-distribution. Implemented in Python, which whilst interesting, mitigates against the point of [bish-bosh]. |
 | **nc.pl** | ? | ? | There are also perl implementations of netcat. Just as for **pnetcat**, it seems a moot choice. |
 | **ncSslCapable** | `scnc` | [SSL-capable netcat](http://www.gomor.org/bin/view/GomorOrg/SslNetcat) | Another perl implementation. Might be worth adding if only for the SSL support. |
+| **sslio** | `sslio` |  [ipvsd](http://smarden.org/ipsvd/sslio.8.html) | Effectively a wrapper around **tcpclient**. |
 
 ## Limitations
 
@@ -732,27 +733,11 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 ### Useful to do
 * nextPacketIdentifier, set at start, and calculate better
 * Turning off DNS resolution
-* Connection timeouts (`-w` in netcat)
-* [MQTT]S
-	* In
-		* openssl, in openssl
-		* openssl, in libressl
-		* gnutls
-	* Out
-		* PolarSSL (WolfSSL), as clients only work with HTTPS
-		* CyaSSL, no clients
-	* Maybe
-		* ipvsd's sslio, intended to run under tcpclient http://smarden.org/ipsvd/sslio.8.html
-		* stunnel
-			* as a local port forwarder
-			* as a wrapper
 * [MQTT] over SSH
 	* As a SOCKS4 or SOCKS5 client (eg using socat)
 	* With OpenSSH local port forwarding
 * [MQTT] over WebSockets
 * More tools
-	* Investigate suckless tools (sbase)
-	* Investigate [Debian uscpi-tcp-ipv6](https://packages.debian.org/wheezy/ucspi-tcp-ipv6)
 	* reverse shell using GAWK! http://www.gnucitizen.org/blog/reverse-shell-with-bash/#comment-122387
 * Need a simple way to send messages from disk on start
 * Need to automatically re-subscribe on start

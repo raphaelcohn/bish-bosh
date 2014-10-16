@@ -1,0 +1,26 @@
+#!/usr/bin/gawk -f
+
+# Env variables
+# GAWK_READ_TIMEOUT
+# GAWK_SOCK_RETRIES
+# GAWK_MSEC_SLEEP
+BEGIN {
+	
+	FS=''
+	RS=''
+	OFS=''
+	ORS=''
+	
+	# /inet/tcp/lport/rhost/rport or inet4 or inet6
+	# Use 0 if no source port
+	socket = "/inet/tcp/0/localhost/1883"
+	stdin = "/dev/stdin"
+	stdout = "/dev/stdout"
+	
+	while (1) {
+		stdin |& socket
+		socket |& getline cmd
+		printf cmd | stdout
+	}
+	close(socket)
+}
