@@ -14,10 +14,15 @@ bishbosh_backend_find()
 			if core_variable_isUnset bishbosh_port; then
 				bishbosh_port=$(bishbosh_backend_${backendName}_port)
 			fi
-			core_message INFO "Using plaintext backend '$bishbosh_backend_name' on path '$bishbosh_backend_path' with port '$bishbosh_port'"
+			core_message INFO "Using backend '$bishbosh_backend_name' on path '$bishbosh_backend_path' with port '$bishbosh_port'"
 			return 0
 		fi
 	done
 	
 	core_exitError $core_commandLine_exitCode_OSFILE "Could not find a backend to make socket connections with tunnelling '$bishbosh_tunnel' that was on the PATH '$PATH'."
+}
+
+bishbosh_backend_debugOptions()
+{
+	core_message DEBUG "Passing options to backend '$bishbosh_backend_name' using '$bishbosh_backend_path' as '$(core_variable_array_passToFunctionAsArguments options echo)' (please note spaces ARE handled correctly)"
 }

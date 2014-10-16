@@ -141,5 +141,7 @@ bishbosh_backend_openssl_start()
 	
 	core_variable_array_append options -connect "$bishbosh_server":"$bishbosh_port"
 	
+	bishbosh_backend_debugOptions
+	
 	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

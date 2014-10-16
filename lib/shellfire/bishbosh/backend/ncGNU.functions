@@ -118,6 +118,8 @@ bishbosh_backend_ncGNU_start()
 		
 	core_variable_array_append options "$bishbosh_port"
 	
+	bishbosh_backend_debugOptions
+	
 	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
 	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }

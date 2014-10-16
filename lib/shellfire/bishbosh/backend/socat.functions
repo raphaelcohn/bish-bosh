@@ -236,6 +236,7 @@ bishbosh_backend_socat_start()
 		
 	esac
 	
-	core_variable_array_passToFunctionAsArguments options echo 1>&2
+	bishbosh_backend_debugOptions
+	
 	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }
