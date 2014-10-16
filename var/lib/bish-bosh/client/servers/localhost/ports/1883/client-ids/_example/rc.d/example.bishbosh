@@ -13,11 +13,9 @@ bishbosh_connection_write_CONNECT_keepAlive=1
 #bishbosh_connection_write_CONNECT_password=password
 
 bishbosh_connection_handler_CONNACK()
-{	
-	return 0
-	
+{
 	# Set up some subscriptions... another implementation could read from a standard file
-	bishbosh_connection_write_SUBSCRIBE_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
+	bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
 	bishbosh_connection_incrementNextPacketIdentifier
 	
 	bishbosh_connection_write_SUBSCRIBE \
@@ -25,7 +23,7 @@ bishbosh_connection_handler_CONNACK()
 		'/topic/2' 0
 	
 	# Make sure we're not subscribed to what we don't want here, too - again, we could read from a file
-	bishbosh_connection_write_UNSUBSCRIBE_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
+	bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
 	bishbosh_connection_incrementNextPacketIdentifier
 	
 	bishbosh_connection_write_UNSUBSCRIBE \
@@ -35,7 +33,7 @@ bishbosh_connection_handler_CONNACK()
 	# Publish an arbitary message
 	#bishbosh_connection_write_PUBLISH_dup=0
 	#bishbosh_connection_write_PUBLISH_QoS=0
-	#bishbosh_connection_write_PUBLISH_packetIdentifier=$(bishbosh_connection_nextPacketIdentifier)
+	#bishbosh_connection_write_packetIdentifier=$(bishbosh_connection_nextPacketIdentifier)
 	#bishbosh_connection_write_PUBLISH_retain=no
 	bishbosh_connection_write_PUBLISH_topicName='a/b'
 	bishbosh_connection_write_PUBLISH_message='X'

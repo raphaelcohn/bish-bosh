@@ -145,7 +145,7 @@ bishbosh_connection_validate_clientId()
 	_bishbosh_connection_validate_clientId_restrictedCharacters
 }
 
-bishbosh_connection_write_validateTopicName()
+bishbosh_connection_validateTopicName()
 {
 	local argument="$1"
 	local value="$2"
@@ -189,13 +189,13 @@ bishbosh_connection_validate_topicFilter()
 
 bishbosh_connection_validate_packetIdentifier()
 {
-	local argument="$1"
-	packetIdentifier="$2"
-	core_validate_isUnsignedInteger $core_commandLine_exitCode_CONFIG 'argument' "$argument" "$packetIdentifier"
+	core_validate_isUnsignedInteger $core_commandLine_exitCode_CONFIG 'argument' "bishbosh_connection_write_packetIdentifier" "$bishbosh_connection_write_packetIdentifier"
+	
 	if [ $packetIdentifier -eq 0 ]; then
-		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is a packet identifier and so can not be 0"
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_packetIdentifier' is a packet identifier and so can not be 0"
 	fi
+	
 	if [ $packetIdentifier -gt 65535 ]; then
-		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is a packet identifier and so can not be greater than 65,535"
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_packetIdentifier' is a packet identifier and so can not be greater than 65,535"
 	fi
 }

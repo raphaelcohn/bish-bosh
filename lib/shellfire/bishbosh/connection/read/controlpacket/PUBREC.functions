@@ -23,6 +23,6 @@ bishbosh_connection_read_controlpacket_PUBREC()
 	
 	bishbosh_connection_handler_PUBREC
 
-	bishbosh_connection_write_PUBREL_packetIdentifier=$packetIdentifier
+	bishbosh_connection_write_packetIdentifier=$packetIdentifier
 	bishbosh_connection_write_PUBREL
 }

@@ -53,8 +53,7 @@ bishbosh_connection_write_SUBSCRIBE_cleanUpState()
 core_usesIn bishbosh/connection write
 bishbosh_connection_write_SUBSCRIBE()
 {
-	local packetIdentifier
-	bishbosh_connection_validate_packetIdentifier bishbosh_connection_write_SUBSCRIBE_packetIdentifier "$bishbosh_connection_write_SUBSCRIBE_packetIdentifier"
+	bishbosh_connection_validate_packetIdentifier
 	
 	local remainingLength=2
 	local topicFilter

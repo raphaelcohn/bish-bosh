@@ -128,12 +128,12 @@ _bishbosh_connection_read_PUBLISH()
 	case $QoS in
 		
 		1)
-			bishbosh_connection_write_PUBACK_packetIdentifier=$packetIdentifier
+			bishbosh_connection_write_packetIdentifier=$packetIdentifier
 			bishbosh_connection_write_PUBACK
 		;;
 		
 		2)
-			bishbosh_connection_write_PUBREC_packetIdentifier=$packetIdentifier
+			bishbosh_connection_write_packetIdentifier=$packetIdentifier
 			bishbosh_connection_write_PUBREC
 		;;
 		

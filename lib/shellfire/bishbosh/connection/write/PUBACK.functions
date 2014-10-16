@@ -2,15 +2,14 @@ core_usesIn bishbosh/connection write
 
 bishbosh_connection_write_PUBACK()
 {
-	local packetIdentifier
-	bishbosh_connection_validate_packetIdentifier bishbosh_connection_write_PUBACK_packetIdentifier "$bishbosh_connection_write_PUBACK_packetIdentifier"
+	bishbosh_connection_validate_packetIdentifier
 	
 	# 4 << 4 in octal, followed by 2 (remaining length)
 	printf '\100\002'
 	
-	bishbosh_connection_write_twoByteLength packetIdentifier
+	bishbosh_connection_write_twoByteLength $packetIdentifier
 	
-	unset bishbosh_connection_write_PUBACK_packetIdentifier
+	unset bishbosh_connection_write_packetIdentifier
 	
 	bishbosh_connection_ping_recordLastSentControlPacketAt
 }

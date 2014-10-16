@@ -24,8 +24,7 @@ _bishbosh_connection_write_UNSUBSCRIBE_validateArguments()
 core_usesIn bishbosh/connection write
 bishbosh_connection_write_UNSUBSCRIBE()
 {
-	local packetIdentifier
-	bishbosh_connection_validate_packetIdentifier bishbosh_connection_write_UNSUBSCRIBE_packetIdentifier "$bishbosh_connection_write_UNSUBSCRIBE_packetIdentifier"
+	bishbosh_connection_validate_packetIdentifier
 
 	local remainingLength=2
 	local topicFilter

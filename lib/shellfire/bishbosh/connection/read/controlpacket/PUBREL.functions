@@ -18,6 +18,6 @@ bishbosh_connection_read_controlpacket_PUBREL()
 	bishbosh_connection_handler_PUBREL
 	rm "$pendingReceiveQoS2PacketIdentifierPath" 2>/dev/null
 	
-	bishbosh_connection_write_PUBCOMP_packetIdentifier=$packetIdentifier
+	bishbosh_connection_write_packetIdentifier=$packetIdentifier
 	bishbosh_connection_write_PUBCOMP
 }

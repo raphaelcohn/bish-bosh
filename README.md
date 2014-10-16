@@ -192,13 +192,13 @@ Inside any of [bish-bosh]'s handlers, you can publish a message, make a subscrip
 ```bash
 bishbosh_connection_handler_CONNACK()
 {
-	bishbosh_connection_write_SUBSCRIBE_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
+	bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
 	bishbosh_connection_incrementNextPacketIdentifier
 	bishbosh_connection_write_SUBSCRIBE \
 		'/topic/1' 0 \
 		'/topic/2' 0
     
-	bishbosh_connection_write_UNSUBSCRIBE_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
+	bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
 	bishbosh_connection_incrementNextPacketIdentifier
 	bishbosh_connection_write_UNSUBSCRIBE \
 		'/topic/not/wanted' \
@@ -216,12 +216,12 @@ bishbosh_connection_handler_CONNACK()
 	bishbosh_connection_write_PUBLISH_messageFilePath="/path/to/message"
 	bishbosh_connection_write_PUBLISH_messageUnlinkFile=no
 	bishbosh_connection_write_PUBLISH_resetArguments=no
-	bishbosh_connection_write_PUBLISH_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
+	bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
 	bishbosh_connection_incrementNextPacketIdentifier
 	bishbosh_connection_write_PUBLISH
 	
 	# Publish again - using bishbosh_connection_write_PUBLISH_resetArguments=no allows reuse of settings
-	bishbosh_connection_write_PUBLISH_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
+	bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
 	bishbosh_connection_incrementNextPacketIdentifier
 	bishbosh_connection_write_PUBLISH
 }

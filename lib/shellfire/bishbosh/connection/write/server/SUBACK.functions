@@ -20,8 +20,7 @@ _bishbosh_connection_write_SUBACK_validateArguments()
 core_usesIn bishbosh/connection write
 bishbosh_connection_write_SUBACK()
 {
-	local packetIdentifier
-	bishbosh_connection_validate_packetIdentifier bishbosh_connection_write_SUBACK_packetIdentifier "$bishbosh_connection_write_SUBACK_packetIdentifier"
+	bishbosh_connection_validate_packetIdentifier
 	
 	local resultCode
 	local remainingLength=$(( 2 + ${#} ))
@@ -39,7 +38,7 @@ bishbosh_connection_write_SUBACK()
 		bishbosh_connection_write_byte $resultCode
 	done
 	
-	unset bishbosh_connection_write_SUBACK_packetIdentifier
+	unset bishbosh_connection_write_packetIdentifier
 	
 	bishbosh_connection_ping_recordLastSentControlPacketAt
 }

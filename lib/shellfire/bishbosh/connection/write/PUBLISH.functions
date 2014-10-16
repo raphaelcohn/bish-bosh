@@ -15,10 +15,10 @@ _bishbosh_connection_write_PUBLISH_validateArguments()
 			;;
 			
 			1|2)
-				if core_variable_isUnset bishbosh_connection_write_PUBLISH_packetIdentifier; then
+				if core_variable_isUnset bishbosh_connection_write_packetIdentifier; then
 					core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_packetIdentifer' must be set when 'bishbosh_connection_write_CONNECT_QoS' is '$QoS'"
 				fi
-				bishbosh_connection_validate_packetIdentifier bishbosh_connection_write_PUBLISH_packetIdentifier "$bishbosh_connection_write_PUBLISH_packetIdentifer"
+				bishbosh_connection_validate_packetIdentifier bishbosh_connection_write_packetIdentifier "$bishbosh_connection_write_packetIdentifer"
 				
 				controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + (QoS << 2) ))
 				remainingLength=$(( remainingLength + 2 ))
@@ -42,7 +42,7 @@ _bishbosh_connection_write_PUBLISH_validateArguments()
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_PUBLISH_topicName' must be specified"
 	fi
 	topicName="$bishbosh_connection_write_PUBLISH_topicName"
-	bishbosh_connection_write_validateTopicName bishbosh_connection_write_PUBLISH_topicName "$topicName"
+	bishbosh_connection_validateTopicName bishbosh_connection_write_PUBLISH_topicName "$topicName"
 	
 	topicNameFieldLength=${#topicName}
 	remainingLength=$(( remainingLength + 2 + topicNameFieldLength ))
@@ -104,7 +104,7 @@ _bishbosh_connection_write_PUBLISH_resetArguments()
 {
 	unset bishbosh_connection_write_PUBLISH_dup
 	unset bishbosh_connection_write_PUBLISH_QoS
-	unset bishbosh_connection_write_PUBLISH_packetIdentifier
+	unset bishbosh_connection_write_packetIdentifier
 	unset bishbosh_connection_write_PUBLISH_retain
 	unset bishbosh_connection_write_PUBLISH_topicName
 	unset bishbosh_connection_write_PUBLISH_message
