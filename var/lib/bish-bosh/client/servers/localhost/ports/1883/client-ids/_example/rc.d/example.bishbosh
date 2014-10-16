@@ -3,7 +3,7 @@
 #bishbosh_server=test.mosquitto.org
 #bishbosh_clientId=example
 
-#bishbosh_connection_write_CONNECT_cleanSession=1
+bishbosh_connection_write_CONNECT_cleanSession=1
 bishbosh_connection_write_CONNECT_willTopic='X'
 bishbosh_connection_write_CONNECT_willMessage='goodbye'
 bishbosh_connection_write_CONNECT_willQoS=1

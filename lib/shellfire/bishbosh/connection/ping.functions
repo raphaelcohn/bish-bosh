@@ -54,7 +54,7 @@ bishbosh_connection_ping_initialise()
 
 		bishbosh_connection_ping_responseReceived()
 		{
-			core_message INFO 'Received valid PINGREQ'
+			core_message INFO 'Received valid PINGRESP'
 			bishbosh_connection_ping_responsePending=0
 		}
 		

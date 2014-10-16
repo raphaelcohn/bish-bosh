@@ -487,7 +487,7 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the `PATH` an
     * `head`
     * `grep`
   * Option 3
-    * No detection, because the `nc` meta-backend isn't used
+    * No detection, because the `nc` meta-backend isn't used (frankly, `socat` or `ncat` are much better).
 * Publishing messages from files
   * `dd`, any POSIX-compliant version (dd is preferred as it permits larger block sizes)
   * `cat`
