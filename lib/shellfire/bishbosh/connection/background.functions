@@ -158,6 +158,8 @@ bishbosh_connection_background_processLoop()
 		fi
 		bishbosh_connection_read_remainingLength CONNACK
 		bishbosh_connection_read_controlpacket_CONNACK
+
+		core_message INFO "Received valid CONNACK"
 		
 		# Main read loop
 		while $bishbosh_connection_continue

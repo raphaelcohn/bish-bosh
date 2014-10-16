@@ -64,6 +64,7 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 			if [ $willMessageFieldLength -gt 65535 ]; then
 				core_exitError $core_commandLine_exitCode_CONFIG "The size of the argument 'bishbosh_connection_write_CONNECT_willMessage' can not be longer than 65,535 bytes"
 			fi
+			willMessageFilePath=''
 		fi
 		bishbosh_connection_validate_fieldLength CONNECT willMessage
 		willMessageFieldLength=${#willMessage}
@@ -78,19 +79,15 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_willQoS' must be between 0 and 2 inclusive"
 			fi
 			willQoS=$bishbosh_connection_write_CONNECT_willQoS
-			echo $connectFlags 1>&2
 			connectFlags=$(( connectFlags + (willQoS << 3) ))
-			echo $connectFlags 1>&2
 		fi
 		
 		# Will Retain
 		if core_variable_isSet bishbosh_connection_write_CONNECT_willRetain; then
 			core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_willRetain "$bishbosh_connection_write_CONNECT_willRetain"
 			if core_variable_isTrue "$bishbosh_connection_write_CONNECT_willRetain"; then
-			echo $connectFlags 1>&2
 				# Will Retain (1 << 5)
 				connectFlags=$(( connectFlags + 32 ))
-			echo $connectFlags 1>&2
 			fi
 		fi
 	fi
@@ -150,6 +147,7 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 			core_exitError $core_commandLine_exitCode_CONFIG "The arguments 'bishbosh_connection_write_CONNECT_password' and 'bishbosh_connection_write_CONNECT_passwordFilePath' can not both be specified"
 		fi
 		password="$bishbosh_connection_write_CONNECT_password"
+		passwordFilePath=''
 		bishbosh_connection_validate_fieldLength CONNECT password
 		passwordFieldLength=${#password}
 		remainingLength=$(( remainingLength + 2 + passwordFieldLength ))

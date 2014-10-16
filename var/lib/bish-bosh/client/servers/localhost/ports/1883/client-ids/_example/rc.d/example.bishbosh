@@ -8,7 +8,7 @@ bishbosh_connection_write_CONNECT_willTopic='X'
 bishbosh_connection_write_CONNECT_willMessage='goodbye'
 bishbosh_connection_write_CONNECT_willQoS=1
 bishbosh_connection_write_CONNECT_willRetain=1
-#bishbosh_connection_write_CONNECT_keepAlive=5
+bishbosh_connection_write_CONNECT_keepAlive=5
 #bishbosh_connection_write_CONNECT_username=user
 #bishbosh_connection_write_CONNECT_password=password
 

@@ -152,6 +152,10 @@ bishbosh_backend_ncat_start()
 			core_variable_array_append options -v
 		;;
 		
+		2)
+			core_variable_array_append options -v
+		;;
+		
 		*)
 			core_variable_array_append options -v -v
 		;;
