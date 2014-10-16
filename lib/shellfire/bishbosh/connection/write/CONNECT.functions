@@ -63,7 +63,7 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 				core_exitError $core_commandLine_exitCode_CONFIG "The size of the argument 'bishbosh_connection_write_CONNECT_willMessage' can not be longer than 65,535 bytes"
 			fi
 		fi
-		bishbosh_connection_write_fieldLengthCheck CONNECT willMessage
+		bishbosh_connection_validate_fieldLength CONNECT willMessage
 		willTopic_fieldLength=${#willMessage}
 		remainingLength=$(( remainingLength + 2 + willMessage_fieldLength ))
 		
@@ -103,21 +103,21 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_clientId' can not be empty (blank) if the argument 'bishbosh_connection_write_CONNECT_cleanSession' is 0"
 		fi
 	else
-		# bishbosh_connection_write_validateClientId is called before we get to this point by bishbosh_connection_clientId_validateAndDefault
+		# bishbosh_connection_validate_clientId is called before we get to this point by bishbosh_connection_clientId_validateAndDefault
 		clientId="$bishbosh_clientId"
 	fi
 	
 	clientId_fieldLength=${#clientId}
-	bishbosh_connection_write_fieldLengthCheck CONNECT clientId
+	bishbosh_connection_validate_fieldLength CONNECT clientId
 	remainingLength=$(( remainingLength + 2 + clientId_fieldLength ))
 
 	if core_variable_isUnset bishbosh_connection_write_CONNECT_username; then
 		username=''
 		username_fieldLength=-1
 	else
-		bishbosh_connection_write_validateUtf8 bishbosh_connection_write_CONNECT_username "$bishbosh_connection_write_CONNECT_username"
+		bishbosh_connection_validate_isUtf8 bishbosh_connection_write_CONNECT_username "$bishbosh_connection_write_CONNECT_username"
 		username="$bishbosh_connection_write_CONNECT_username"
-		bishbosh_connection_write_fieldLengthCheck CONNECT username
+		bishbosh_connection_validate_fieldLength CONNECT username
 		username_fieldLength=${#username}
 		remainingLength=$(( remainingLength + 2 + username_fieldLength ))
 		connectFlags=$(( connectFlags + 1 << 7 ))
@@ -142,7 +142,7 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 			core_exitError $core_commandLine_exitCode_CONFIG "The arguments 'bishbosh_connection_write_CONNECT_password' and 'bishbosh_connection_write_CONNECT_passwordFilePath' can not both be specified"
 		fi
 		password="$bishbosh_connection_write_CONNECT_password"
-		bishbosh_connection_write_fieldLengthCheck CONNECT password
+		bishbosh_connection_validate_fieldLength CONNECT password
 		password_fieldLength=${#password}
 		remainingLength=$(( remainingLength + 2 + password_fieldLength ))
 		connectFlags=$(( connectFlags + 1 << 6 ))

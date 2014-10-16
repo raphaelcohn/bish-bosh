@@ -2,7 +2,7 @@ core_usesIn bishbosh/connection write
 bishbosh_connection_write_PUBREL()
 {
 	local packetIdentifier
-	bishbosh_connection_write_packetIdentifierCheck bishbosh_connection_write_PUBREL_packetIdentifier "$bishbosh_connection_write_PUBREL_packetIdentifier"
+	bishbosh_connection_validate_packetIdentifier bishbosh_connection_write_PUBREL_packetIdentifier "$bishbosh_connection_write_PUBREL_packetIdentifier"
 	
 	# 6 << 4 in octal + 1 << 1, followed by 2 (remaining length)
 	printf '\142\002'

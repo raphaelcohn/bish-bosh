@@ -11,7 +11,7 @@ _bishbosh_connection_write_SUBSCRIBE_validateArguments()
 	while [ $# -gt 1 ]
 	do
 		topicFilter="$1"
-		bishbosh_connection_write_validateTopicFilter 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' $index "$topicFilter"
+		bishbosh_connection_validate_topicFilter 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' $index "$topicFilter"
 		
 		topicQos="$2"
 		case "$topicQos" in
@@ -54,7 +54,7 @@ core_usesIn bishbosh/connection write
 bishbosh_connection_write_SUBSCRIBE()
 {
 	local packetIdentifier
-	bishbosh_connection_write_packetIdentifierCheck bishbosh_connection_write_SUBSCRIBE_packetIdentifier "$bishbosh_connection_write_SUBSCRIBE_packetIdentifier"
+	bishbosh_connection_validate_packetIdentifier bishbosh_connection_write_SUBSCRIBE_packetIdentifier "$bishbosh_connection_write_SUBSCRIBE_packetIdentifier"
 	
 	local remainingLength=2
 	local topicFilter

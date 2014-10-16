@@ -1,7 +1,7 @@
 bishbosh_connection_write_UNSUBACK()
 {
 	local packetIdentifier
-	bishbosh_connection_write_packetIdentifierCheck bishbosh_connection_write_UNSUBACK_packetIdentifier "$bishbosh_connection_write_UNSUBACK_packetIdentifier"
+	bishbosh_connection_validate_packetIdentifier bishbosh_connection_write_UNSUBACK_packetIdentifier "$bishbosh_connection_write_UNSUBACK_packetIdentifier"
 	
 	# 11 << 4 in octal, followed by 2 (remaining length)
 	printf '\260\002'

@@ -3,7 +3,7 @@ core_usesIn bishbosh/connection write
 bishbosh_connection_clientId_validateAndDefault()
 {
 	if core_variable_isSet bishbosh_clientId; then
-		bishbosh_connection_write_validateClientId
+		bishbosh_connection_validate_clientId
 		return 0
 	fi
 	
@@ -33,7 +33,7 @@ bishbosh_connection_clientId_random()
 	while true
 	do
 		potentialClientId="$(bishbosh_connection_clientId_randomBytesBase64EncodedALike 16)"
-		reducedClientId="$(bishbosh_connection_write_removeCharacters '+/' "$potentialClientId")"
+		reducedClientId="$(bishbosh_connection_validate_removeCharacters '+/' "$potentialClientId")"
 		
 		if [ ${#reducedClientId} = ${#potentialClientId}]; then
 			bishbosh_clientId="$potentialClientId"
