@@ -6,7 +6,8 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_cleanSession "$bishbosh_connection_write_CONNECT_cleanSession"
 		if core_variable_isTrue "$bishbosh_connection_write_CONNECT_cleanSession"; then
 			cleanSession=1
-			connectFlags=$(( connectFlags + 1 << 1 ))
+			# Clean Session Flag (1<<1)
+			connectFlags=$(( connectFlags + 2 ))
 		else
 			cleanSession=0
 		fi
@@ -30,8 +31,8 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		willMessage=''
 		willMessageFieldLength=-1
 	else
-		# Will Flag
-		connectFlags=$(( connectFlags + 1 << 2 ))
+		# Will Flag (1<<2)
+		connectFlags=$(( connectFlags + 4 ))
 		
 		# Will Topic
 		willTopic="$bishbosh_connection_write_CONNECT_willTopic"
@@ -77,14 +78,19 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_willQoS' must be between 0 and 2 inclusive"
 			fi
 			willQoS=$bishbosh_connection_write_CONNECT_willQoS
+			echo $connectFlags 1>&2
 			connectFlags=$(( connectFlags + (willQoS << 3) ))
+			echo $connectFlags 1>&2
 		fi
 		
 		# Will Retain
 		if core_variable_isSet bishbosh_connection_write_CONNECT_willRetain; then
 			core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_willRetain "$bishbosh_connection_write_CONNECT_willRetain"
 			if core_variable_isTrue "$bishbosh_connection_write_CONNECT_willRetain"; then
-				connectFlags=$(( connectFlags + 1 << 5 ))
+			echo $connectFlags 1>&2
+				# Will Retain (1 << 5)
+				connectFlags=$(( connectFlags + 32 ))
+			echo $connectFlags 1>&2
 			fi
 		fi
 	fi
@@ -121,7 +127,8 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		bishbosh_connection_validate_fieldLength CONNECT username
 		usernameFieldLength=${#username}
 		remainingLength=$(( remainingLength + 2 + usernameFieldLength ))
-		connectFlags=$(( connectFlags + 1 << 7 ))
+		# Username Flag (1 << 7)
+		connectFlags=$(( connectFlags + 128 ))
 	fi
 	
 	if core_variable_isUnset bishbosh_connection_write_CONNECT_password; then
@@ -146,7 +153,8 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		bishbosh_connection_validate_fieldLength CONNECT password
 		passwordFieldLength=${#password}
 		remainingLength=$(( remainingLength + 2 + passwordFieldLength ))
-		connectFlags=$(( connectFlags + 1 << 6 ))
+		# Password Flag (1 << 6)
+		connectFlags=$(( connectFlags + 64 ))
 	fi
 }
 

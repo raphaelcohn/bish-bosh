@@ -33,6 +33,7 @@ _bishbosh_connection_write_PUBLISH_validateArguments()
 
 	if core_variable_isSet bishbosh_connection_write_PUBLISH_retain; then
 		if core_variable_isTrue bishbosh_connection_write_PUBLISH_retain; then
+			# RETAIN flag (1<<0)
 			controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + 1 ))
 		fi
 	fi
@@ -134,8 +135,8 @@ bishbosh_connection_write_PUBLISH()
 		1)
 			local pendingSendQoS1PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQoS1PendingSendPath"/"$packetIdentifier"
 			if [ -f "$pendingSendQoS1PacketIdentifierPath" ]; then
-				# Set DUP flag
-				controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + 1 << 3 ))
+				# Set DUP flag (1 << 3)
+				controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + 8 ))
 			fi
 		;;
 		
@@ -146,8 +147,8 @@ bishbosh_connection_write_PUBLISH()
 				core_exitError $core_commandLine_exitCode_CONFIG "We can not PUBLISH packetIdentifier '$packetIdentifier' because it is pending a PUBCOMP"
 			fi
 			if [ -f "$pendingSendQoS2PacketIdentifierPath" ]; then
-				# Set DUP flag
-				controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + 1 << 3 ))
+				# Set DUP flag (1 << 3)
+				controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + 8 ))
 			fi
 		;;
 		
