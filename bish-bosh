@@ -973,7 +973,6 @@ _program_commandLine_validate()
 	
 	# tunnel specific checks
 	
-	bishbosh_tunnelTlsVerify="$optionValue"
 	if [ "$bishbosh_tunnel" = 'tls' ]; then
 
 		if core_variable_isSet bishbosh_tunnelTlsCaBundle; then
