@@ -1,6 +1,49 @@
 core_usesIn bishbosh/connection validate
 core_usesIn bishbosh/connection/write CONNACK CONNECT DISCONNECT PINGREQ PINGRESP PUBACK PUBCOMP PUBLISH PUBREC PUBREL SUBACK SUBSCRIBE UNSUBACK UNSUBSCRIBE
 
+core_dependency_oneOf '*' dd cat tee tail head tr
+bishbosh_connection_write_initialise()
+{
+	if core_compatibility_whichNoOutput dd; then
+		bishbosh_connection_write_file()
+		{
+			dd if="$1" bs=$2 count=1
+		}
+	elif core_compatibility_whichNoOutput cat; then
+		bishbosh_connection_write_file()
+		{
+			cat "$1"
+		}
+	elif core_compatibility_whichNoOutput tee; then
+		bishbosh_connection_write_file()
+		{
+			tee <"$1"
+		}
+	elif core_compatibility_whichNoOutput tail; then
+		bishbosh_connection_write_file()
+		{
+			tail -c +0 "$1"
+		}
+	elif core_compatibility_whichNoOutput head; then
+		bishbosh_connection_write_file()
+		{
+			head -c "$1"
+		}
+	elif core_compatibility_whichNoOutput tr; then
+		bishbosh_connection_write_file()
+		{
+			# BusyBox doesn't like tr '' ''
+			tr -d '' <"$1"
+		}
+	else
+		core_message WARN "Can not write message and password files, because dd, cat, tee, head and tr are missing"
+		bishbosh_connection_write_file()
+		{
+			core_exitError $core_commandLine_exitCode_OSFILE "Can not send files as messages or passwords, because dd, cat, tee, head and tr are missing"
+		}
+	fi
+}
+
 bishbosh_connection_write_byte()
 {
 	printf "\\$(printf '%o' $1)"

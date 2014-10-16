@@ -14,8 +14,8 @@ _bishbosh_connection_write_UNSUBSCRIBE_validateArguments()
 		# We could also record the request as the actual packet, then cat it into the stream; potentially more efficient
 		printf '%s' "${topicFilter}" >"$recordFile"
 		
-		topicFilter_fieldLength=${#topicFilter}
-		remainingLength=$(( remainingLength + 2 + topicFilter_fieldLength ))
+		topicFilterFieldLength=${#topicFilter}
+		remainingLength=$(( remainingLength + 2 + topicFilterFieldLength ))
 	done
 	
 	touch "$recordFile".written
@@ -29,7 +29,7 @@ bishbosh_connection_write_UNSUBSCRIBE()
 
 	local remainingLength=2
 	local topicFilter
-	local topicFilter_fieldLength
+	local topicFilterFieldLength
 	_bishbosh_connection_write_UNSUBSCRIBE_validateArguments "$@"
 	
 	# 10 << 4 + 1 << 1 in octal

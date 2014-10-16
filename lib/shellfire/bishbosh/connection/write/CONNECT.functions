@@ -26,9 +26,9 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_willRetain' can not be set when 'bishbosh_connection_write_CONNECT_willTopic' is unset"
 		fi
 		willTopic=''
-		willTopic_fieldLength=-1
+		willTopicFieldLength=-1
 		willMessage=''
-		willMessage_fieldLength=-1
+		willMessageFieldLength=-1
 	else
 		# Will Flag
 		connectFlags=$(( connectFlags + 1 << 2 ))
@@ -36,21 +36,21 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		# Will Topic
 		willTopic="$bishbosh_connection_write_CONNECT_willTopic"
 		bishbosh_connection_write_validateTopicName bishbosh_connection_write_CONNECT_willTopic "$willTopic"
-		willTopic_fieldLength=${#willTopic}
-		remainingLength=$(( remainingLength + 2 + willTopic_fieldLength ))
+		willTopicFieldLength=${#willTopic}
+		remainingLength=$(( remainingLength + 2 + willTopicFieldLength ))
 		
 		# Will Message
 		if core_variable_isUnset bishbosh_connection_write_CONNECT_willMessage; then
 			if core_variable_isUnset bishbosh_connection_write_CONNECT_willMessageFilePath; then
 				willMessage=''
-				willMessage_fieldLength=0
+				willMessageFieldLength=0
 				willMessageFilePath=''
 			else
 				willMessage=''
 				core_validate_filePathReadable $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_willMessageFilePath "$bishbosh_connection_write_CONNECT_willMessageFilePath"
 				willMessageFilePath="$bishbosh_connection_write_CONNECT_willMessageFilePath"
-				willMessage_fieldLength=$(bishbosh_filesize_${bishbosh_filesizeAlgorithm} "$willMessageFilePath")
-				if [ $willMessage_fieldLength -gt 65535 ]; then
+				willMessageFieldLength=$(bishbosh_filesize_${bishbosh_filesizeAlgorithm} "$willMessageFilePath")
+				if [ $willMessageFieldLength -gt 65535 ]; then
 					core_exitError $core_commandLine_exitCode_CONFIG "The size of the file pointed to be argument 'bishbosh_connection_write_CONNECT_willMessageFilePath' can not be longer than 65,535 bytes"
 				fi
 			fi
@@ -59,13 +59,14 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 				core_exitError $core_commandLine_exitCode_CONFIG "The arguments 'bishbosh_connection_write_CONNECT_willMessage' and 'bishbosh_connection_write_CONNECT_willMessageFilePath' can not both be specified"
 			fi
 			willMessage="$bishbosh_connection_write_CONNECT_willMessage"
-			if [ $willMessage_fieldLength -gt 65535 ]; then
+			willMessageFieldLength=${#willMessage}
+			if [ $willMessageFieldLength -gt 65535 ]; then
 				core_exitError $core_commandLine_exitCode_CONFIG "The size of the argument 'bishbosh_connection_write_CONNECT_willMessage' can not be longer than 65,535 bytes"
 			fi
 		fi
 		bishbosh_connection_validate_fieldLength CONNECT willMessage
-		willTopic_fieldLength=${#willMessage}
-		remainingLength=$(( remainingLength + 2 + willMessage_fieldLength ))
+		willTopicFieldLength=${#willMessage}
+		remainingLength=$(( remainingLength + 2 + willMessageFieldLength ))
 		
 		# Will QoS
 		if core_variable_isUnset bishbosh_connection_write_CONNECT_willQoS; then
@@ -77,7 +78,7 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 			fi
 			willQoS=$bishbosh_connection_write_CONNECT_willQoS
 		fi
-		connectFlags=$(( connectFlags + will_qos << 3 ))
+		connectFlags=$(( connectFlags + willQos << 3 ))
 		
 		# Will Retain
 		if core_variable_isSet bishbosh_connection_write_CONNECT_willRetain; then
@@ -107,33 +108,33 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		clientId="$bishbosh_clientId"
 	fi
 	
-	clientId_fieldLength=${#clientId}
+	clientIdFieldLength=${#clientId}
 	bishbosh_connection_validate_fieldLength CONNECT clientId
-	remainingLength=$(( remainingLength + 2 + clientId_fieldLength ))
+	remainingLength=$(( remainingLength + 2 + clientIdFieldLength ))
 
 	if core_variable_isUnset bishbosh_connection_write_CONNECT_username; then
 		username=''
-		username_fieldLength=-1
+		usernameFieldLength=-1
 	else
 		bishbosh_connection_validate_isUtf8 bishbosh_connection_write_CONNECT_username "$bishbosh_connection_write_CONNECT_username"
 		username="$bishbosh_connection_write_CONNECT_username"
 		bishbosh_connection_validate_fieldLength CONNECT username
-		username_fieldLength=${#username}
-		remainingLength=$(( remainingLength + 2 + username_fieldLength ))
+		usernameFieldLength=${#username}
+		remainingLength=$(( remainingLength + 2 + usernameFieldLength ))
 		connectFlags=$(( connectFlags + 1 << 7 ))
 	fi
 	
 	if core_variable_isUnset bishbosh_connection_write_CONNECT_password; then
 		if core_variable_isUnset bishbosh_connection_write_CONNECT_passwordFilePath; then
 			password=''
-			password_fieldLength=-1
+			passwordFieldLength=-1
 			passwordFilePath=''
 		else
 			password=''
 			core_validate_filePathReadable $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_passwordFilePath "$bishbosh_connection_write_CONNECT_passwordFilePath"
 			passwordFilePath="$bishbosh_connection_write_CONNECT_passwordFilePath"
-			password_fieldLength=$(bishbosh_filesize_${bishbosh_filesizeAlgorithm} "$passwordFilePath")
-			if [ ${#password_fieldLength} -gt 65535 ]; then
+			passwordFieldLength=$(bishbosh_filesize_${bishbosh_filesizeAlgorithm} "$passwordFilePath")
+			if [ ${#passwordFieldLength} -gt 65535 ]; then
 				core_exitError $core_commandLine_exitCode_CONFIG "The size of the file pointed to be argument 'bishbosh_connection_write_CONNECT_passwordFilePath' can not be longer than 65,535 bytes"
 			fi
 		fi
@@ -143,8 +144,8 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		fi
 		password="$bishbosh_connection_write_CONNECT_password"
 		bishbosh_connection_validate_fieldLength CONNECT password
-		password_fieldLength=${#password}
-		remainingLength=$(( remainingLength + 2 + password_fieldLength ))
+		passwordFieldLength=${#password}
+		remainingLength=$(( remainingLength + 2 + passwordFieldLength ))
 		connectFlags=$(( connectFlags + 1 << 6 ))
 	fi
 }
@@ -159,19 +160,19 @@ bishbosh_connection_write_CONNECT()
 	
 	local cleanSession
 	local willTopic
-	local willTopic_fieldLength
+	local willTopicFieldLength
 	local willMessage
 	local willMessageFilePath
-	local willMessage_fieldLength
+	local willMessageFieldLength
 	local willQoS
 	local keepAlive
 	local clientId
-	local clientId_fieldLength
+	local clientIdFieldLength
 	local username
-	local username_fieldLength
+	local usernameFieldLength
 	local password
 	local passwordFilePath
-	local password_fieldLength
+	local passwordFieldLength
 	_bishbosh_connection_write_CONNECT_validateArguments
 	
 	# CONNECT 1 << 4 in Octal (1 byte)
@@ -190,34 +191,34 @@ bishbosh_connection_write_CONNECT()
 	bishbosh_connection_write_twoByteLength $keepAlive
 
 	# client id
-	bishbosh_connection_write_twoByteLength $clientId_fieldLength
+	bishbosh_connection_write_twoByteLength $clientIdFieldLength
 	printf '%s' "$clientId"
 
 	# will topic & will message
-	if [ $willTopic_fieldLength -ne -1 ]; then
-		bishbosh_connection_write_twoByteLength $willTopic_fieldLength
+	if [ $willTopicFieldLength -ne -1 ]; then
+		bishbosh_connection_write_twoByteLength $willTopicFieldLength
 		printf '%s' "$willTopic"
-		bishbosh_connection_write_twoByteLength $willMessage_fieldLength
+		bishbosh_connection_write_twoByteLength $willMessageFieldLength
 		if [ -z "$willMessageFilePath" ]; then
 			printf '%s' "$willMessage"
 		else
-			cat "$willMessageFilePath"
+			bishbosh_connection_write_file "$willMessageFilePath" $willMessageFieldLength
 		fi
 	fi
 
 	# username
-	if [ $username_fieldLength -ne -1 ]; then
-		bishbosh_connection_write_twoByteLength $username_fieldLength
+	if [ $usernameFieldLength -ne -1 ]; then
+		bishbosh_connection_write_twoByteLength $usernameFieldLength
 		printf '%s' "$username"
 	fi
 
 	# password
-	if [ $password_fieldLength -ne -1 ]; then
-		bishbosh_connection_write_twoByteLength $password_fieldLength
+	if [ $passwordFieldLength -ne -1 ]; then
+		bishbosh_connection_write_twoByteLength $passwordFieldLength
 		if [ -z "$passwordFilePath" ]; then
 			printf '%s' "$password"
 		else
-			cat "$passwordFilePath"
+			bishbosh_connection_write_file "$passwordFilePath" $passwordFieldLength
 		fi
 	fi
 	

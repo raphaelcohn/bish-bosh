@@ -226,6 +226,7 @@ bishbosh_connection_makeClientConnection()
 	bishbosh_connection_obtainNextSubscriptionIndex
 	bishbosh_connection_createFifos
 	
+	bishbosh_connection_write_initialise
 	bishbosh_connection_read_initialise 'no'
 	bishbosh_connection_ping_initialise
 	bishbosh_connection_foreground_initialise

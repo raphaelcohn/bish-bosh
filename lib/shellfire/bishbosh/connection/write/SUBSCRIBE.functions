@@ -31,9 +31,9 @@ _bishbosh_connection_write_SUBSCRIBE_validateArguments()
 		
 		shift 2
 		index=$((index+1))
-		topicFilter_fieldLength=${#topicFilter}
+		topicFilterFieldLength=${#topicFilter}
 		# 3 is topicFilter length bytes (2) + QoS length (1)
-		remainingLength=$(( remainingLength + 3 + topicFilter_fieldLength ))
+		remainingLength=$(( remainingLength + 3 + topicFilterFieldLength ))
 	done
 	
 	printf '%s\n' $index >"$pendingSubscribeByPacketIdentifierPath".count
@@ -59,7 +59,7 @@ bishbosh_connection_write_SUBSCRIBE()
 	local remainingLength=2
 	local topicFilter
 	local topicQos
-	local topicFilter_fieldLength
+	local topicFilterFieldLength
 	_bishbosh_connection_write_SUBSCRIBE_validateArguments "$@"
 	
 	local index=0

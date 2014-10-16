@@ -1,3 +1,114 @@
+core_dependency_oneOf '*' iconv
+core_dependency_oneOf '*' sed
+core_dependency_oneOf '*' tr
+bishbosh_connection_validate_initialise()
+{
+	if core_compatibility_whichNoOutput iconv; then
+		
+		_bishbosh_connection_validate_isUtf8_iconv_iconv()
+		{
+			iconv -c -s -f utf-8 -t utf-8 1>/dev/null <<-EOF
+				$value
+			EOF
+		}
+
+		_bishbosh_connection_validate_isUtf8_iconv()
+		{
+			if ! _bishbosh_connection_validate_isUtf8_iconv_iconv; then
+				core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is not valid UTF-8"
+			fi
+		}
+		
+	else
+		
+		core_message WARN "Disabling UTF-8 validation because 'iconv' isn't available"
+		_bishbosh_connection_validate_isUtf8_iconv()
+		{
+			:
+		}
+	fi
+	
+	if core_compatibility_whichNoOutput sed; then
+
+		_bishbosh_connection_validate_topicFilter_sed_sed()
+		{
+			sed -e 's;/+/;XXX;g' -e 's;^+/;XX;g' -e 's;/+$;XX;g' -e 's;/#$;XX;g' -e 's;#;;g' -e 's;+;;g' <<-EOF
+				$value
+			EOF
+		}
+
+		_bishbosh_connection_validate_topicFilter_sed()
+		{
+			local strippedOfWildcard="$(_bishbosh_connection_validate_topicFilter_sed_sed)"
+			if [ ${#strippedOfWildcard} -ne ${#topicFilter} ]; then
+				core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' ('$value') contains invalid wildcards"
+			fi
+		}
+		
+	else
+		
+		core_message WARN "Disabling some topic filter validation because 'sed' isn't available"
+		_bishbosh_connection_validate_topicFilter_sed()
+		{
+			:
+		}
+		
+	fi
+	
+	if core_compatibility_whichNoOutput tr; then
+	
+		bishbosh_connection_validate_removeCharacters()
+		{
+			local strip="$1"
+			local value="$2"
+			printf '%s' "$value" | tr -d "$strip"
+		}
+
+		_bishbosh_connection_validate_clientId_restrictedCharacters()
+		{
+			local stripped="$(printf '%s' "$bishbosh_clientId" | tr -d -C '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')"
+			if [ ${#stripped} -ne ${#bishbosh_clientId} ]; then
+				core_message WARN "Not all MQTT servers support a ClientId with characters other than 0-9, a-z and A-Z."
+			fi
+		}
+		
+	else
+		
+		core_message WARN "Disabling invalid character validation because 'tr' isn't available"
+		bishbosh_connection_validate_removeCharacters()
+		{
+			local strip="$1"
+			local value="$2"
+			printf '%s' "$value"
+		}
+		
+		core_message WARN "Disabling Client Id restricted character validation because 'tr' isn't available"
+		_bishbosh_connection_validate_clientId_restrictedCharacters()
+		{
+			:
+		}
+	fi
+
+	# Only zsh can potentially have NUL in strings
+	if core_variable_isSet ZSH_VERSION; then
+		
+		_bishbosh_connection_validate_isUtf8_asciiNul()
+		{
+			local strippedOfAsciiNul="$(bishbosh_connection_validate_removeCharacters '\000' "$value")"
+			if [ ${#strippedOfAsciiNul} -ne ${#value} ]; then
+				core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' contains U+0000 (NUL)"
+			fi
+		}
+		
+	else
+		
+		_bishbosh_connection_validate_isUtf8_asciiNul()()
+		{
+			:
+		}
+	fi
+}
+
 bishbosh_connection_validate_fieldLength()
 {
 	local packetName="$1"
@@ -10,43 +121,13 @@ bishbosh_connection_validate_fieldLength()
 	fi
 }
 
-_bishbosh_connection_validate_isUtf8WithIconv_iconv()
-{
-	iconv -c -s -f utf-8 -t utf-8 1>/dev/null <<-EOF
-		$value
-	EOF
-}
-
-_bishbosh_connection_validate_isUtf8WithIconv()
-{
-	if core_compatibility_whichNoOutput iconv; then
-		if ! _bishbosh_connection_validate_isUtf8WithIconv_iconv; then
-			core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is not valid UTF-8"
-		fi
-	fi
-}
-
-core_dependency_requires '*' tr
-bishbosh_connection_validate_removeCharacters()
-{
-	local strip="$1"
-	local value="$2"
-	printf '%s' "$value" | tr -d "$strip"
-}
-
-core_dependency_oneOf '*' iconv
 bishbosh_connection_validate_isUtf8()
 {
 	local argument="$1"
 	local value="$2"
 	
-	_bishbosh_connection_validate_isUtf8WithIconv
-
-	# Only relevant to zsh
-	local strippedOfAsciiNul="$(bishbosh_connection_validate_removeCharacters '\000' "$value")"
-	if [ ${#strippedOfAsciiNul} -ne ${#value} ]; then
-		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' contains \u0000 (ASCII NUL)"
-	fi
+	_bishbosh_connection_validate_isUtf8_iconv
+	_bishbosh_connection_validate_isUtf8_asciiNul
 }
 
 bishbosh_connection_validate_clientId()
@@ -61,10 +142,7 @@ bishbosh_connection_validate_clientId()
 		core_message WARN "Not all MQTT servers support a ClientId of more than 23 encoded bytes."
 	fi
 	
-	local stripped="$(printf '%s' "$bishbosh_clientId" | tr -d -C '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')"
-	if [ ${#stripped} -ne ${#bishbosh_clientId} ]; then
-		core_message WARN "Not all MQTT servers support a ClientId with characters other than 0-9, a-z and A-Z."
-	fi
+	_bishbosh_connection_validate_clientId_restrictedCharacters
 }
 
 bishbosh_connection_write_validateTopicName()
@@ -76,27 +154,14 @@ bishbosh_connection_write_validateTopicName()
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is empty; this is not permitted for topic names"
 	fi
 	
-	_bishbosh_connection_validate_isUtf8WithIconv
+	_bishbosh_connection_validate_isUtf8_iconv
 	
 	local strippedOfInvalidCharacters="$(bishbosh_connection_validate_removeCharacters '#*\000' "$value")"
 	
 	if [ ${#strippedOfInvalidCharacters} -ne ${#value} ]; then
-		# Only relevant to zsh
-		local strippedOfAsciiNul="$(bishbosh_connection_validate_removeCharacters '\000' "$value")"
-	
-		if [ ${#strippedOfAsciiNul} -ne ${#value} ]; then
-			core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' contains \u0000 (ASCII NUL)"
-		fi
+		_bishbosh_connection_validate_isUtf8_asciiNul
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' ('$value') contains a wildcard ('#' or '+')"
 	fi
-}
-
-core_dependency_requires '*' sed
-_bishbosh_connection_validate_topicFilter_sed()
-{
-	sed -e 's;/+/;XXX;g' -e 's;^+/;XX;g' -e 's;/+$;XX;g' -e 's;/#$;XX;g' -e 's;#;;g' -e 's;+;;g' <<-EOF
-		$value
-	EOF
 }
 
 bishbosh_connection_validate_topicFilter()
@@ -111,24 +176,15 @@ bishbosh_connection_validate_topicFilter()
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is empty; this is not permitted for topic filters"
 	fi
 	
-	_bishbosh_connection_validate_isUtf8WithIconv
+	_bishbosh_connection_validate_isUtf8_iconv
 	
 	local strippedTopicFilter="$(bishbosh_connection_validate_removeCharacters '\n\000' "$value")"
 	if [ ${#strippedTopicFilter} -ne ${#value} ]; then
-
-		local strippedOfAsciiNul="$(bishbosh_connection_validate_removeCharacters '\000' "$value")"
-		if [ ${#strippedOfAsciiNul} -ne ${#argument} ]; then
-			core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' contains \u0000 (ASCII NUL)"
-		fi
-		
+		_bishbosh_connection_validate_isUtf8_asciiNul
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' has a topic filter containing \n (LF, Linefeed), which, although allowed in the MQTT 3.1.1 specification can not be supported in portable shell scripts or common tools (outside of those supplied by GNU)"
 	fi
 	
-	local strippedOfWildcard="$(_bishbosh_connection_validate_topicFilter_sed)"
-	
-	if [ ${#strippedOfWildcard} -ne ${#topicFilter} ]; then
-		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' ('$value') contains invalid wildcards"
-	fi
+	_bishbosh_connection_validate_topicFilter_sed
 }
 
 bishbosh_connection_validate_packetIdentifier()

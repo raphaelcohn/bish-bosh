@@ -43,37 +43,37 @@ _bishbosh_connection_write_PUBLISH_validateArguments()
 	topicName="$bishbosh_connection_write_PUBLISH_topicName"
 	bishbosh_connection_write_validateTopicName bishbosh_connection_write_PUBLISH_topicName "$topicName"
 	
-	topicName_fieldLength=${#topicName}
-	remainingLength=$(( remainingLength + 2 + topicName_fieldLength ))
+	topicNameFieldLength=${#topicName}
+	remainingLength=$(( remainingLength + 2 + topicNameFieldLength ))
 	
 	if core_variable_isUnset bishbosh_connection_write_PUBLISH_message; then
 		if core_variable_isUnset bishbosh_connection_write_PUBLISH_messageFilePath; then
 			message=''
-			message_fieldLength=0
+			messageFieldLength=0
 			messageFilePath=''
 		else
 			message=''
 			core_validate_filePathReadable $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_PUBLISH_messageFilePath "$bishbosh_connection_write_PUBLISH_messageFilePath"
 			messageFilePath="$bishbosh_connection_write_PUBLISH_messageFilePath"
-			message_fieldLength=$(bishbosh_filesize_${bishbosh_filesizeAlgorithm} "$messageFilePath")
+			messageFieldLength=$(bishbosh_filesize_${bishbosh_filesizeAlgorithm} "$messageFilePath")
 		fi
 	else
 		if core_variable_isSet bishbosh_connection_write_PUBLISH_messageFilePath; then
 			core_exitError $core_commandLine_exitCode_CONFIG "The arguments 'bishbosh_connection_write_PUBLISH_message' and 'bishbosh_connection_write_PUBLISH_message' can not both be specified"
 		fi
 		message="$bishbosh_connection_write_PUBLISH_message"
-		message_fieldLength=${#message}
+		messageFieldLength=${#message}
 		messageFilePath=''
 		bishbosh_connection_validate_fieldLength PUBLISH message
 	fi
-	local maximumLength=$((268435455-2-topicName_fieldLength))
+	local maximumLength=$((268435455-2-topicNameFieldLength))
 	if [ $qos -ne 0 ]; then
 		maximumLength=$((maximumLength-2))
 	fi
-	if [ $message_fieldLength -gt $maximumLength ]; then
-		core_exitError $core_commandLine_exitCode_CONFIG "The message can not be longer than $maximumLength bytes when topicName is $topicName_fieldLength bytes and qos is $qos."
+	if [ $messageFieldLength -gt $maximumLength ]; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The message can not be longer than $maximumLength bytes when topicName is $topicNameFieldLength bytes and qos is $qos."
 	fi
-	remainingLength=$(( remainingLength + message_fieldLength ))
+	remainingLength=$(( remainingLength + messageFieldLength ))
 	
 	if core_variable_isSet bishbosh_connection_write_PUBLISH_messageUnlinkFile; then
 		if core_variable_isUnset bishbosh_connection_write_PUBLISH_messageFilePath; then
@@ -121,10 +121,10 @@ bishbosh_connection_write_PUBLISH()
 	local packetIdentifier
 	local qos
 	local topicName
-	local topicName_fieldLength
+	local topicNameFieldLength
 	local message
 	local messageFilePath
-	local message_fieldLength
+	local messageFieldLength
 	local messageUnlinkFile
 	local resetArguments
 	_bishbosh_connection_write_PUBLISH_validateArguments
@@ -156,7 +156,7 @@ bishbosh_connection_write_PUBLISH()
 	bishbosh_connection_write_byte "$controlPacketTypeAndFlags"
 	bishbosh_connection_write_remainingLength $remainingLength
 	
-	bishbosh_connection_write_twoByteLength $topicName_fieldLength
+	bishbosh_connection_write_twoByteLength $topicNameFieldLength
 	printf '%s' "$topicName"
 	
 	if [ $packetIdentifier -ne -1 ]; then
@@ -167,7 +167,7 @@ bishbosh_connection_write_PUBLISH()
 		printf '%s' "$message"
 	else
 		cat "$messageFilePath"
-		core_TODO 'Experiment with dd bs=$message_fieldLength count=$message_fieldLength if="$messageFilePath" as an alternative to cat'
+		core_TODO 'Experiment with dd bs=$messageFieldLength count=$messageFieldLength if="$messageFilePath" as an alternative to cat'
 	fi
 	
 	bishbosh_connection_ping_recordLastSentControlPacketAt

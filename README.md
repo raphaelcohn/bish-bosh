@@ -140,12 +140,12 @@ These settings relate to [MQTT]'s **CONNACK** packet.
 | `bishbosh_connection_write_CONNECT_willQos` | 0 - 2 inclusive | 0 | Will QoS, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
 | `bishbosh_connection_write_CONNECT_willRetain` | 0 or 1 \* | 0 | Will Retain flag, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
 | `bishbosh_connection_write_CONNECT_willMessage` | Any valid message, but Unicode `U+0000` is not supported.† | invalid | Will message, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
-| `bishbosh_connection_write_CONNECT_willMessageFilePath` | A path to a valid message | invalid | Will message, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset or `bishbosh_connection_write_CONNECT_willMessage` is set. Useful if a message might contain Unicode `U+0000`.† |
+| `bishbosh_connection_write_CONNECT_willMessageFilePath` | A path to a valid message | invalid | Will message, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset or `bishbosh_connection_write_CONNECT_willMessage` is set. Must be a regular file (reading from a FIFO, etc, is unsupported), as we need to know the size in advance. Useful if a message might contain Unicode `U+0000`.† |
 | `bishbosh_connection_write_CONNECT_keepAlive` | 0 to 65535 inclusive | 0 | Keep Alive for pings in seconds. A value of 0 disables keep alive handling |
 | `bishbosh_clientId` | Any valid UTF-8 string excluding Unicode `U+0000` | invalid | Client id. Empty client ids, and random client ids, are not yet supported. Usually set on the command line with the switch `--client-id CLIENT_ID` |
 | `bishbosh_connection_write_CONNECT_username` | Any valid UTF-8 string excluding Unicode `U+0000`. May be empty | No username | Username. May be empty or *unset* (the latter meaning it is not sent) |
 | `bishbosh_connection_write_CONNECT_password` | Any sequence of bytes excluding Unicode `U+0000`. May be empty | No password | Password. May be empty or *unset* (the latter meaning it is not sent) |
-| `bishbosh_connection_write_CONNECT_passwordFilePath` | A path to a valid file. May be empty. | No password | Password, invalid if `bishbosh_connection_write_CONNECT_password` is set. Useful if a password might contain Unicode `U+0000`†, or you want to able to check in configuration to source control or change passwords in production. |
+| `bishbosh_connection_write_CONNECT_passwordFilePath` | A path to a valid file. May be empty. | No password | Password, invalid if `bishbosh_connection_write_CONNECT_password` is set. Must be a regular file (reading from a FIFO, etc, is unsupported), as we need to know the size in advance. Useful if a password might contain Unicode `U+0000`†, or you want to able to check in configuration to source control or change passwords in production. |
 
 _\* Technically, a boolean, which might also be `Y`, `YES`, `Yes`, `yes`, `T`, `TRUE`, `True`, `true`, `ON`, `On`, `on` for 1 and `N`, `NO`, `No`, `no`, `F`, `FALSE`, `False`, `false`, `OFF`, `Off` and `off` for 0, but best as a number._
 
@@ -455,30 +455,44 @@ We use a `/etc` folder underneath where we're installed. If you've just cloned [
 [bish-bosh] tries to use as few dependencies as possible, but, since this is shell script, that's not always possible. It's compounded by the need to support the difference between major shells, too. It also does its best to work around differences in common binaries, by using feature detection, and where it can't do any better, by attempting to install using your package manager.
 
 ### Required Dependencies
-All of these should be present even on the most minimal system. Usage is restricted to those flags known to work across Mac OS X, GNU, BusyBox and Toybox.
+All of these should be present even on the most minimal system. Usage is restricted to those flags known to work across Mac OS X, GNU, BusyBox and Toybox. Even the most minimal system is likely to have these:-
 
-* `cat`
 * `grep`
 * `head`
-* `kill` (only if not built in to shell)
 * `mkdir`
 * `mktemp`
 * `rm`
 * `rmdir`
-* `sed`
 * `sleep`
 * `tail`
-* `tr`
 * `uname`
+
+The following are needed if not builtin to your shell (except for `kill`, this would be highly unusual):-
+
+* `[`, any POSIX-compliant version
+* `echo`, any version (we do not use this with string escapes)
+* `kill`, any POSIX-compliant version.
+* `printf`, any POSIX-compliant version
+* `pwd`, any POSIX-compliant version
+* `true` and `false`
 
 If cloning from [GitHub], then you'll also need to make sure you have `git`.
 
 ### Either Or Dependencies (one is required)
 These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and feature detection to try to find an optimum dependency. Making some choices, however, influences others (eg `hexdump` and `od` preferences change when `stdbuf` is discovered, to try to use GNU `od`). Some choices are sub-optimal, and may cause operational irritation (mostly, bishbosh responds far more slowly to signals and socket disconnections).
 
+* Publishing messages from files
+  * `dd`, any POSIX-compliant version (dd is preferred as it permits larger block sizes)
+  * `cat`
+  * `tee`
+  * `tail` (uses `-c +0`)
+  * `head` (uses `-c`, which doesn't work in [Toybox])
+  * `tr`
+  * Nothing, if you do not need to publish messages from files (eg you are scripting them as shell strings)
+    * Please note we can't use `printf '%s' "$(<"$1")"` because it strips trailing newlines and removes U+0000
 * Creating FIFOs (named pipes)
-* `mkfifo`, any POSIX compliant
-* `mknod`, most except BSD-derived (GNU coreutils, [BusyBox] and [Toybox] are known to work)
+* `mkfifo`, any POSIX-compliant version
+* `mknod`, most except BSD-derived (GNU coreutils, [BusyBox], [Toybox] and [mksh]'s builtin are known to work)
 * Binary to Hexadecimal conversion
   * `hexdump`, BSD-derived (part of the `bsdmainutils` package in Debian/Ubuntu; usually installed by default)
   * `hexdump`, in [BusyBox]
@@ -491,6 +505,7 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * `stdbuf`, from the GNU `coreutils` package
   * `stdbuf`, FreeBSD
   * `unbuffer`, from the expect package (known as `expect-dev` on Debian/Ubuntu)
+    * Does not seem to work properly on Mac OS X
   * `dd`, any POSIX-compliant version.
 * Unencrypted Network Connections (can be configured with the `--backends` option to use a different preference order)
   * `ncat`, part of the `nmap` package (available as `nmap` on Debian/Ubuntu and Mac OS X + Homebrew)
@@ -504,11 +519,12 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * `nc`, [Toybox]
   * `bash` (if compiled with socket support; this is true for Mac OS X Snow Leopard+, Mac OS X + Homebrew, RHEL 6+, Centos 6+, Debian 6+, and Ubuntu 10.04 LTS +)
   * `ksh` ([ksh93], however [ksh93] doesn't work with other script features at this time)
-* TLS-encrypted backends
+  * none, if not using MQTT (unlikely)
+* TLS-encrypted backends for MQTTS
   * `ncat`,
-  * `socat`
-  * `openssl` from [LibreSSL](http://www.libressl.org/)
-  * `openssl` from [OpenSSL](https://www.openssl.org/)
+  * `socat`,
+  * `openssl`, from [LibreSSL](http://www.libressl.org/)
+  * `openssl`, from [OpenSSL](https://www.openssl.org/)
   * `gnutls`, from [GnuTLS](http://gnutls.org/)
   * none, if not using MQTTS
 * cryptcat-encrypted backends
@@ -518,27 +534,39 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the PATH and 
   * `SECONDS` pseudo-environment variable if your shell supports it [GNU Bash], [mksh] and [pdksh] do)
     * Works slightly differently on [ksh93], as it uses 3 decimal places, but still effective
   * `date`, as long as it supports the `+%s` format string (true for GNU `coreutils`, [BusyBox], [Toybox] and Mac OS X)
+  * Disabled and Keep Alive forced to 0 (with a warning)
 * Validating UTF-8 strings
   * `iconv`, from the [GNU glibc] package
   * `iconv`, BSD-derived
   * `iconv`, from the [GNU libiconv] package
   * Nothing (validation not performed)
-* File sizes
+* Validating Topic Filter strings
+  * `sed`
+  * Nothing (validation not performed)
+* Validating for invalid or restricted characters in topic names, topic filters and client ids
+  * `tr`
+  * Nothing (validation not performed)
+* File sizes (controlled with [`--filesize-algorithm`](#configuration-tweaks))
   * `ls`, any, used for file sizes (not efficient, but `ls -L -l -n FILE` is portable)
-  * `stat`, from GNU `coreutils` package
+  * `stat`, from the GNU `coreutils` package
   * `stat`, in [BusyBox]
   * `stat`, BSD-derived
   * `stat`, in [Toybox], but does not work with symbolic links (No `-L` option)
-* Random client-id generation
+* Random client-id generation (only for Clean Session = 1) \*
+  * Nothing, if empty client ids are acceptable
   * `openssl`
   * `gpg`
-  * `dd` with access to either `/dev/urandom` or `/dev/random`
-  * The shell's RANDOM psuedo-environment variable: not cryptographically robust
-  * `awk` (any POSIX compliant-version): not cryptographically robust
-  * Nothing, if random client-ids are not needed
-* Coloured text (only when running on a terminal)
+  * `base64` (any version) and `tr` (required to strip newlines from `base64`; different implementations have different switches for newlines), and one of
+    * `dd` with access to either `/dev/urandom` or `/dev/random`
+	* The shell's RANDOM psuedo-environment variable: not cryptographically robust
+    * `awk` (any POSIX compliant-version): not cryptographically robust
+  * Defaults to empty client id with a warning
+* Coloured text (only when running in a terminal)
   * `tput` (assumes the `terminfo` database defined by POSIX; `termcap` is obsolete)
   * fallback to ANSI escape sequences, which should work on anything modern
+  * Nothing, if not running in a terminal
+
+_\* It may be possible to also use EGD sockets and other programs and sources (eg a TPM or `rng-tools`). Please get in touch._
 
 ### A word on [GNU Bash] versions
 Unfortunately, there are a lot of [GNU Bash] versions that are still in common use. Versions 3 and 4 of Bash differ in their support of key features (such as associative arrays). Even then, Bash 4.1 is arguably not particularly useful with associative arrays, though, as its declare syntax lacks the `-g` global setting. [bish-bosh] tries to maintain compatibility with `bash` as at version 3.1/3.2, even though it's obsolescent, because it occurs on two common platforms. A quick guide to common bash version occurrence is below.
