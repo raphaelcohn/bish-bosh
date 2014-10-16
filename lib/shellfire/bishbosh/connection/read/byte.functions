@@ -1,5 +1,5 @@
 bishbosh_connection_read_byte_initialise()
-{		
+{
 	if [ $bishbosh_connection_supportsNonBlockingRead -eq 1 ]; then
 
 		# TMOUT also works for ksh93, bash
@@ -37,6 +37,7 @@ bishbosh_connection_read_byte_initialise()
 		}
 
 		# Relies on bishbosh_connection_background_processingLoopReadInterrupter, which fires HUP on a timer
+		# Doesn't seem to work on bash, but then, should not be required
 		bishbosh_connection_read_byte_nonBlocking()
 		{
 			trap 'true' HUP
