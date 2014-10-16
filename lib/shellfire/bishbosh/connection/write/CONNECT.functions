@@ -68,22 +68,22 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		willTopicFieldLength=${#willMessage}
 		remainingLength=$(( remainingLength + 2 + willMessageFieldLength ))
 		
-		# Will QoS
-		if core_variable_isUnset bishbosh_connection_write_CONNECT_willQoS; then
-			willQoS=0
+		# Will Qos
+		if core_variable_isUnset bishbosh_connection_write_CONNECT_willQos; then
+			willQos=0
 		else
-			core_validate_isUnsignedInteger $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_willQoS "$bishbosh_connection_write_CONNECT_willQoS"
-			if [ $bishbosh_connection_write_CONNECT_willQoS -gt 2 ]; then
-				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_willQoS' must be between 0 and 2 inclusive"
+			core_validate_isUnsignedInteger $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_willQos "$bishbosh_connection_write_CONNECT_willQos"
+			if [ $bishbosh_connection_write_CONNECT_willQos -gt 2 ]; then
+				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_CONNECT_willQos' must be between 0 and 2 inclusive"
 			fi
-			willQoS=$bishbosh_connection_write_CONNECT_willQoS
+			willQos=$bishbosh_connection_write_CONNECT_willQos
 		fi
 		connectFlags=$(( connectFlags + willQos << 3 ))
 		
 		# Will Retain
 		if core_variable_isSet bishbosh_connection_write_CONNECT_willRetain; then
-			core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_cleanSession "$bishbosh_connection_write_CONNECT_cleanSession"
-			if core_variable_isTrue "$bishbosh_connection_write_CONNECT_cleanSession"; then
+			core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_willRetain "$bishbosh_connection_write_CONNECT_willRetain"
+			if core_variable_isTrue "$bishbosh_connection_write_CONNECT_willRetain"; then
 				connectFlags=$(( connectFlags + 1 << 5 ))
 			fi
 		fi
@@ -164,7 +164,7 @@ bishbosh_connection_write_CONNECT()
 	local willMessage
 	local willMessageFilePath
 	local willMessageFieldLength
-	local willQoS
+	local willQos
 	local keepAlive
 	local clientId
 	local clientIdFieldLength

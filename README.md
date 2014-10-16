@@ -461,9 +461,11 @@ All of these should be present even on the most minimal system. Usage is restric
 * `head`
 * `mkdir`
 * `mktemp`
+* `mv`
 * `rm`
 * `rmdir`
 * `sleep`
+* `touch`
 * `uname`
 
 The following are needed if not builtin to your shell (except for `kill`, this would be highly unusual):-

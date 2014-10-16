@@ -199,6 +199,8 @@ bishbosh_connection_createFifos()
 
 bishbosh_connection_makeClientConnection()
 {
+	bishbosh_connection_validate_initialise
+	
 	if core_variable_isUnset bishbosh_connection_clientServersPath; then
 		bishbosh_connection_clientServersPath="$bishbosh_clientPath"/servers/"$bishbosh_server"
 		bishbosh_connection_sourceScriptlets "$bishbosh_connection_clientServersPath"
@@ -225,6 +227,7 @@ bishbosh_connection_makeClientConnection()
 	bishbosh_connection_obtainConnectionId
 	bishbosh_connection_obtainNextSubscriptionIndex
 	bishbosh_connection_createFifos
+	
 	
 	bishbosh_connection_write_initialise
 	bishbosh_connection_read_initialise 'no'

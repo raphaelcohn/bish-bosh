@@ -16,19 +16,12 @@ bishbosh_backend_ncDebianTraditional_check()
 	return 1
 }
 
-core_dependency_requires '*' grep
-core_dependency_requires '*' head
 bishbosh_backend_ncDebianTraditional_checkIfNetcatVariant()
 {
 	# eg [v1.10-40] \n connect to somewhere:   nc [-options] hostname port[s] [ports] ...
 	# Checking on a version number is a poor choice, but Hobbit's netcat is so old the minor version doesn't change [Debian just patches it]
 	# The help message, BTW, is identical to cryptcat
-	if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^\[v1\.10'; then
-		bishbosh_backend_name=ncDebianTraditional
-		bishbosh_backend_path="$binary"
-		return 0
-	fi
-	return 1
+	bishbosh_backend_netcatVariantHelpMessageLineExists '^\[v1\.10'
 }
 
 bishbosh_backend_ncDebianTraditional_port()

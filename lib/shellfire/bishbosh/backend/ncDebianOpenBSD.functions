@@ -18,17 +18,10 @@ bishbosh_backend_ncDebianOpenBSD_check()
 
 # was '^OpenBSD netcat \(Debian '
 # Ported from OpenBSD to Debian, FreeBSD, Cygwin, Solaris
-core_dependency_requires '*' grep
-core_dependency_requires '*' head
 bishbosh_backend_ncDebianOpenBSD_checkIfNetcatVariant()
 {
 	# eg  'OpenBSD netcat (Debian patchlevel 1.105-7ubuntu1)'
-	if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^OpenBSD netcat '; then
-		bishbosh_backend_name=ncDebianOpenBSD
-		bishbosh_backend_path="$binary"
-		return 0
-	fi
-	return 1
+	bishbosh_backend_netcatVariantHelpMessageLineExists '^OpenBSD netcat '
 }
 
 bishbosh_backend_ncDebianOpenBSD_port()

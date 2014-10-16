@@ -27,17 +27,10 @@ bishbosh_backend_ncMacOSX_check()
 	return 1
 }
 
-core_dependency_requires '*' grep
-core_dependency_requires '*' head
 bishbosh_backend_ncMacOSX_checkIfNetcatVariant()
 {
 	# eg  'usage: nc [-46AcCDdFhklnrtUuvz] [-K tc] [-b boundif] [-i interval] [-p source_port]'
-	if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^usage: nc \[-'; then
-		bishbosh_backend_name=ncMacOSX
-		bishbosh_backend_path="$binary"
-		return 0
-	fi
-	return 1
+	bishbosh_backend_netcatVariantHelpMessageLineExists '^usage: nc \[-'bishbosh_backend_netcatVariantHelpMessageLineExists
 }
 
 bishbosh_backend_ncMacOSX_port()

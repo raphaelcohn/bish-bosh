@@ -18,6 +18,7 @@ bishbosh_backend_nc_check()
 	for ncVariantCheckFunction in ncDebianTraditional ncDebianOpenBSD ncMacOSX ncGNU ncToybox ncBusyBox
 	do
 		if bishbosh_backend_${ncVariantCheckFunction}_checkIfNetcatVariant; then
+			backendName="$ncVariantCheckFunction"
 			return 0
 		fi
 	done

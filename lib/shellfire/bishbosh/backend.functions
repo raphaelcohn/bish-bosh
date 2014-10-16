@@ -11,6 +11,7 @@ bishbosh_backend_find()
 	for backendName in $@
 	do
 		if bishbosh_backend_${backendName}_check; then
+			bishbosh_backend_name="$backendName"
 			if core_variable_isUnset bishbosh_port; then
 				bishbosh_port=$(bishbosh_backend_${backendName}_port)
 			fi
@@ -20,6 +21,21 @@ bishbosh_backend_find()
 	done
 	
 	core_exitError $core_commandLine_exitCode_OSFILE "Could not find a backend to make socket connections with tunnelling '$bishbosh_tunnel' that was on the PATH '$PATH'."
+}
+
+core_dependency_requires '*' grep
+core_dependency_requires '*' head
+bishbosh_backend_netcatVariantHelpMessageLineExists()
+{
+	local pattern="$1"
+
+	# can be replaced with [ $("$binary" -h 2>&1 | sed -n '/^\[v1\.10/=') -eq 1 ]
+	# but toybox doesn't have sed yet
+	if "$binary" -h 2>&1 | head -n 1 | grep -q -E "$pattern"; then
+		bishbosh_backend_path="$binary"
+		return 0
+	fi
+	return 1
 }
 
 bishbosh_backend_debugOptions()

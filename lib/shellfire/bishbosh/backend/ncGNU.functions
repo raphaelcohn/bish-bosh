@@ -14,17 +14,10 @@ bishbosh_backend_ncGNU_check()
 	bishbosh_backend_ncGNU_checkIfNetcatVariant
 }
 
-core_dependency_requires '*' grep
-core_dependency_requires '*' head
 bishbosh_backend_ncGNU_checkIfNetcatVariant()
 {
 	# eg  'GNU netcat 0.7.1, a rewrite of the famous networking tool.'
-	if "$binary" -h | head -n 1 | grep -q -E '^GNU netcat '; then
-		bishbosh_backend_name=ncGNU
-		bishbosh_backend_path="$binary"
-		return 0
-	fi
-	return 1
+	bishbosh_backend_netcatVariantHelpMessageLineExists '^GNU netcat '
 }
 
 bishbosh_backend_ncGNU_port()

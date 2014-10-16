@@ -102,7 +102,7 @@ bishbosh_connection_validate_initialise()
 		
 	else
 		
-		_bishbosh_connection_validate_isUtf8_asciiNul()()
+		_bishbosh_connection_validate_isUtf8_asciiNul()
 		{
 			:
 		}

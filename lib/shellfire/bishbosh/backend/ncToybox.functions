@@ -24,17 +24,10 @@ bishbosh_backend_ncToybox_check()
 	return 1
 }
 
-core_dependency_requires '*' grep
-core_dependency_requires '*' head
 bishbosh_backend_ncToybox_checkIfNetcatVariant()
 {
 	# eg  'usage: netcat [-tu] [-lL COMMAND...] [-wpq #] [-s addr] {IPADDR PORTNUM|-f FILENAME}'
-	if "$binary" 2>&1 | head -n 1 | grep -q -E '^usage: netcat \[-tu\] '; then
-		bishbosh_backend_name=ncBusyBox
-		bishbosh_backend_path="$binary"
-		return 0
-	fi
-	return 1
+	bishbosh_backend_netcatVariantHelpMessageLineExists '^usage: netcat \[-tu\] '
 }
 
 bishbosh_backend_ncToybox_port()
