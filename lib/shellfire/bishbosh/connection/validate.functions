@@ -41,9 +41,9 @@ bishbosh_connection_validate_isUtf8()
 	local value="$2"
 	
 	_bishbosh_connection_validate_isUtf8WithIconv
-	
+
+	# Only relevant to zsh
 	local strippedOfAsciiNul="$(bishbosh_connection_validate_removeCharacters '\000' "$value")"
-	
 	if [ ${#strippedOfAsciiNul} -ne ${#value} ]; then
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' contains \u0000 (ASCII NUL)"
 	fi
@@ -63,7 +63,7 @@ bishbosh_connection_validate_clientId()
 	
 	local stripped="$(printf '%s' "$bishbosh_clientId" | tr -d -C '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')"
 	if [ ${#stripped} -ne ${#bishbosh_clientId} ]; then
-		core_message WARN "Not all MQTT servers support a ClientId with non non-alphanumeric characters."
+		core_message WARN "Not all MQTT servers support a ClientId with characters other than 0-9, a-z and A-Z."
 	fi
 }
 
@@ -72,7 +72,7 @@ bishbosh_connection_write_validateTopicName()
 	local argument="$1"
 	local value="$2"
 
-	if [ ${#argument} -eq 0 ]; then
+	if [ ${#value} -eq 0 ]; then
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is empty; this is not permitted for topic names"
 	fi
 	
@@ -80,10 +80,11 @@ bishbosh_connection_write_validateTopicName()
 	
 	local strippedOfInvalidCharacters="$(bishbosh_connection_validate_removeCharacters '#*\000' "$value")"
 	
-	if [ ${#strippedOfInvalidCharacters} -ne ${#argument} ]; then
+	if [ ${#strippedOfInvalidCharacters} -ne ${#value} ]; then
+		# Only relevant to zsh
 		local strippedOfAsciiNul="$(bishbosh_connection_validate_removeCharacters '\000' "$value")"
 	
-		if [ ${#strippedOfAsciiNul} -ne ${#argument} ]; then
+		if [ ${#strippedOfAsciiNul} -ne ${#value} ]; then
 			core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' contains \u0000 (ASCII NUL)"
 		fi
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' ('$value') contains a wildcard ('#' or '+')"
@@ -94,7 +95,7 @@ core_dependency_requires '*' sed
 _bishbosh_connection_validate_topicFilter_sed()
 {
 	sed -e 's;/+/;XXX;g' -e 's;^+/;XX;g' -e 's;/+$;XX;g' -e 's;/#$;XX;g' -e 's;#;;g' -e 's;+;;g' <<-EOF
-		$topicFilter
+		$value
 	EOF
 }
 
@@ -106,14 +107,14 @@ bishbosh_connection_validate_topicFilter()
 	
 	argument="$argument' at pair index '$index"
 	
-	if [ ${#topicFilter} -eq 0 ]; then
+	if [ ${#value} -eq 0 ]; then
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is empty; this is not permitted for topic filters"
 	fi
 	
 	_bishbosh_connection_validate_isUtf8WithIconv
 	
-	local strippedTopicFilter="$(bishbosh_connection_validate_removeCharacters '\n\000' "$topicFilter")"
-	if [ ${#strippedTopicFilter} -ne ${#topicFilter} ]; then
+	local strippedTopicFilter="$(bishbosh_connection_validate_removeCharacters '\n\000' "$value")"
+	if [ ${#strippedTopicFilter} -ne ${#value} ]; then
 
 		local strippedOfAsciiNul="$(bishbosh_connection_validate_removeCharacters '\000' "$value")"
 		if [ ${#strippedOfAsciiNul} -ne ${#argument} ]; then

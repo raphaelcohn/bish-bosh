@@ -70,7 +70,7 @@ _bishbosh_connection_write_PUBLISH_validateArguments()
 	if [ $qos -ne 0 ]; then
 		maximumLength=$((maximumLength-2))
 	fi
-	if [ ${#message_fieldLength} -gt $maximumLength ]; then
+	if [ $message_fieldLength -gt $maximumLength ]; then
 		core_exitError $core_commandLine_exitCode_CONFIG "The message can not be longer than $maximumLength bytes when topicName is $topicName_fieldLength bytes and qos is $qos."
 	fi
 	remainingLength=$(( remainingLength + message_fieldLength ))

@@ -50,7 +50,7 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 				core_validate_filePathReadable $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_willMessageFilePath "$bishbosh_connection_write_CONNECT_willMessageFilePath"
 				willMessageFilePath="$bishbosh_connection_write_CONNECT_willMessageFilePath"
 				willMessage_fieldLength=$(bishbosh_filesize_${bishbosh_filesizeAlgorithm} "$willMessageFilePath")
-				if [ ${#willMessage_fieldLength} -gt 65535 ]; then
+				if [ $willMessage_fieldLength -gt 65535 ]; then
 					core_exitError $core_commandLine_exitCode_CONFIG "The size of the file pointed to be argument 'bishbosh_connection_write_CONNECT_willMessageFilePath' can not be longer than 65,535 bytes"
 				fi
 			fi
@@ -59,7 +59,7 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 				core_exitError $core_commandLine_exitCode_CONFIG "The arguments 'bishbosh_connection_write_CONNECT_willMessage' and 'bishbosh_connection_write_CONNECT_willMessageFilePath' can not both be specified"
 			fi
 			willMessage="$bishbosh_connection_write_CONNECT_willMessage"
-			if [ ${#message_fieldLength} -gt 65535 ]; then
+			if [ $willMessage_fieldLength -gt 65535 ]; then
 				core_exitError $core_commandLine_exitCode_CONFIG "The size of the argument 'bishbosh_connection_write_CONNECT_willMessage' can not be longer than 65,535 bytes"
 			fi
 		fi
