@@ -18,7 +18,8 @@ bishbosh_connection_ping_initialise()
 			if bishbosh_connection_ping_checkTimer -lt $bishbosh_connection_write_CONNECT_keepAlive; then
 				return 0
 			fi
-	
+			
+			core_message INFO 'Writing PINGREQ'
 			bishbosh_connection_write_PINGREQ
 			bishbosh_connection_ping_responsePending=1
 		}
@@ -46,7 +47,7 @@ bishbosh_connection_ping_initialise()
 
 		bishbosh_connection_ping_responseReceived()
 		{
-			echo 'RESPONSE RCD' 1>&2
+			core_message INFO 'Received valid PINGREQ'
 			bishbosh_connection_ping_responsePending=0
 		}
 		
