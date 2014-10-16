@@ -8,6 +8,13 @@ bishbosh_connection_ping_initialise()
 	fi
 	
 	if [ $bishbosh_connection_write_CONNECT_keepAlive -ne 0 ]; then
+	
+		if [ $bishbosh_readLatency -ge 1000 ]; then
+			if [ $bishbosh_connection_write_CONNECT_keepAlive -lt 2 ]; then
+				core_message WARN "When the option '--read-latency' (or configuration setting 'bishbosh_readLatency') is 1000 ms, 'bishbosh_connection_write_CONNECT_keepAlive' must be at least 2 seconds (not '$bishbosh_connection_write_CONNECT_keepAlive'). bishbosh_connection_write_CONNECT_keepAlive is being forcing to 2 seconds."
+				bishbosh_connection_write_CONNECT_keepAlive=2
+			fi
+		fi
 		
 		bishbosh_connection_ping_sendPingIfRequired()
 		{

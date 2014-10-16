@@ -1,7 +1,7 @@
 core_usesIn bishbosh/connection/read controlpacket byte
 
 bishbosh_connection_read_nonBlockingFeatureTest()
-{
+{	
 	local testFifoPath="$(bishbosh_connection_mkfifo 'non-blocking-read-feature-test')"
 	exec 3<>"$testFifoPath"
 	printf '%s\n' 'test' >&3

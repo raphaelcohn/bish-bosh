@@ -1,4 +1,4 @@
-#!/usr/bin/env dash
+#!/usr/bin/env sh
 
 _program()
 {
@@ -885,16 +885,27 @@ _program_commandLine_validate()
 	else
 		bishbosh_validate_latency $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_readLatency' "$bishbosh_readLatency"
 	fi
-	if [ $bishbosh_readLatency -lt 1 ]; then
-		bishbosh_readLatency_inFractionalSeconds=0
-	elif [ $bishbosh_readLatency -lt 10 ]; then
-		bishbosh_readLatency_inFractionalSeconds=0.00${bishbosh_readLatency}
-	elif [ $bishbosh_readLatency -lt 100 ]; then
-		bishbosh_readLatency_inFractionalSeconds=0.0${bishbosh_readLatency}
-	elif [ $bishbosh_readLatency -lt 1000 ]; then
-		bishbosh_readLatency_inFractionalSeconds=0.${bishbosh_readLatency}
-	else
-		bishbosh_readLatency_inFractionalSeconds=1
+
+	if core_variable_isSet BASH_VERSINFO; then
+		if [ ${BASH_VERSINFO[0]} -eq 3 ]; then
+			if [ $bishbosh_readLatency -lt 1000 ]; then
+				core_message WARN "bash 3 does not support fractional read latency (we're forcing bishbosh_readLatency to 1000 ms) [discovered on Mac OS X when run as default sh]"
+				bishbosh_readLatency=1000
+				bishbosh_readLatency_inFractionalSeconds=1
+			fi
+		else
+			if [ $bishbosh_readLatency -lt 1 ]; then
+				bishbosh_readLatency_inFractionalSeconds=0
+			elif [ $bishbosh_readLatency -lt 10 ]; then
+				bishbosh_readLatency_inFractionalSeconds=0.00${bishbosh_readLatency}
+			elif [ $bishbosh_readLatency -lt 100 ]; then
+				bishbosh_readLatency_inFractionalSeconds=0.0${bishbosh_readLatency}
+			elif [ $bishbosh_readLatency -lt 1000 ]; then
+				bishbosh_readLatency_inFractionalSeconds=0.${bishbosh_readLatency}
+			else
+				bishbosh_readLatency_inFractionalSeconds=1
+			fi
+		fi
 	fi
 	
 	if core_variable_isUnset bishbosh_lockLatency; then
