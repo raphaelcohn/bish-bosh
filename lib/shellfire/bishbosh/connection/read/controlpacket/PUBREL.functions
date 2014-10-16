@@ -7,17 +7,21 @@ bishbosh_connection_read_controlpacket_PUBREL()
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
 	
+	local messageFileBasePath="$bishbosh_connection_sessionReceivePath"/2/$packetIdentifier
 	local unknownPacketIdentifier
-	local pendingReceiveQoS2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQoS2PendingReceivePath"/"$packetIdentifier"
-	if [ -f "$pendingReceiveQoS2PacketIdentifierPath" ]; then
+	if [ -f "$messageFileBasePath".sent-pubrec ]; then
 		unknownPacketIdentifier=0
 	else
 		unknownPacketIdentifier=1
+		printf '' >"$messageFileBasePath".sent-pubrec
 	fi
 	
 	bishbosh_connection_handler_PUBREL
-	rm "$pendingReceiveQoS2PacketIdentifierPath" 2>/dev/null
 	
 	bishbosh_connection_write_packetIdentifier=$packetIdentifier
 	bishbosh_connection_write_PUBCOMP
+	
+	set +f
+	rm -rf "$messageFileBasePath".* 2>/dev/null
+	set -f
 }

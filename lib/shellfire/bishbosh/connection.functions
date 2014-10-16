@@ -107,23 +107,14 @@ bishbosh_connection_defaultAndCreateSessionSubFolderPaths()
 	
 	# publications: Can be overridden, but not listed in help or README.md
 	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsPath "$bishbosh_connection_sessionPath" publications
+	mkdir -m 0700 -p "$bishbosh_connection_sessionPublicationsPath"/1
+	mkdir -m 0700 -p "$bishbosh_connection_sessionPublicationsPath"/2
 	
-	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsQoS2PendingReceivePath "$bishbosh_connection_sessionPublicationsPath" QoS2-receive
-	
-	
-	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsQoS1PendingSendPath "$bishbosh_connection_sessionPublicationsPath" QoS1-sent-publish
-	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsQoS2PendingSendPath "$bishbosh_connection_sessionPublicationsPath" QoS2-sent-publish
-	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsQoS2PendingCompPath "$bishbosh_connection_sessionPublicationsPath" QoS2-sent-pubrel
-	
-	# messages: Can be overridden, but not listed in help or README.md
-	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionReceivedMessagesPath "$bishbosh_connection_sessionPath" received-messages
-}
-
-bishbosh_connection_defaultEssentialState()
-{
-	if core_variable_isUnset bishbosh_connection_nextReceivedMessageNumber; then
-		bishbosh_connection_nextReceivedMessageNumber=0
-	fi
+	# publications: Can be overridden, but not listed in help or README.md
+	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionReceivePath "$bishbosh_connection_sessionPath" receive
+	mkdir -m 0700 -p "$bishbosh_connection_sessionReceivePath"/0
+	mkdir -m 0700 -p "$bishbosh_connection_sessionReceivePath"/1
+	mkdir -m 0700 -p "$bishbosh_connection_sessionReceivePath"/2
 }
 
 bishbosh_connection_obtainConnectionId()
@@ -221,12 +212,10 @@ bishbosh_connection_makeClientConnection()
 	
 	bishbosh_connection_chooseConnectionSessionPathAndCleanUpOldSessionIfRequired
 	bishbosh_connection_defaultAndCreateSessionSubFolderPaths
-	bishbosh_connection_defaultEssentialState
 	
 	bishbosh_connection_obtainConnectionId
 	bishbosh_connection_obtainNextSubscriptionIndex
 	bishbosh_connection_createFifos
-	
 	
 	bishbosh_connection_write_initialise
 	bishbosh_connection_read_initialise 'no'

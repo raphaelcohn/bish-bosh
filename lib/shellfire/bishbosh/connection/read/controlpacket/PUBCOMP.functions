@@ -11,16 +11,16 @@ bishbosh_connection_read_controlpacket_PUBCOMP()
 	local unknownPacketIdentifier
 	local alreadySentMessage="$bishbosh_connection_sessionPublicationsPath"/$QoS/"$bishbosh_connection_write_packetIdentifier"
 	
-	if [ -f "$alreadySentMessage".pubrel-ready ]; then
+	if [ -f "$alreadySentMessage".pubrec-received ]; then
 		unknownPacketIdentifier=0
 	else
 		# Handle from now on
 		unknownPacketIdentifier=1
-		printf '' >"$alreadySentMessage".pubrel-ready
+		printf '' >"$alreadySentMessage".pubrec-received
 	fi
 	
 	bishbosh_connection_handler_PUBCOMP
 	set -f
-	rm -f "$alreadySentMessage".*
+	rm -f "$alreadySentMessage".* 2>/dev/null
 	set +f
 }

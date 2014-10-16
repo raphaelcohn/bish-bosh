@@ -80,7 +80,6 @@ bishbosh_connection_read_PUBLISH_13()
 
 _bishbosh_connection_read_PUBLISH()
 {
-	read topic name
 	local length
 	bishbosh_connection_read_length
 	local topicLength=$length
@@ -100,41 +99,62 @@ _bishbosh_connection_read_PUBLISH()
 	
 	local messageLength=$((remainingLength-2-topicLength-2))
 	
-	# We really ought to dump the message to a file
-	local messageFilePath="$bishbosh_connection_sessionReceivedMessagesPath"/$bishbosh_connection_nextReceivedMessageNumber
-	bishbosh_connection_nextReceivedMessageNumber=$((bishbosh_connection_nextReceivedMessageNumber+1))
-	
-	local remainingMessageLength=$messageLength
-	local byte
-	while [ $remainingMessageLength -ne 0 ]
-	do
-		# Could we pipe stdin to dd and use a dirty converter?
-		bishbosh_connection_read_byte_blocking byte
-		bishbosh_connection_write_byte $byte
-		remainingMessageLength=$((remainingMessageLength-1))
-	done >"$messageFilePath"
+	# Not good enough for sorting
+	local messageFileBasePath="$bishbosh_connection_sessionReceivePath"/$QoS/$packetIdentifier
+	local messageFilePath="$messageFileBasePath".message
 
-	local pendingReceiveQoS2PacketIdentifierPath="$bishbosh_connection_sessionPublicationsQoS2PendingReceivePath"/"$packetIdentifier"
-	if [ -f "$pendingReceiveQoS2PacketIdentifierPath" ]; then
-		# assume we have sent the PUBREC w/o PUBREL being received
+	local remainingMessageLength=$messageLength
+	
+	local isADuplicate
+	local byte
+	
+	if [ -f "$messageFileBasePath".complete ]; then
+		isADuplicate=1
+	
+		while [ $remainingMessageLength -ne 0 ]
+		do
+			bishbosh_connection_read_byte_blocking byte
+			remainingMessageLength=$((remainingMessageLength-1))
+		done
+
 		bishbosh_connection_handler_PUBLISH_again
+		
 	else
+		isADuplicate=0
+	
+		while [ $remainingMessageLength -ne 0 ]
+		do
+			bishbosh_connection_read_byte_blocking byte
+			bishbosh_connection_write_byte $byte
+			remainingMessageLength=$((remainingMessageLength-1))
+		done >"$messageFilePath"
+		
+		printf '' >"$messageFileBasePath".complete
+		
 		bishbosh_connection_handler_PUBLISH
-		if [ $QoS -eq 2 ]; then
-			printf '' >"$pendingReceiveQoS2PacketIdentifierPath"
-		fi
 	fi
 	
 	case $QoS in
 		
+		0)
+			set +f
+			rm -rf "$messageFileBasePath".* 2>/dev/null
+			set -f
+		;;
+		
 		1)
 			bishbosh_connection_write_packetIdentifier=$packetIdentifier
 			bishbosh_connection_write_PUBACK
+
+			set +f
+			rm -rf "$messageFileBasePath".* 2>/dev/null
+			set -f
 		;;
 		
 		2)
 			bishbosh_connection_write_packetIdentifier=$packetIdentifier
 			bishbosh_connection_write_PUBREC
+			printf '' >"$messageFileBasePath".sent-pubrec
 		;;
 		
 	esac

@@ -22,6 +22,6 @@ bishbosh_connection_read_controlpacket_PUBACK()
 	
 	bishbosh_connection_handler_PUBACK
 	set -f
-	rm -f "$alreadySentMessage".*
+	rm -f "$alreadySentMessage".* 2>/dev/null
 	set +f
 }

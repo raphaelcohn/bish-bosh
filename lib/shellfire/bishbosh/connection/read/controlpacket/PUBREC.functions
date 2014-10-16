@@ -1,5 +1,5 @@
 core_usesIn bishbosh/connection error
-core_dependency_requires '*' mv
+core_dependency_requires '*' mv rm
 bishbosh_connection_read_controlpacket_PUBREC()
 {
 	bishbosh_connection_error_ifRemainingLengthNot PUBREC 2
@@ -11,17 +11,14 @@ bishbosh_connection_read_controlpacket_PUBREC()
 	local unknownPacketIdentifier
 	local alreadySentMessage="$bishbosh_connection_sessionPublicationsPath"/$QoS/"$bishbosh_connection_write_packetIdentifier"
 	
+	printf '' >"$alreadySentMessage".pubrec-received
+	
 	if [ -f "$alreadySentMessage".topic-name ]; then
 		unknownPacketIdentifier=0
 	else
 		# Handle from now on; empty topic-name means we don't know about it
 		unknownPacketIdentifier=1
 		printf '' >"$alreadySentMessage".topic-name
-	fi
-	
-	# Seems to be a duplicate PUBREC
-	if [ -f "$alreadySentMessage".pubrel-ready ]; then
-		core_message NOTICE "Duplicate PUBREC for packet identifier '$packetIdentifier'"
 	fi
 	
 	# reply

@@ -60,4 +60,67 @@ bishbosh_connection_read_controlpacket_CONNACK()
 	esac
 	
 	bishbosh_connection_handler_CONNACK
+	
+	bishbosh_connection_read_controlpacket_CONNACK_republish
+	bishbosh_connection_read_controlpacket_CONNACK_repubcomp
+}
+
+bishbosh_connection_read_controlpacket_CONNACK_republish()
+{
+	pushd "$bishbosh_connection_sessionPublicationsPath"
+		
+		local QoS
+		local packetIdentifier
+		local extension=.message
+		
+		local alreadySentMessageMessage
+		local alreadySentMessage
+		
+		for QoS in 1 2
+		do
+			pushd $QoS
+	
+				set +f
+				for alreadySentMessageMessage in *.${extension}
+				do
+					set -f
+					if [ ! -e "$alreadySentMessageMessage" ]; then
+						continue
+					fi
+					packetIdentifier="$(core_variable_allButLastN "$alreadySentMessageMessage" ${#extension})"
+					
+					if [ -f "$packetIdentifier".pubrec-received ]; then
+						bishbosh_connection_write_packetIdentifier=$packetIdentifier
+						bishbosh_connection_write_rePUBREC
+					else
+						bishbosh_connection_write_rePUBLISH
+					fi
+				done
+				set -f
+			popd
+		done
+	popd
+}
+
+bishbosh_connection_read_controlpacket_CONNACK_repubcomp()
+{
+	pushd "$bishbosh_connection_sessionReceivePath"/2
+		
+		local sentPubrecRecord
+		local extension=.sent-pubrec
+		
+		set +f
+		for sentPubrecRecord in *.${extension}
+		do
+			set -f
+			if [ ! -e "$sentPubrecRecord" ]; then
+				continue
+			fi
+			
+			bishbosh_connection_write_packetIdentifier="$(core_variable_allButLastN "$sentPubrecRecord" ${#extension})"
+			bishbosh_connection_write_PUBCOMP
+		done
+		set +f
+	
+	popd
 }

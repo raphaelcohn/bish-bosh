@@ -172,10 +172,10 @@ _bishbosh_connection_write_PUBLISH_writeMessagePingAndUnlink()
 	fi
 }
 
+# requires QoS, packetIdentifier
 bishbosh_connection_write_rePUBLISH()
 {
-	local QoS=$1
-	local packetIdentifier="$2"
+	core_message INFO "re-PUBLISH-ing packet identifier '$bishbosh_connection_write_packetIdentifier'"
 	
 	local bishbosh_connection_write_packetIdentifier=$packetIdentifier
 	
