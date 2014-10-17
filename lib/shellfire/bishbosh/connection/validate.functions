@@ -145,7 +145,7 @@ bishbosh_connection_validate_clientId()
 	_bishbosh_connection_validate_clientId_restrictedCharacters
 }
 
-bishbosh_connection_validateTopicName()
+bishbosh_connection_validate_topicName()
 {
 	local argument="$1"
 	local value="$2"
@@ -185,6 +185,17 @@ bishbosh_connection_validate_topicFilter()
 	fi
 	
 	_bishbosh_connection_validate_topicFilter_sed
+}
+
+bishbosh_connection_validate_publishMessageFieldLength()
+{
+	local maximumLength=$((268435455-2-topicNameFieldLength))
+	if [ $QoS -ne 0 ]; then
+		maximumLength=$((maximumLength-2))
+	fi
+	if [ $messageFieldLength -gt $maximumLength ]; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The message can not be longer than $maximumLength bytes when topicName is $topicNameFieldLength bytes and QoS is $QoS."
+	fi
 }
 
 bishbosh_connection_validate_packetIdentifier()

@@ -33,6 +33,5 @@ bishbosh_connection_handler_CONNACK()
 	bishbosh_connection_write_PUBLISH_message='X'
 	#bishbosh_connection_write_PUBLISH_messageFilePath="example.message"
 	#bishbosh_connection_write_PUBLISH_messageUnlinkFile=no
-	#bishbosh_connection_write_PUBLISH_resetArguments=yes
 	bishbosh_connection_write_PUBLISH
 }

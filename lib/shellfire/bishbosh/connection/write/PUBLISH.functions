@@ -28,7 +28,7 @@ _bishbosh_connection_write_PUBLISH_setTopicName()
 	if core_variable_isUnset bishbosh_connection_write_PUBLISH_topicName; then
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_PUBLISH_topicName' must be specified"
 	fi
-	bishbosh_connection_validateTopicName bishbosh_connection_write_PUBLISH_topicName "$bishbosh_connection_write_PUBLISH_topicName"
+	bishbosh_connection_validate_topicName bishbosh_connection_write_PUBLISH_topicName "$bishbosh_connection_write_PUBLISH_topicName"
 	topicName="$bishbosh_connection_write_PUBLISH_topicName"
 	
 	topicNameFieldLength=${#topicName}
@@ -79,6 +79,7 @@ _bishbosh_connection_write_PUBLISH_setMessage()
 				messageUnlinkFile=0
 			else
 				messageUnlinkFile=1
+			fi
 		else
 			messageUnlinkFile=0
 		fi
@@ -95,13 +96,7 @@ _bishbosh_connection_write_PUBLISH_setMessage()
 		messageUnlinkFile=0
 	fi
 	
-	local maximumLength=$((268435455-2-topicNameFieldLength))
-	if [ $QoS -ne 0 ]; then
-		maximumLength=$((maximumLength-2))
-	fi
-	if [ $messageFieldLength -gt $maximumLength ]; then
-		core_exitError $core_commandLine_exitCode_CONFIG "The message can not be longer than $maximumLength bytes when topicName is $topicNameFieldLength bytes and QoS is $QoS."
-	fi
+	bishbosh_connection_validate_publishMessageFieldLength
 	remainingLength=$(( remainingLength + messageFieldLength ))
 }
 

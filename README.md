@@ -212,14 +212,6 @@ bishbosh_connection_handler_CONNACK()
 	bishbosh_connection_write_PUBLISH_retain=yes
 	bishbosh_connection_write_PUBLISH_messageFilePath="/path/to/message"
 	bishbosh_connection_write_PUBLISH_messageUnlinkFile=no
-	bishbosh_connection_write_PUBLISH_resetArguments=no
-	XXXXX    bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
-	bishbosh_connection_incrementNextPacketIdentifier
-	bishbosh_connection_write_PUBLISH
-	
-	# Publish again - using bishbosh_connection_write_PUBLISH_resetArguments=no allows reuse of settings
-	XXXXX    bishbosh_connection_write_packetIdentifier=$bishbosh_connection_nextPacketIdentifier
-	bishbosh_connection_incrementNextPacketIdentifier
 	bishbosh_connection_write_PUBLISH
 }
 ```

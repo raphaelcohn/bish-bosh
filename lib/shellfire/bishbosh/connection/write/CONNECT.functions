@@ -39,7 +39,7 @@ _bishbosh_connection_write_CONNECT_validateArguments()
 		
 		# Will Topic
 		willTopic="$bishbosh_connection_write_CONNECT_willTopic"
-		bishbosh_connection_validateTopicName bishbosh_connection_write_CONNECT_willTopic "$willTopic"
+		bishbosh_connection_validate_topicName bishbosh_connection_write_CONNECT_willTopic "$willTopic"
 		willTopicFieldLength=${#willTopic}
 		remainingLength=$(( remainingLength + 2 + willTopicFieldLength ))
 		

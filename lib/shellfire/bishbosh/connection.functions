@@ -110,7 +110,7 @@ bishbosh_connection_defaultAndCreateSessionSubFolderPaths()
 	mkdir -m 0700 -p "$bishbosh_connection_sessionPublicationsPath"/1
 	mkdir -m 0700 -p "$bishbosh_connection_sessionPublicationsPath"/2
 	
-	# publications: Can be overridden, but not listed in help or README.md
+	# receive: Can be overridden, but not listed in help or README.md
 	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionReceivePath "$bishbosh_connection_sessionPath" receive
 	mkdir -m 0700 -p "$bishbosh_connection_sessionReceivePath"/0
 	mkdir -m 0700 -p "$bishbosh_connection_sessionReceivePath"/1
