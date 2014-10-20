@@ -21,12 +21,6 @@ bishbosh_connection_packetIdentifier_initialise()
 		fi
 	fi
 	
-	# Ensure current session path is clean
-	# We should destroy any historic session paths...
-	#set +f
-	#rm -rf "$bishbosh_connection_sessionPath"/* 2>/dev/null || core_message WARN "Could not clean up session state at '$bishbosh_connection_sessionPath'"
-	#set -f
-	
 	# packet-identifiers: Can be overridden, but not listed in help or README.md
 	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPacketIdentifiersPath "$bishbosh_connection_sessionPath" packet-identifiers
 	

@@ -87,19 +87,6 @@ bishbosh_connection_obtainConnectionId()
 	fi
 }
 
-cat <<EOF
-
-outcome no1 - packet identifiers could be stored as folders, not files OR SYMLINKS
-outcome no2 - packet identifiers should symlink to their SUBSCRIBE, UNSUBSCRIBE, PUBLISH (and friends)
-outcome no3 - packet identifiers should be block-sized
-
-
-EOF
-
-
-
-
-
 core_dependency_requires '*' rmdir mkdir
 bishbosh_connection_obtainLockForClientId()
 {
