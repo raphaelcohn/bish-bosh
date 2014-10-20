@@ -3,18 +3,7 @@ core_usesIn bishbosh/connection/write CONNECT DISCONNECT PINGREQ PUBACK PUBCOMP 
 
 core_dependency_oneOf '*' dd cat tee tail head tr
 bishbosh_connection_write_initialise()
-{
-	# Needs to be persisted in some fashion / derived from on disk messages
-	_bishbosh_connection_write_nextPacketIdentifier=1
-	
-	core_exitError 1 "FIX bishbosh_connection_write_nextPacketIdentifier"
-	core_exitError 1 "FIX sort order for packet identifiers so we can republish in correct order (some sort of marker?)"
-	core_exitError 1 "FIX prevent publish if all packet identifiers in use"
-	core_exitError 1 "FIX skip over next identifier if in use / allocate initial value"
-	
-	# integrate with the SUBSCRIBE / UNSCUBCRIBE system
-	# only matters for PUBLISH / SUBSCRIBE / UNSUBSCRIBE [everything else is ]
-	
+{	
 	if core_compatibility_whichNoOutput dd; then
 		bishbosh_connection_write_file()
 		{
@@ -87,17 +76,4 @@ bishbosh_connection_write_twoByteLength()
 	local length=$1
 	bishbosh_connection_write_byte $(( length >> 8 ))
 	bishbosh_connection_write_byte $(( length & 255 ))
-}
-
-bishbosh_connection_write_nextPacketIdentifier()
-{
-	bishbosh_connection_write_packetIdentifier=$_bishbosh_connection_write_nextPacketIdentifier
-	
-	core_exitError 1 "Determine if we need to skip a packet identifier"
-	
-	if [ $_bishbosh_connection_write_nextPacketIdentifier -eq 65535 ]; then
-		_bishbosh_connection_write_nextPacketIdentifier=1
-	else
-		_bishbosh_connection_write_nextPacketIdentifier=$((_bishbosh_connection_write_nextPacketIdentifier+1))
-	fi
 }

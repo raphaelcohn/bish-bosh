@@ -4,7 +4,7 @@ _bishbosh_connection_write_UNSUBSCRIBE_validateArguments()
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_UNSUBSCRIBE_topics' must contain at least one topic"
 	fi
 	
-	local recordFile="$bishbosh_connection_sessionSubscriptionsUnsubscribingPath"/"$bishbosh_connection_write_packetIdentifier"
+	local recordFile="$bishbosh_connection_sessionSubscriptionsUnsubscribingPath"/"$bishbosh_connection_packetIdentifier_forWriting"
 	while [ $# -gt 0 ]
 	do
 		topicFilter="$1"
@@ -24,7 +24,8 @@ _bishbosh_connection_write_UNSUBSCRIBE_validateArguments()
 core_usesIn bishbosh/connection write
 bishbosh_connection_write_UNSUBSCRIBE()
 {
-	bishbosh_connection_write_nextPacketIdentifier
+
+	REDO PACKET IDENTIFIER NEXT
 
 	local remainingLength=2
 	local topicFilter
@@ -34,7 +35,7 @@ bishbosh_connection_write_UNSUBSCRIBE()
 	# 10 << 4 + 1 << 1 in octal
 	printf '\242'
 	bishbosh_connection_write_remainingLength $remainingLength
-	bishbosh_connection_write_twoByteLength $bishbosh_connection_write_packetIdentifier
+	bishbosh_connection_packetIdentifier_write
 	
 	while [ $# -gt 0 ]
 	do

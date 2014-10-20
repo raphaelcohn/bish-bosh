@@ -5,9 +5,20 @@ bishbosh_connection_write_PUBREL()
 	
 	# 6 << 4 in octal + 1 << 1, followed by 2 (remaining length)
 	printf '\142\002'
-	bishbosh_connection_write_twoByteLength $bishbosh_connection_write_packetIdentifier
-	
-	unset bishbosh_connection_write_packetIdentifier
+	bishbosh_connection_packetIdentifier_write
+
+	# Assumes packetIdentifierFolderPath is in scope (it should be)
+	printf '' >"$packetIdentifierFolderPath"/pubrel	
 	
 	bishbosh_connection_ping_recordLastSentControlPacketAt
+}
+
+bishbosh_connection_write_rePUBREL()
+{
+	core_message INFO "re-PUBREL-ing packet identifier '$packetIdentifier'"
+
+	local packetIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_packetIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_forWriting=$packetIdentifier
+	bishbosh_connection_write_PUBREL
 }

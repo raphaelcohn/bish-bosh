@@ -7,23 +7,26 @@ bishbosh_connection_read_controlpacket_PUBREC()
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
 	
-	local QoS=2
+	local packetIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_packetIdentifierFolderPath
+	
 	local unknownPacketIdentifier
-	local alreadySentMessage="$bishbosh_connection_sessionPublicationsPath"/$QoS/"$bishbosh_connection_write_packetIdentifier"
-	
-	printf '' >"$alreadySentMessage".pubrec-received
-	
-	if [ -f "$alreadySentMessage".topic-name ]; then
+	local duplicate
+	if [ -f "$packetIdentifierFolderPath"/pubrel ]; then
 		unknownPacketIdentifier=0
+		duplicate=1
+	elif [ -f "$packetIdentifierFolderPath"/publish ]; then
+		unknownPacketIdentifier=0
+		duplicate=0
 	else
-		# Handle from now on; empty topic-name means we don't know about it
 		unknownPacketIdentifier=1
-		printf '' >"$alreadySentMessage".topic-name
+		duplicate=0
+		
+		core_message WARN "Received a PUBREC with packet identifier '$packetIdentifier' for a PUBLISH that doesn't appear to be ours'"
 	fi
 	
-	# reply
-	bishbosh_connection_write_packetIdentifier=$packetIdentifier
-	bishbosh_connection_write_PUBREL
-	
 	bishbosh_connection_handler_PUBREC
+	
+	bishbosh_connection_packetIdentifier_forWriting=$packetIdentifier
+	bishbosh_connection_write_PUBREL
 }

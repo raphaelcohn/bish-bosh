@@ -8,20 +8,19 @@ bishbosh_connection_read_controlpacket_PUBACK()
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
 	
-	local QoS=1
-	local unknownPacketIdentifier
-	local alreadySentMessage="$bishbosh_connection_sessionPublicationsPath"/$QoS/"$packetIdentifier"
+	local packetIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_packetIdentifierFolderPath
 	
-	if [ -f "$alreadySentMessage".topic-name ]; then
+	local unknownPacketIdentifier
+	if [ -f "$packetIdentifierFolderPath"/publish ]; then
 		unknownPacketIdentifier=0
 	else
-		# Handle from now on; empty topic-name means we don't know about it
 		unknownPacketIdentifier=1
-		printf '' >"$alreadySentMessage".topic-name
+		
+		core_message WARN "Received a PUBACK with packet identifier '$packetIdentifier' for a PUBLISH that doesn't appear to be ours'"
 	fi
 	
 	bishbosh_connection_handler_PUBACK
-	set -f
-	rm -f "$alreadySentMessage".* 2>/dev/null
-	set +f
+	
+	bishbosh_connection_packetIdentifier_retire
 }

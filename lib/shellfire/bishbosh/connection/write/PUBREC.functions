@@ -5,22 +5,18 @@ bishbosh_connection_write_PUBREC()
 	
 	# 5 << 4 in octal, followed by 2 (remaining length)
 	printf '\120\002'
-	bishbosh_connection_write_twoByteLength $bishbosh_connection_write_packetIdentifier
-	
-	unset bishbosh_connection_write_packetIdentifier
+	bishbosh_connection_packetIdentifier_write
 	
 	bishbosh_connection_ping_recordLastSentControlPacketAt
 }
 
 bishbosh_connection_write_rePUBREC()
 {
-	core_message INFO "re-PUBREC-ing packet identifier '$bishbosh_connection_write_packetIdentifier'"
+	core_message INFO "re-PUBREC-ing packet identifier '$bishbosh_connection_packetIdentifier_forWriting'"
 	
 	# 5 << 4 in octal, followed by 2 (remaining length)
 	printf '\120\002'
-	bishbosh_connection_write_twoByteLength $bishbosh_connection_write_packetIdentifier
+	bishbosh_connection_packetIdentifier_write
 	
-	unset bishbosh_connection_write_packetIdentifier
-	
-	bishbosh_connection_ping_recordLastSentControlPacketAt
+	unbishbosh_connection_ping_recordLastSentControlPacketAt
 }

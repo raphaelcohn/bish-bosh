@@ -31,14 +31,14 @@ bishbosh_connection_write_SUBACK()
 	
 	bishbosh_connection_write_remainingLength $remainingLength
 	
-	bishbosh_connection_write_twoByteLength $bishbosh_connection_write_packetIdentifier
+	bishbosh_connection_packetIdentifier_write
 	
 	for resultCode in "$@"
 	do
 		bishbosh_connection_write_byte $resultCode
 	done
 	
-	unset bishbosh_connection_write_packetIdentifier
+	
 	
 	bishbosh_connection_ping_recordLastSentControlPacketAt
 }

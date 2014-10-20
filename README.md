@@ -374,7 +374,7 @@ See `man 8 stunnel` for more details. From experience, it can be a bit troubleso
 | 68   | Unknown Host | Not used presently |
 | 67   | Unknown User | **CONNACK** had a connection return code of 2 |
 | 66   |  | Not used |
-| 65   |  | Not used |
+| 65   | Data Error | Corrupt or unexpected data found in stored session state. |
 | 64   | Incorrect command line | Command line switches omitted, contradictory or incorrectly specified |
 | 2    |  | A shell builtin misbehaved |
 | 1    |  | Something went wrong we didn't expect or couldn't intercept |

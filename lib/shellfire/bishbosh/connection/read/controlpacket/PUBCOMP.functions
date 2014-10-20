@@ -7,20 +7,20 @@ bishbosh_connection_read_controlpacket_PUBCOMP()
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
 	
-	local QoS=2
-	local unknownPacketIdentifier
-	local alreadySentMessage="$bishbosh_connection_sessionPublicationsPath"/$QoS/"$bishbosh_connection_write_packetIdentifier"
+	local packetIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_packetIdentifierFolderPath
 	
-	if [ -f "$alreadySentMessage".pubrec-received ]; then
+	local unknownPacketIdentifier
+	if [ -f "$packetIdentifierFolderPath"/pubrel ]; then
 		unknownPacketIdentifier=0
 	else
 		# Handle from now on
 		unknownPacketIdentifier=1
-		printf '' >"$alreadySentMessage".pubrec-received
+
+		core_message WARN "Received a PUBCOMP with packet identifier '$packetIdentifier' for a PUBREL that doesn't appear to be ours'"
 	fi
 	
 	bishbosh_connection_handler_PUBCOMP
-	set -f
-	rm -f "$alreadySentMessage".* 2>/dev/null
-	set +f
+	
+	bishbosh_connection_packetIdentifier_retire
 }

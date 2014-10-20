@@ -26,6 +26,14 @@ bishbosh_connection_mkfifo()
 	printf '%s' "$fifoPath"
 }
 
+core_dependency_requires '*' rm
+bishbosh_connection_cleanContentsOfFolderPath()
+{
+	set +f
+	rm -rf "$1"/* 2>/dev/null
+	set -f
+}
+
 bishbosh_connection_sourceScriptlets()
 {
 	local path="$1"
@@ -68,55 +76,6 @@ _bishbosh_connection_defaultFolderPath()
 	fi
 }
 
-bishbosh_connection_chooseConnectionSessionPathAndCleanUpOldSessionIfRequired()
-{
-	# Choose a temporary location for clean session = 1 clients
-	local chosenParentPath
-	local tryToCleanUpSession
-	if core_variable_isUnset bishbosh_connection_sessionPath; then
-		if core_variable_isUnset bishbosh_connection_write_CONNECT_cleanSession; then
-			chosenParentPath="$bishbosh_sessionPath"
-			tryToCleanUpSession=0
-		else
-			core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'argument' bishbosh_connection_write_CONNECT_cleanSession "$bishbosh_connection_write_CONNECT_cleanSession"
-			if core_variable_isTrue "$bishbosh_connection_write_CONNECT_cleanSession"; then
-				chosenParentPath="$bishbosh_temporaryFolderPath"
-				tryToCleanUpSession=1
-			else
-				chosenParentPath="$bishbosh_sessionPath"
-				tryToCleanUpSession=0
-			fi
-		fi
-	fi
-	
-	local relativeSessionPath=servers/"$bishbosh_server"/ports/"$bishbosh_port"/client-ids/"$bishbosh_clientId"
-	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPath "$chosenParentPath"/"$relativeSessionPath" session
-	
-	if [ $tryToCleanUpSession ]; then
-		rm -rf "$bishbosh_sessionPath"/"$relativeSessionPath" 2>/dev/null || core_message WARN "Could not clean up session state at '$bishbosh_sessionPath/$relativeSessionPath'"
-	fi
-}
-
-bishbosh_connection_defaultAndCreateSessionSubFolderPaths()
-{
-	# subscriptions: Can be overridden, but not listed in help or README.md
-	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionSubscriptionsPath "$bishbosh_connection_sessionPath" subscriptions
-	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionSubscriptionsSubscribingPath "$bishbosh_connection_sessionSubscriptionsPath" subscribing
-	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionSubscriptionsActivePath "$bishbosh_connection_sessionSubscriptionsPath" active
-	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionSubscriptionsUnsubscribingPath "$bishbosh_connection_sessionSubscriptionsPath" unsubscribing
-	
-	# publications: Can be overridden, but not listed in help or README.md
-	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPublicationsPath "$bishbosh_connection_sessionPath" publications
-	mkdir -m 0700 -p "$bishbosh_connection_sessionPublicationsPath"/1
-	mkdir -m 0700 -p "$bishbosh_connection_sessionPublicationsPath"/2
-	
-	# receive: Can be overridden, but not listed in help or README.md
-	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionReceivePath "$bishbosh_connection_sessionPath" receive
-	mkdir -m 0700 -p "$bishbosh_connection_sessionReceivePath"/0
-	mkdir -m 0700 -p "$bishbosh_connection_sessionReceivePath"/1
-	mkdir -m 0700 -p "$bishbosh_connection_sessionReceivePath"/2
-}
-
 bishbosh_connection_obtainConnectionId()
 {
 	if core_variable_isUnset bishbosh_connection_nextId; then
@@ -128,35 +87,18 @@ bishbosh_connection_obtainConnectionId()
 	fi
 }
 
-bishbosh_connection_obtainNextSubscriptionIndex()
-{
-	# Or find . -type f -print | awk -v FS='/' '{print $2}' | sort -n  to get a numerically sorted list. Yuck.
-	bishbosh_connection_nextSubscriptionIndex=0
-	
-	pushd "$bishbosh_connection_sessionSubscriptionsActivePath"
-	
-		local currentSubscriptionIndex
-		local parsedCurrentSubscriptionIndex
-		set +f
-		for currentSubscriptionIndex in *
-		do
-			set -f
-			if [ ! -e "$currentSubscriptionIndex" ]; then
-				# ie '*'
-				continue
-			fi
-			
-			# This rather odd logic ensures that a leading-zero padded unsigned decimal integer number is not interpreted as octal
-			# Leading-zero padding is used to ensure the shell's glob-expansion sorts in ascending numerical order subscription files
-			parsedCurrentSubscriptionIndex=$((1${currentSubscriptionIndex}-1000000000))
-			if [ $parsedCurrentSubscriptionIndex -gt $bishbosh_connection_nextSubscriptionIndex ]; then
-				bishbosh_connection_nextSubscriptionIndex=$parsedCurrentSubscriptionIndex
-			fi
-		done
-		set -f
-	
-	popd
-}
+cat <<EOF
+
+outcome no1 - packet identifiers could be stored as folders, not files OR SYMLINKS
+outcome no2 - packet identifiers should symlink to their SUBSCRIBE, UNSUBSCRIBE, PUBLISH (and friends)
+outcome no3 - packet identifiers should be block-sized
+
+
+EOF
+
+
+
+
 
 core_dependency_requires '*' rmdir mkdir
 bishbosh_connection_obtainLockForClientId()
@@ -210,13 +152,11 @@ bishbosh_connection_makeClientConnection()
 	
 	bishbosh_connection_obtainLockForClientId
 	
-	bishbosh_connection_chooseConnectionSessionPathAndCleanUpOldSessionIfRequired
-	bishbosh_connection_defaultAndCreateSessionSubFolderPaths
-	
 	bishbosh_connection_obtainConnectionId
-	bishbosh_connection_obtainNextSubscriptionIndex
+	
 	bishbosh_connection_createFifos
 	
+	bishbosh_connection_packetIdentifier_initialise
 	bishbosh_connection_write_initialise
 	bishbosh_connection_read_initialise 'no'
 	bishbosh_connection_ping_initialise

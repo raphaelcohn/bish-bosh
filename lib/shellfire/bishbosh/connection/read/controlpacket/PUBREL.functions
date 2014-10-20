@@ -18,7 +18,7 @@ bishbosh_connection_read_controlpacket_PUBREL()
 	
 	bishbosh_connection_handler_PUBREL
 	
-	bishbosh_connection_write_packetIdentifier=$packetIdentifier
+	bishbosh_connection_packetIdentifier_forWriting=$packetIdentifier
 	bishbosh_connection_write_PUBCOMP
 	
 	set +f

@@ -4,7 +4,7 @@ _bishbosh_connection_write_SUBSCRIBE_validateArguments()
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' must contain at least one pair"
 	fi
 	
-	local pendingSubscribeByPacketIdentifierPath="$bishbosh_connection_sessionSubscriptionsSubscribingPath"/"$bishbosh_connection_write_packetIdentifier"
+	local pendingSubscribeByPacketIdentifierPath="$bishbosh_connection_sessionSubscriptionsSubscribingPath"/"$bishbosh_connection_packetIdentifier_forWriting"
 	mkdir -m 0700 -p "$pendingSubscribeByPacketIdentifierPath"
 	
 	local index=0
@@ -53,7 +53,8 @@ bishbosh_connection_write_SUBSCRIBE_cleanUpState()
 core_usesIn bishbosh/connection write
 bishbosh_connection_write_SUBSCRIBE()
 {
-	bishbosh_connection_write_nextPacketIdentifier
+	REDO PACKET IDENTIFIER NEXT
+	
 	
 	local remainingLength=2
 	local topicFilter
@@ -72,7 +73,7 @@ bishbosh_connection_write_SUBSCRIBE()
 	# 8 << 4 + 1 << 1 in octal
 	printf '\202'
 	bishbosh_connection_write_remainingLength $remainingLength
-	bishbosh_connection_write_twoByteLength $bishbosh_connection_write_packetIdentifier
+	bishbosh_connection_packetIdentifier_write
 	
 	while $# -gt 0
 	do
