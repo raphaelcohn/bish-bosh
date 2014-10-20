@@ -1,12 +1,12 @@
 core_dependency_requires '*' rm
 bishbosh_connection_packetIdentifier_initialise()
 {
-	if core_variable_isUnset bishbosh_connection_write_CONNECT_cleanSession; then
-		bishbosh_connection_write_CONNECT_cleanSession=1
+	if core_variable_isUnset bishbosh_connect_cleanSession; then
+		bishbosh_connect_cleanSession=1
 	fi
 	
 	# bishbosh_connection_sessionPath: Can be overridden, but not listed in help or README.md
-	if [ $bishbosh_connection_write_CONNECT_cleanSession -eq 0 ]; then
+	if [ $bishbosh_connect_cleanSession -eq 0 ]; then
 		_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPath "$bishbosh_sessionPath"/servers/"$bishbosh_server"/ports/"$bishbosh_port"/client-ids "_${bishbosh_clientId}"
 	else
 		_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPath "$bishbosh_temporaryFolderPath" session
@@ -139,16 +139,16 @@ bishbosh_connection_packetIdentifier_useOneOfOurs()
 	
 	$callback "$@"
 	
-	bishbosh_connection_packetIdentifier_incrementTransmissionCounter
-	
 	# only once transmission counter is written is this publish, etc, good to be sent
-	printf '%s' "$transmissionCounter" >"$ourPacketIdentifierFolderPath"/transmission-counter
+	bishbosh_connection_packetIdentifier_incrementTransmissionCounter "$ourPacketIdentifierFolderPath"
 }
 
 bishbosh_connection_packetIdentifier_incrementTransmissionCounter()
 {
+	local packetIdentifierFolderPath="$1"
 	local transmissionCounter=$bishbosh_connection_packetIdentifier_transmissionCounter
 	bishbosh_connection_packetIdentifier_transmissionCounter=$((bishbosh_connection_packetIdentifier_transmissionCounter+1))
+	printf '%s' "$transmissionCounter" >"$packetIdentifierFolderPath"/transmission-counter
 }
 
 # Assumes  packetIdentifier  already set
@@ -169,7 +169,6 @@ bishbosh_connection_packetIdentifier_ourPacketIdentifierFolderPath()
 bishbosh_connection_packetIdentifier_write()
 {
 	bishbosh_connection_write_twoByteLength $bishbosh_connection_packetIdentifier_forWriting
-	unset bishbosh_connection_packetIdentifier_forWriting
 }
 
 # Assumes  packetIdentifier  already set

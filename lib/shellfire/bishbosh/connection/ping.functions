@@ -3,16 +3,16 @@ bishbosh_connection_ping_initialise()
 {
 	bishbosh_connection_ping_responsePending=0
 	
-	if core_variable_isUnset bishbosh_connection_write_CONNECT_keepAlive; then
-		bishbosh_connection_write_CONNECT_keepAlive=0
+	if core_variable_isUnset bishbosh_connect_keepAlive; then
+		bishbosh_connect_keepAlive=0
 	fi
 	
-	if [ $bishbosh_connection_write_CONNECT_keepAlive -ne 0 ]; then
+	if [ $bishbosh_connect_keepAlive -ne 0 ]; then
 	
 		if [ $bishbosh_readLatency -ge 1000 ]; then
-			if [ $bishbosh_connection_write_CONNECT_keepAlive -lt 2 ]; then
-				core_message WARN "When the option '--read-latency' (or configuration setting 'bishbosh_readLatency') is 1000 ms, 'bishbosh_connection_write_CONNECT_keepAlive' must be at least 2 seconds (not '$bishbosh_connection_write_CONNECT_keepAlive'). bishbosh_connection_write_CONNECT_keepAlive is being forcing to 2 seconds."
-				bishbosh_connection_write_CONNECT_keepAlive=2
+			if [ $bishbosh_connect_keepAlive -lt 2 ]; then
+				core_message WARN "When the option '--read-latency' (or configuration setting 'bishbosh_readLatency') is 1000 ms, 'bishbosh_connect_keepAlive' must be at least 2 seconds (not '$bishbosh_connect_keepAlive'). bishbosh_connect_keepAlive is being forcing to 2 seconds."
+				bishbosh_connect_keepAlive=2
 			fi
 		fi
 		
@@ -22,7 +22,7 @@ bishbosh_connection_ping_initialise()
 				return 0
 			fi
 			
-			if bishbosh_connection_ping_checkTimer -lt $bishbosh_connection_write_CONNECT_keepAlive; then
+			if bishbosh_connection_ping_checkTimer -lt $bishbosh_connect_keepAlive; then
 				return 0
 			fi
 			
@@ -92,8 +92,8 @@ bishbosh_connection_ping_initialise()
 			return 0
 		fi
 		
-		core_message WARN "Your shell does not support 'SECONDS' and the 'date' program isn't unavailble. Overriding your setting of 'bishbosh_connection_write_CONNECT_keepAlive as '$bishbosh_connection_write_CONNECT_keepAlive' to '0' (ie disabling)."
-		bishbosh_connection_write_CONNECT_keepAlive=0
+		core_message WARN "Your shell does not support 'SECONDS' and the 'date' program isn't unavailble. Overriding your setting of 'bishbosh_connect_keepAlive as '$bishbosh_connect_keepAlive' to '0' (ie disabling)."
+		bishbosh_connect_keepAlive=0
 	fi
 	
 	bishbosh_connection_ping_sendPingIfRequired()

@@ -7,11 +7,11 @@ bishbosh_connection_clientId_validateAndDefault()
 		return 0
 	fi
 	
-	if core_variable_isUnset bishbosh_connection_write_CONNECT_cleanSession; then
+	if core_variable_isUnset bishbosh_connect_cleanSession; then
 		core_exitError $core_commandLine_exitCode_CONFIG "Clean Session is 0 and the option -i,--client-id or configuration setting bishbosh_clientId isn't set, either in configuration, SCRIPTLETS or any path under '$bishbosh_clientPath'."
 	else
-		core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'configuration setting' bishbosh_connection_write_CONNECT_cleanSession "$bishbosh_connection_write_CONNECT_cleanSession"
-		if core_variable_isFalse "$bishbosh_connection_write_CONNECT_cleanSession"; then
+		core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'configuration setting' bishbosh_connect_cleanSession "$bishbosh_connect_cleanSession"
+		if core_variable_isFalse "$bishbosh_connect_cleanSession"; then
 			core_exitError $core_commandLine_exitCode_CONFIG "Clean Session is 0 and the option -i,--client-id or configuration setting bishbosh_clientId isn't set, either in configuration, SCRIPTLETS or any path under '$bishbosh_clientPath'."
 		fi
 	fi

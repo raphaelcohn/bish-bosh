@@ -1,11 +1,11 @@
 _bishbosh_connection_write_SUBSCRIBE_validateArguments()
 {
 	if [ $# -lt 2 ]; then
-		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' must contain at least one pair"
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_subscribe_topicQoSPairs' must contain at least one pair"
 	fi
 	
 	if [ $(($#%2)) -ne 0 ]; then
-		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' must contain pairs"
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_subscribe_topicQoSPairs' must contain pairs"
 	fi	
 	
 	local topicFilter
@@ -15,7 +15,7 @@ _bishbosh_connection_write_SUBSCRIBE_validateArguments()
 	while [ $# -gt 0 ]
 	do
 		topicFilter="$1"
-		bishbosh_connection_validate_topicFilter 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' $index "$topicFilter"
+		bishbosh_connection_validate_topicFilter 'bishbosh_subscribe_topicQoSPairs' $index "$topicFilter"
 		
 		topicQoS=$2
 		case "$topicQoS" in
@@ -25,7 +25,7 @@ _bishbosh_connection_write_SUBSCRIBE_validateArguments()
 			;;
 			
 			*)
-				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' at pair index '$index' must contain QoS values between 0 to 2 (inclusive), not '$topicQoS'"
+				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_subscribe_topicQoSPairs' at pair index '$index' must contain QoS values between 0 to 2 (inclusive), not '$topicQoS'"
 			;;
 		esac
 		
@@ -64,7 +64,7 @@ _bishbosh_connection_write_SUBSCRIBE_store()
 }
 
 core_usesIn bishbosh/connection write
-bishbosh_connection_write_SUBSCRIBE()
+_bishbosh_connection_write_SUBSCRIBE()
 {
 	local remainingLength=2
 	_bishbosh_connection_write_SUBSCRIBE_validateArguments "$@"
@@ -137,7 +137,6 @@ bishbosh_connection_write_reSUBSCRIBE()
 	
 	local bishbosh_connection_packetIdentifier_forWriting=$packetIdentifier
 	bishbosh_connection_packetIdentifier_write
-	unset bishbosh_connection_packetIdentifier_forWriting
 	
 	pushd "$topicFiltersPath"
 
@@ -154,4 +153,9 @@ bishbosh_connection_write_reSUBSCRIBE()
 	popd
 	
 	bishbosh_connection_ping_recordLastSentControlPacketAt
+}
+
+bishbosh_subscribe()
+{
+	_bishbosh_connection_write_SUBSCRIBE "$@"
 }

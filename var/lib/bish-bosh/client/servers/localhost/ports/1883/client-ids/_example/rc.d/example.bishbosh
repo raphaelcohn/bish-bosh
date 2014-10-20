@@ -3,35 +3,41 @@
 #bishbosh_server=test.mosquitto.org
 #bishbosh_clientId=example
 
-bishbosh_connection_write_CONNECT_cleanSession=1
-bishbosh_connection_write_CONNECT_willTopic='X'
-bishbosh_connection_write_CONNECT_willMessage='goodbye'
-bishbosh_connection_write_CONNECT_willQoS=1
-bishbosh_connection_write_CONNECT_willRetain=1
-bishbosh_connection_write_CONNECT_keepAlive=1
-#bishbosh_connection_write_CONNECT_username=user
-#bishbosh_connection_write_CONNECT_password=password
+#bishbosh_connect_cleanSession=0
+bishbosh_connect_willTopic='X'
+bishbosh_connect_willMessage='goodbye'
+bishbosh_connect_willQoS=1
+bishbosh_connect_willRetain=1
+bishbosh_connect_keepAlive=1
+#bishbosh_connect_username=user
+#bishbosh_connect_password=password
 
 bishbosh_connection_handler_CONNACK()
 {
 	# Set up some subscriptions... another implementation could read from a standard file
-	bishbosh_connection_write_SUBSCRIBE \
+	bishbosh_subscribe \
 		'/topic/qos/0' 0 \
 		'/topic/qos/1' 1 \
 		'/topic/qos/3' 1
 	
 	# Make sure we're not subscribed to what we don't want here, too - again, we could read from a file
-	bishbosh_connection_write_UNSUBSCRIBE \
+	bishbosh_unsubscribe \
 		'/topic/not/wanted' \
 		'/and/also/topic/not/wanted'
 	
-	# Publish an arbitary message
-	#bishbosh_connection_write_PUBLISH_dup=0
-	#bishbosh_connection_write_PUBLISH_QoS=0
-	#bishbosh_connection_write_PUBLISH_retain=no
-	bishbosh_connection_write_PUBLISH_topicName='a/b'
-	bishbosh_connection_write_PUBLISH_message='X'
-	#bishbosh_connection_write_PUBLISH_messageFilePath="example.message"
-	#bishbosh_connection_write_PUBLISH_messageUnlinkFile=no
-	bishbosh_connection_write_PUBLISH
+	# Publish a QoS 0 message
+	#bishbosh_publish_retain=no
+	bishbosh_publish_topicName='a/b'
+	bishbosh_publish_message='X'
+	#bishbosh_publish_messageFilePath="example.message"
+	#bishbosh_publish_messageUnlinkFile=no
+	bishbosh_publish 0
+	
+	# Publish a QoS 1 message
+	# Note arguments are not reset between publishes
+	bishbosh_publish 1
+	
+	# Publish a QoS 2 message
+	# Note arguments are not reset between publishes
+	bishbosh_publish 2
 }

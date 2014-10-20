@@ -1,19 +1,21 @@
 _bishbosh_connection_write_UNSUBSCRIBE_validateArguments()
 {
 	if [ $# -eq 0 ]; then
-		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_UNSUBSCRIBE_topics' must contain at least one topic"
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_unsubscribe_topics' must contain at least one topic"
 	fi
 	
 	local topicFilter
 	local topicFilterFieldLength
+	local index=0
 	while [ $# -gt 0 ]
 	do
 		topicFilter="$1"
-		bishbosh_connection_validate_topicFilter 'bishbosh_connection_write_UNSUBSCRIBE_topics' $index "$topicFilter"
+		bishbosh_connection_validate_topicFilter 'bishbosh_unsubscribe_topics' $index "$topicFilter"
 		shift 1
 		
 		topicFilterFieldLength=${#topicFilter}
 		remainingLength=$(( remainingLength + 2 + topicFilterFieldLength ))
+		index=$((index+1))
 	done
 }
 
@@ -40,7 +42,7 @@ _bishbosh_connection_write_UNSUBSCRIBE_store()
 }
 
 core_usesIn bishbosh/connection write
-bishbosh_connection_write_UNSUBSCRIBE()
+_bishbosh_connection_write_UNSUBSCRIBE()
 {
 	local remainingLength=2
 	_bishbosh_connection_write_UNSUBSCRIBE_validateArguments "$@"
@@ -111,7 +113,6 @@ bishbosh_connection_write_reUNSUBSCRIBE()
 	
 	local bishbosh_connection_packetIdentifier_forWriting=$packetIdentifier
 	bishbosh_connection_packetIdentifier_write
-	unset bishbosh_connection_packetIdentifier_forWriting
 	
 	pushd "$topicFiltersPath"
 
@@ -127,4 +128,9 @@ bishbosh_connection_write_reUNSUBSCRIBE()
 	popd
 	
 	bishbosh_connection_ping_recordLastSentControlPacketAt
+}
+
+bishbosh_unsubscribe()
+{
+	_bishbosh_connection_write_UNSUBSCRIBE "$@"
 }

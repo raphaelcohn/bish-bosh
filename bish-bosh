@@ -353,14 +353,14 @@ The following values control the tunnel 'cryptcat'
 These may also be set in the SCRIPTLETS.
 
 The following values may be used in SCRIPTLETS to manage a connection:-
-  bishbosh_connection_write_CONNECT_cleanSession  Option    Boolean
-  bishbosh_connection_write_CONNECT_willTopic     Optional  String
-  bishbosh_connection_write_CONNECT_willMessage   Optional  Binary*
-  bishbosh_connection_write_CONNECT_willQoS       Optional  0 - 2
-  bishbosh_connection_write_CONNECT_willRetain    Optional
-  bishbosh_connection_write_CONNECT_keepAlive     Optional  0 - 65535
-  bishbosh_connection_write_CONNECT_username      Optional  String
-  bishbosh_connection_write_CONNECT_password      Optional  Binary*
+  bishbosh_connect_cleanSession  Option    Boolean
+  bishbosh_connect_willTopic     Optional  String
+  bishbosh_connect_willMessage   Optional  Binary*
+  bishbosh_connect_willQoS       Optional  0 - 2
+  bishbosh_connect_willRetain    Optional
+  bishbosh_connect_keepAlive     Optional  0 - 65535
+  bishbosh_connect_username      Optional  String
+  bishbosh_connect_password      Optional  Binary*
 
   * ASCII NUL (0x00) is not supported.
 

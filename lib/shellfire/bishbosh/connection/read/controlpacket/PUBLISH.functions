@@ -162,8 +162,7 @@ _bishbosh_connection_read_PUBLISH()
 		;;
 		
 		2)
-			bishbosh_connection_packetIdentifier_incrementTransmissionCounter
-			printf '%s' $transmissionCounter >"$theirPacketIdentifierFolderPath"/transmission-counter
+			bishbosh_connection_packetIdentifier_incrementTransmissionCounter "$theirPacketIdentifierFolderPath"
 			
 			bishbosh_connection_packetIdentifier_forWriting=$packetIdentifier
 			bishbosh_connection_write_PUBREC

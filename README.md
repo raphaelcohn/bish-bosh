@@ -84,8 +84,8 @@ where `PORT` is a port between 1 and 65535.
 Well, it's quite straightforward. Rather than use _even more_ switches (and place sensitive data in the command line where any user with `ps` can see it), you can specify configuration scripts. For example, we could have the script snippet:-
 
 ```bash
-bishbosh_connection_write_CONNECT_username='raphcohn'
-bishbosh_connection_write_CONNECT_password='whatever you like'
+bishbosh_connect_username='raphcohn'
+bishbosh_connect_password='whatever you like'
 ```
 
 saved as `script.bishbosh` and use it as
@@ -109,9 +109,9 @@ As an added convenience, you can also store configuration scripts on a per-clien
 There's quite a lot of things than can be configured this way. If a setting is missing, [bish-bosh] applies a default. For things like QoS, we got for the lowest; for usernames and passwords and wills, we omit them. So it you've got a [MQTT] server that doesn't need passwords (a bit odd, but possible), then you can just not set it. Please note that not set isn't the same thing as empty:-
 
 ```bash
-bishbosh_connection_write_CONNECT_username=''
+bishbosh_connect_username=''
 # is not the same as
-unset bishbosh_connection_write_CONNECT_username
+unset bishbosh_connect_username
 ```
 
 ### All switches can be set as configuration
@@ -135,17 +135,17 @@ These settings relate to [MQTT]'s **CONNACK** packet.
 
 | Configuration Setting | Values | Interpreted as if *unset* | Explanation |
 | --------------------- | ------ | ----------------------- | ----------- |
-| `bishbosh_connection_write_CONNECT_cleanSession` | 0 or 1 \* | 1 (ie non-persistent) | Clean Session flag |
-| `bishbosh_connection_write_CONNECT_willTopic` | Any valid topic name | No will messages |  Will topic |
-| `bishbosh_connection_write_CONNECT_willQoS` | 0 - 2 inclusive | 0 | Will QoS, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
-| `bishbosh_connection_write_CONNECT_willRetain` | 0 or 1 \* | 0 | Will Retain flag, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
-| `bishbosh_connection_write_CONNECT_willMessage` | Any valid message, but Unicode `U+0000` is not supported.† | invalid | Will message, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset |
-| `bishbosh_connection_write_CONNECT_willMessageFilePath` | A path to a valid message | invalid | Will message, invalid if `bishbosh_connection_write_CONNECT_willTopic` is unset or `bishbosh_connection_write_CONNECT_willMessage` is set. Must be a regular file (reading from a FIFO, etc, is unsupported), as we need to know the size in advance. Useful if a message might contain Unicode `U+0000`.† |
-| `bishbosh_connection_write_CONNECT_keepAlive` | 0 to 65535 inclusive | 0 | Keep Alive for pings in seconds. A value of 0 disables keep alive handling |
+| `bishbosh_connect_cleanSession` | 0 or 1 \* | 1 (ie non-persistent) | Clean Session flag |
+| `bishbosh_connect_willTopic` | Any valid topic name | No will messages |  Will topic |
+| `bishbosh_connect_willQoS` | 0 - 2 inclusive | 0 | Will QoS, invalid if `bishbosh_connect_willTopic` is unset |
+| `bishbosh_connect_willRetain` | 0 or 1 \* | 0 | Will Retain flag, invalid if `bishbosh_connect_willTopic` is unset |
+| `bishbosh_connect_willMessage` | Any valid message, but Unicode `U+0000` is not supported.† | invalid | Will message, invalid if `bishbosh_connect_willTopic` is unset |
+| `bishbosh_connect_willMessageFilePath` | A path to a valid message | invalid | Will message, invalid if `bishbosh_connect_willTopic` is unset or `bishbosh_connect_willMessage` is set. Must be a regular file (reading from a FIFO, etc, is unsupported), as we need to know the size in advance. Useful if a message might contain Unicode `U+0000`.† |
+| `bishbosh_connect_keepAlive` | 0 to 65535 inclusive | 0 | Keep Alive for pings in seconds. A value of 0 disables keep alive handling |
 | `bishbosh_clientId` | Any valid UTF-8 string excluding Unicode `U+0000` | invalid | Client id. Empty client ids, and random client ids, are not yet supported. Usually set on the command line with the switch `--client-id CLIENT_ID` |
-| `bishbosh_connection_write_CONNECT_username` | Any valid UTF-8 string excluding Unicode `U+0000`. May be empty | No username | Username. May be empty or *unset* (the latter meaning it is not sent) |
-| `bishbosh_connection_write_CONNECT_password` | Any sequence of bytes excluding Unicode `U+0000`. May be empty | No password | Password. May be empty or *unset* (the latter meaning it is not sent) |
-| `bishbosh_connection_write_CONNECT_passwordFilePath` | A path to a valid file. May be empty. | No password | Password, invalid if `bishbosh_connection_write_CONNECT_password` is set. Must be a regular file (reading from a FIFO, etc, is unsupported), as we need to know the size in advance. Useful if a password might contain Unicode `U+0000`†, or you want to able to check in configuration to source control or change passwords in production. |
+| `bishbosh_connect_username` | Any valid UTF-8 string excluding Unicode `U+0000`. May be empty | No username | Username. May be empty or *unset* (the latter meaning it is not sent) |
+| `bishbosh_connect_password` | Any sequence of bytes excluding Unicode `U+0000`. May be empty | No password | Password. May be empty or *unset* (the latter meaning it is not sent) |
+| `bishbosh_connect_passwordFilePath` | A path to a valid file. May be empty. | No password | Password, invalid if `bishbosh_connect_password` is set. Must be a regular file (reading from a FIFO, etc, is unsupported), as we need to know the size in advance. Useful if a password might contain Unicode `U+0000`†, or you want to able to check in configuration to source control or change passwords in production. |
 
 _\* Technically, a boolean, which might also be `Y`, `YES`, `Yes`, `yes`, `T`, `TRUE`, `True`, `true`, `ON`, `On`, `on` for 1 and `N`, `NO`, `No`, `no`, `F`, `FALSE`, `False`, `false`, `OFF`, `Off` and `off` for 0, but best as a number._
 
@@ -202,16 +202,16 @@ bishbosh_connection_handler_CONNACK()
 		'/and/also/topic/not/wanted'
 	
 	# Publish a QoS 0 message from a string
-	bishbosh_connection_write_PUBLISH_topicName='a/b'
-	bishbosh_connection_write_PUBLISH_message='Message from a string'
+	bishbosh_publish_topicName='a/b'
+	bishbosh_publish_message='Message from a string'
 	bishbosh_connection_write_PUBLISH
 	
 	# Publish a duplicate QoS 2 retained message from a file that is to not be deleted (unlinked) after publication
 	bishbosh_connection_write_PUBLISH_dup=1
 	bishbosh_connection_write_PUBLISH_QoS=2
-	bishbosh_connection_write_PUBLISH_retain=yes
-	bishbosh_connection_write_PUBLISH_messageFilePath="/path/to/message"
-	bishbosh_connection_write_PUBLISH_messageUnlinkFile=no
+	bishbosh_publish_retain=yes
+	bishbosh_publish_messageFilePath="/path/to/message"
+	bishbosh_publish_messageUnlinkFile=no
 	bishbosh_connection_write_PUBLISH
 }
 ```
@@ -236,7 +236,7 @@ _*TODO: Document control packet writers of interest*_
 | `-t`, `--tunnel` | `TUNNEL` | `bishbosh_tunnel` | `none` | The tunnel `TUNNEL` controls how a MQTT connection is made. Ordinarily, it's just `none`: MQTT. Values are `none`, `tls` and `cryptcat`. Changing this setting changes how the [backends](#backends) are chosen. Most backends support only `none`; some also support `tls`, and some only `tls`. In the future, if there's demand, support can also be added for `SSH`, `telnet`, `WebSockets` and `WebSocketsSecure`. This is not the same thing as [proxying](#proxy-settings). Additional [tunnel settings](#tunnel-settings) may be required. |
 | `-s`, `--server` | `HOST` | `bishbosh_server` | `test.mosquitto.org` | `HOST` is a DNS-resolved hostname, IPv4 or IPv6 address of an [MQTT] server to connect to. If using Unix domain sockets (see [`--transport`](#source-routing-settings)) it is a file path to a readable Unix domain socket. If using serial devices it a file path to a readable serial device file. |
 | `-p`, `--port` | `PORT` | `bishbosh_port` | By `TUNNEL`: 1883 for `none`, `cryptcat`. 8883 for `tls`. | Port your [MQTT] `HOST` is running on, between 1 to 65535, inclusive. Ignored if using Unix domain sockets or serial device files (see [`--transport`](#source-routing-settings)). |
-| `-i`, `--client-id` | `ID` | `bishbosh_clientId` | *unset* | [MQTT] ClientId. When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. If *unset*, and [`bishbosh_connection_write_CONNECT_cleanSession`](#being-specific-about-how-a-is-made-connection) is 1, then forced to empty (`''`), which MAY NOT work with some MQTT servers. |
+| `-i`, `--client-id` | `ID` | `bishbosh_clientId` | *unset* | [MQTT] ClientId. When specified, it also, in conjunction with `HOST` and `PORT`, is used to find a folder containing state and scripts for the client id `ID`, to the server `HOST`, on the port `PORT`. If *unset*, and [`bishbosh_connect_cleanSession`](#being-specific-about-how-a-is-made-connection) is 1, then forced to empty (`''`), which MAY NOT work with some MQTT servers. |
 | `-r`, `--random-client-id` | | `bishbosh_randomClientId`\* | `0` | When specified, `--client-id` isn't and Clean Session is 1, then a random client-id of 16 bytes, base64-encoded, is used, instead of an empty client id. This should work with most MQTT servers. To be compatible with servers that only use a restricted alphanumeric range, the base64 trailing `=` is discarded. Random client-ids with `+` and `/` are discarded and another client id generated. This alogrithm gives similar, but not quite as random, results as using a Type 4 UUID. |
 | `-x`, `--ping-timeout` | `SECS` | `bishbosh_pingTimeout` | `30` | When the client's Keep Alive value is not `0`, this is the 'reasonable time' in `SECS` seconds that the client will wait to receive a **PINGRESP** packet. |
 | `-w`, `--connect-timeout` | `SECS` | `bishbosh_connectTimeout` | `30` | This is the time in `SECS` seconds that the client will wait to try to connect to a MQTT server. Not all [backends] honour this setting. Some older versions of netcat interpret it as an idle connection timeout. `0` is infinity. |
@@ -526,7 +526,7 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the `PATH` an
 * cryptcat-encrypted backends
   * `cryptcat`
   * none, if not using `cryptcat`
-* Keep Alives (only required if `bishbosh_connection_write_CONNECT_keepAlive` is not `0`)
+* Keep Alives (only required if `bishbosh_connect_keepAlive` is not `0`)
   * `SECONDS` pseudo-environment variable if your shell supports it [GNU Bash], [mksh] and [pdksh] do)
     * Works slightly differently on [ksh93], as it uses 3 decimal places, but still effective
   * `date`, as long as it supports the `+%s` format string (true for GNU `coreutils`, [BusyBox], [Toybox] and Mac OS X)
