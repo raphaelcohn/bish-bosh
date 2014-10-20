@@ -114,6 +114,7 @@ _bishbosh_connection_read_PUBLISH()
 		bishbosh_connection_read_packetIdentifier
 		# -2 for packetIdentifier, -2 for topicLength size bytes == -4
 		messageLength=$((remainingLength-topicLength-4))
+		bishbosh_connection_packetIdentifier_theirPacketIdentifierFolderPath
 	fi
 	
 	local readMessage
