@@ -100,7 +100,7 @@ bishbosh_connection_obtainLockForClientId()
 		fi
 	}
 	core_trap_addOnCleanUp _bishbosh_connection_write_removeClientIdLockFolder
-	local lockPath="$bishbosh_lockPath"/servers/"$bishbosh_server"/ports/"$bishbosh_port"/client-ids/"$bishbosh_clientId"/lock
+	local lockPath="$bishbosh_lockPath"/servers/"$bishbosh_server"/ports/"$bishbosh_port"/client-ids/"_${bishbosh_clientId}"/lock
 	if mkdir -m 0755 -p "$lockPath"; then
 		bishbosh_connection_clientIdLockFolderPath="$lockPath"
 	else

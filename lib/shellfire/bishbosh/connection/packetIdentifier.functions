@@ -2,17 +2,17 @@ core_dependency_requires '*' rm
 bishbosh_connection_packetIdentifier_initialise()
 {
 	if core_variable_isUnset bishbosh_connection_write_CONNECT_cleanSession; then
-		bishbosh_connection_write_CONNECT_cleanSession=0
+		bishbosh_connection_write_CONNECT_cleanSession=1
 	fi
 	
-	# sessionPath: Can be overridden, but not listed in help or README.md
+	# bishbosh_connection_sessionPath: Can be overridden, but not listed in help or README.md
 	if [ $bishbosh_connection_write_CONNECT_cleanSession -eq 0 ]; then
-		_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPath "$bishbosh_sessionPath"/servers/"$bishbosh_server"/ports/"$bishbosh_port"/client-ids "$bishbosh_clientId"
+		_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPath "$bishbosh_sessionPath"/servers/"$bishbosh_server"/ports/"$bishbosh_port"/client-ids "_${bishbosh_clientId}"
 	else
 		_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPath "$bishbosh_temporaryFolderPath" session
 		
 		# Destroy any former clean session = 0 session data, so can't be accidentially re-used if clean session changed from 1 back to 0 in the future
-		local formerCleanSession0Path="$bishbosh_sessionPath"/servers/"$bishbosh_server"/ports/"$bishbosh_port"/client-ids/"$bishbosh_clientId"
+		local formerCleanSession0Path="$bishbosh_sessionPath"/servers/"$bishbosh_server"/ports/"$bishbosh_port"/client-ids/"_${bishbosh_clientId}"
 		if [ -d "$formerCleanSession0Path" ]; then
 			bishbosh_connection_cleanContentsOfFolderPath "$formerCleanSession0Path"
 		fi
