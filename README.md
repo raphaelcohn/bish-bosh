@@ -134,8 +134,9 @@ For example, this scriptlet shows a skeleton persistent client which does quite 
 
 ```bash
 #!/usr/bin/env bish-bosh
-#bishbosh_server=test.mosquitto.org
-#bishbosh_clientId=example
+bishbosh_server=test.mosquitto.org
+# load your configuration if you need to, eg bishbosh_clientId="$(</path/to/client-id)" or use '.' (source)
+bishbosh_clientId=<some-client-id>
 
 bishbosh_connect_cleanSession=0
 bishbosh_connect_willTopic='/some/will/topic'
