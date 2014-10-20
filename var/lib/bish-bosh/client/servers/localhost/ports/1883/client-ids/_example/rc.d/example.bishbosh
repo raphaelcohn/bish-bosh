@@ -45,5 +45,5 @@ bishbosh_connection_handler_CONNACK()
 	# Retained
 	# Using the contents of file '/path/to/message/to/remove/after/send'
 	# Then remove '/path/to/message/to/remove/after/send' after send (QoS 2 takes a copy)
-	#bishbosh_publishFileAndRemove 2 'a/b' yes '/path/to/message/to/remove/after/send'
+	bishbosh_publishText 2 'a/b' no 'hello qos 2'
 }
