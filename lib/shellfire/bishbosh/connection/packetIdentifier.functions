@@ -1,6 +1,3 @@
-
-#padlessPacketIdentifierCounter=$((1${paddedPacketIdentifierCounter}-1000000000))
-#"$(printf '%09s' $bishbosh_connection_packetIdentifier_forWritingCounter)"
 core_dependency_requires '*' rm
 bishbosh_connection_packetIdentifier_initialise()
 {
