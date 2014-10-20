@@ -130,6 +130,69 @@ ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a let
 
 ### But the really interesting scriptable stuff is done with configuration files or scriptlets
 
+For example, this scriptlet shows a skeleton persistent client which does quite a lot (including retransmission) - with very little code:-
+
+```bash
+#!/usr/bin/env bish-bosh
+#bishbosh_server=test.mosquitto.org
+#bishbosh_clientId=example
+
+bishbosh_connect_cleanSession=0
+bishbosh_connect_willTopic='/some/will/topic'
+bishbosh_connect_willMessageFilePath=/path/to/will/message
+bishbosh_connect_willQoS=1
+bishbosh_connect_willRetain=1
+# 5 second ping
+bishbosh_connect_keepAlive=5
+bishbosh_connect_username=<some-user-name>
+bishbosh_connect_passwordFilePath=/path/to/password/kept/securely
+
+bishbosh_connection_handler_CONNACK()
+{
+	# Set up some subscriptions... another implementation could read from a standard file
+	bishbosh_subscribe \
+		'/topic/qos/0' 0 \
+		'/topic/qos/1' 1 \
+		'/topic/qos/3' 1
+	
+	bishbosh_unsubscribe \
+		'/topic/not/wanted' \
+		'/and/also/topic/not/wanted'
+	
+	# Publish a QoS 0 message
+	# On topic a/b
+	# Unretained
+	# With value 'X'
+	bishbosh_publishText 0 'a/b' no 'X'
+	
+	# Publish a QoS 1 message
+	# On topic a/b
+	# Unretained
+	# Using the contents of file '/path/to/message'
+	bishbosh_publishFile 1 'a/b' no '/path/to/message'
+	
+	# Publish a QoS 2 message
+	# On topic a/b
+	# Retained
+	# Using the contents of file '/path/to/message/to/remove/after/send'
+	# Then remove '/path/to/message/to/remove/after/send' after send (QoS 2 takes a copy)
+	bishbosh_publishFileAndRemove 2 'a/b' yes '/path/to/message/to/remove/after/send'
+}
+
+bishbosh_connection_handler_PUBLISH()
+{
+	echo "Message received: retain=$retain, QoS=$QoS, dup=$dup, topicLength=$topicLength, topicName=$topicName, messageLength=$messageLength, messageFilePath=$messageFilePath"
+}
+
+bishbosh_connection_handler_noControlPacketsRead()
+{
+	# Down time - use this to publish some messages, change subscriptions or reload our configuration. Perhaps we could monitor a folder path?
+	bishbosh_publishText 0 'nowt' no 'hello world'
+}
+```
+
+It's easy to see how that could be modified to generate a will message or get a password by a secure means, monitor a folder or add sophisticated subscription tracking to build up a picture of current state.
+
 #### Being specific about how a is made connection
 These settings relate to [MQTT]'s **CONNECT** packet.
 
@@ -151,7 +214,7 @@ _\* Technically, a boolean, which might also be `Y`, `YES`, `Yes`, `yes`, `T`, `
 
 _† Apart from [zsh], no shell can either have variables with Unicode `U+0000` (ACSCII `NUL` as was) in them, or read them directly._
 
-##### Publishing
+#### Publishing
 Messages can be published using one of three functions:-
 * `bishbosh_publishText`, to send messages as text (ie shell strings, which, apart from [zsh], can't contain Unicode `U+0000`);
 * `bishbosh_publishFile`, to send messages from a file (so they can contain Unicode `U+0000`);
@@ -159,7 +222,7 @@ Messages can be published using one of three functions:-
 
 Any unacknowledged **PUBLISH** packets (and **PUBREL** packets) are resent by [bish-bosh] on start-up once **CONNACK** is received.
 
-###### `bishbosh_publishText`
+##### `bishbosh_publishText`
 |Position|Purpose|Valid Values|
 |--------|-------|------------|
 |1|QoS level| `0` to `2` inclusive|
@@ -167,7 +230,15 @@ Any unacknowledged **PUBLISH** packets (and **PUBREL** packets) are resent by [b
 |3|Retain Flag as a Boolean|`yes` or `no`|
 |4|Message text|Any message text. May be empty or omitted (interpreted as empty)|
 
-###### `bishbosh_publishFile`
+For example
+
+```bash
+bishbosh_publishText 0 'a/b' no 'My message'
+```
+
+publishes a message with the text `My message` at QoS `0`, to the topic named `a/b` with RETAIN off (ie not retained).
+
+##### `bishbosh_publishFile`
 |Position|Purpose|Valid Values|
 |--------|-------|------------|
 |1|QoS level| `0` to `2` inclusive|
@@ -175,7 +246,15 @@ Any unacknowledged **PUBLISH** packets (and **PUBREL** packets) are resent by [b
 |3|Retain Flag as a Boolean|`yes` or `no`|
 |4|File path|Any valid file path. Must be readable. Can be empty.|
 
-###### `bishbosh_publishFileAndRemove`
+For example
+
+```bash
+bishbosh_publishFile 1 'a/b' no '/path/to/message'
+```
+
+publishes a message with the contents of the file `/path/to/message/` at QoS `1`, to the topic named `a/b` with RETAIN off (ie not retained).
+
+##### `bishbosh_publishFileAndRemove`
 |Position|Purpose|Valid Values|
 |--------|-------|------------|
 |1|QoS level| `0` to `2` inclusive|
@@ -183,7 +262,15 @@ Any unacknowledged **PUBLISH** packets (and **PUBREL** packets) are resent by [b
 |3|Retain Flag as a Boolean|`yes` or `no`|
 |4|File path|Any valid file path. Must be readable. Can be empty. Must be writable so we can delete it.|
 
-##### Subscribing
+For example
+
+```bash
+bishbosh_publishFileAndRemove 2 'a/b' yes '/path/to/message/to/remove/after/send'
+```
+
+publishes a message with the contents of the file `/path/to/message/to/remove/after/send` at QoS `2`, to the topic named `a/b` with RETAIN on (ie retained). When it is sent, it then removes the file `/path/to/message/to/remove/after/send`. An internal copy is kept for QoS handling. For interest, internal copies are made using `mv`, `ln` or `ln -s` wherever possible.
+
+#### Subscribing
 Subscriptions are sent using the function `bishbosh_subscribe`. Any unacknowledged **SUBSCRIBE** packets are resent by [bish-bosh] on start-up once **CONNACK** is received.
 
 Subscriptions are given by specifiying pairs of variable arguments as `topicFilter` - `topicQos`. At least one pair must be supplied. For example
@@ -201,7 +288,7 @@ subcribes to:-
 * a `topicFilter` of `/topic/qos/1` with a requested `topicQos` of `1`, and
 * a `topicFilter` of `/topic/qos/2` with a requested `topicQos` of `2`
 
-##### Unsubscribing
+#### Unsubscribing
 Unsubscriptions are sent using the function `bishbosh_unsubscribe`. Any unacknowledged **UNSUBSCRIBE** packets are resent by [bish-bosh] on start-up once **CONNACK** is received.
 
 Unsubscriptions are given by specifiying variable arguments of `topicFilter`. At least one `topicFilter` must be supplied. For example
