@@ -9,7 +9,7 @@ bishbosh_connect_willMessage='goodbye'
 #bishbosh_connect_willMessageFilePath
 bishbosh_connect_willQoS=1
 bishbosh_connect_willRetain=1
-bishbosh_connect_keepAlive=1
+bishbosh_connect_keepAlive=5
 #bishbosh_connect_username=user
 #bishbosh_connect_password=password
 #bishbosh_connect_passwordFilePath
@@ -20,7 +20,8 @@ bishbosh_connection_handler_CONNACK()
 	bishbosh_subscribe \
 		'/topic/qos/0' 0 \
 		'/topic/qos/1' 1 \
-		'/topic/qos/3' 1
+		'/topic/qos/3' 1 \
+		'a/b' 2
 	
 	# Make sure we're not subscribed to what we don't want here, too - again, we could read from a file
 	bishbosh_unsubscribe \

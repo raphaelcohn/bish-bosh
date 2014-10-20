@@ -1,4 +1,4 @@
-bishbosh_connection_read_PUBLISH_0()
+bishbosh_connection_read_controlpacket_PUBLISH_0()
 {	
 	local retain=0
 	local QoS=0
@@ -6,7 +6,7 @@ bishbosh_connection_read_PUBLISH_0()
 	_bishbosh_connection_read_PUBLISH
 }
 
-bishbosh_connection_read_PUBLISH_1()
+bishbosh_connection_read_controlpacket_PUBLISH_1()
 {
 	local retain=1
 	local QoS=0
@@ -14,7 +14,7 @@ bishbosh_connection_read_PUBLISH_1()
 	_bishbosh_connection_read_PUBLISH
 }
 
-bishbosh_connection_read_PUBLISH_2()
+bishbosh_connection_read_controlpacket_PUBLISH_2()
 {
 	local retain=0
 	local QoS=1
@@ -22,7 +22,7 @@ bishbosh_connection_read_PUBLISH_2()
 	_bishbosh_connection_read_PUBLISH
 }
 
-bishbosh_connection_read_PUBLISH_3()
+bishbosh_connection_read_controlpacket_PUBLISH_3()
 {
 	local retain=1
 	local QoS=1
@@ -30,7 +30,7 @@ bishbosh_connection_read_PUBLISH_3()
 	_bishbosh_connection_read_PUBLISH
 }
 
-bishbosh_connection_read_PUBLISH_4()
+bishbosh_connection_read_controlpacket_PUBLISH_4()
 {
 	local retain=0
 	local QoS=2
@@ -38,7 +38,7 @@ bishbosh_connection_read_PUBLISH_4()
 	_bishbosh_connection_read_PUBLISH
 }
 
-bishbosh_connection_read_PUBLISH_5()
+bishbosh_connection_read_controlpacket_PUBLISH_5()
 {
 	local retain=1
 	local QoS=2
@@ -46,7 +46,7 @@ bishbosh_connection_read_PUBLISH_5()
 	_bishbosh_connection_read_PUBLISH
 }
 
-bishbosh_connection_read_PUBLISH_10()
+bishbosh_connection_read_controlpacket_PUBLISH_10()
 {
 	local retain=0
 	local QoS=1
@@ -54,7 +54,7 @@ bishbosh_connection_read_PUBLISH_10()
 	_bishbosh_connection_read_PUBLISH
 }
 
-bishbosh_connection_read_PUBLISH_11()
+bishbosh_connection_read_controlpacket_PUBLISH_11()
 {
 	local retain=1
 	local QoS=1
@@ -62,7 +62,7 @@ bishbosh_connection_read_PUBLISH_11()
 	_bishbosh_connection_read_PUBLISH
 }
 
-bishbosh_connection_read_PUBLISH_12()
+bishbosh_connection_read_controlpacket_PUBLISH_12()
 {
 	local retain=0
 	local QoS=2
@@ -70,7 +70,7 @@ bishbosh_connection_read_PUBLISH_12()
 	_bishbosh_connection_read_PUBLISH
 }
 
-bishbosh_connection_read_PUBLISH_13()
+bishbosh_connection_read_controlpacket_PUBLISH_13()
 {
 	local retain=1
 	local QoS=2
@@ -99,6 +99,8 @@ _bishbosh_connection_read_PUBLISH()
 		remainingTopicLength=$((remainingTopicLength-1))
 	done
 	
+	local topicName="$(<"$temporaryTheirPacketIdentifierFolderPath"/topic-name)"
+	
 	local packetIdentifier
 	local messageLength
 	local theirPacketIdentifierFolderPath
@@ -125,6 +127,7 @@ _bishbosh_connection_read_PUBLISH()
 		mv "$temporaryTheirPacketIdentifierFolderPath" "$theirPacketIdentifierFolderPath"
 		readMessage=1
 	fi
+	local topicNameFilePath="$theirPacketIdentifierFolderPath"/topic-name
 	
 	local remainingMessageLength=$messageLength
 	local byte
@@ -135,6 +138,8 @@ _bishbosh_connection_read_PUBLISH()
 			bishbosh_connection_write_byte $byte
 			remainingMessageLength=$((remainingMessageLength-1))
 		done >"$theirPacketIdentifierFolderPath"/message-received
+		
+		local messageFilePath="$theirPacketIdentifierFolderPath"/message-received
 		
 		bishbosh_connection_handler_PUBLISH
 		

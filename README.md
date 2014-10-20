@@ -327,7 +327,7 @@ bishbosh_connection_handler_PUBLISH()
 You need to be careful if using `printf` or `echo` - by default, all data written to standard out goes to the [MQTT] server! BTW, [bish-bosh] handles all the publication, subscription and unscribe acknowledgments. You don't have to do anything apart from have a handler (`bishbosh_connection_handler_PUBLISH`) to read your messages. But if you do:-
 
 | Handler | Control Packet Received | Local Variables in Scope | Notes |
-| ------- | --------------- | ------------------------ | ----- |
+| ------- | --------------- | -------------------------------- | ----- |
 | `bishbosh_connection_handler_CONNACK` | **CONNACK** | `bishbosh_connection_sessionPresent` | Invalid packets and non-zero **CONNACK** codes are handled for you |
 | `bishbosh_connection_handler_SUBACK` | **SUBACK** | `packetIdentifier`, `returnCodeCount`, `$@` which is a list of return codes | Invalid and unexpected packets are handled for you; active sessions are tracked on your behalf |
 | `bishbosh_connection_handler_UNSUBACK` | **UNSUBACK** | `packetIdentifier` | Invalid and unexpected packets are handled for you; active sessions are tracked on your behalf |
@@ -340,8 +340,10 @@ You need to be careful if using `printf` or `echo` - by default, all data writte
 | `bishbosh_connection_handler_PINGRESP` | **PINGRESP** |  | Nothing much to say. |
 | `bishbosh_connection_handler_noControlPacketsRead` | *none* | Occurs when a read for a control packet timed out. |
 
+* Tip: To find the current list of arguments a handler has access to, run [bish-bosh] with `--verbose 3`.
+
 #### Writing control packets
-Inside any of [bish-bosh]'s handlers, you can publish a message, make a subscription request, etc. Indeed, you can do it yourself - anything sent to standard out goes to the server - but it's probably better to use our built in writers. For example once connected (you received **CONNACK** control packet), you might want to subscribe and send some messages:-
+Inside any of [bish-bosh]'s handlers, you can publish a message, make a subscription request, etc. Indeed, you can do it yourself - anything sent to standard out goes to the server - but it's probably better to use our built in writers. For example once connected (you received **CONNACK** control packet), you might want to subscribe:-
 
 ```bash
 bishbosh_connection_handler_CONNACK()
@@ -354,24 +356,8 @@ bishbosh_connection_handler_CONNACK()
 	bishbosh_connection_write_UNSUBSCRIBE \
 		'/topic/not/wanted' \
 		'/and/also/topic/not/wanted'
-	
-	# Publish a QoS 0 message from a string
-	bishbosh_publish_topicName='a/b'
-	bishbosh_publish_message='Message from a string'
-	bishbosh_connection_write_PUBLISH
-	
-	# Publish a duplicate QoS 2 retained message from a file that is to not be deleted (unlinked) after publication
-	bishbosh_connection_write_PUBLISH_dup=1
-	bishbosh_connection_write_PUBLISH_QoS=2
-	bishbosh_publish_retain=yes
-	bishbosh_publish_messageFilePath="/path/to/message"
-	bishbosh_publish_messageUnlinkFile=no
-	bishbosh_connection_write_PUBLISH
 }
 ```
-_Note: This code is still evolving and the syntax is likely to change._
-
-_*TODO: Document control packet writers of interest*_
 
 ### OK, back to switches
 
@@ -898,9 +884,10 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 * We do not permit client ids to exceed 254 bytes. This is because client ids can not exceed the maximum file name size of a file system, and most modern file systems support a maximum size of either 255 bytes or 255 UTF-8 code points (except HFS+).
 
 #### Topic Names and Topic Filters
-* Shell builtins and most common tools do not support parsing lines delimited with anything other than `\n` (eg `sed`). Whilst some tooling (eg GNU coreutils, [GNU Bash]) can handle `\0` terminated lines, support is not consistent enough. Consequently,
-  * Topic names can not contain `\n`.
-  * Topic filters can not contain `\n`.
+* Shell builtins and most common tools do not support parsing lines delimited with anything other than `\n` (eg `sed`). Whilst some tooling (eg GNU coreutils, [GNU Bash]) can handle `\0` terminated lines, support is not consistent enough. Consequently:-
+  * When sending **PUBLISH** control packets, topic names can not contain `\n`.
+  * When sending **SUBSCRIBE** and **UNSUBSCRIBE** control packets, topic filters can not contain `\n` (this may be relaxed in the future, as the underlying code is now `\n` aware).
+* However, when receiving **PUBLISH** control packets, `\n` is permitted but won't be correctly encoded if it is the final character in the `topicName` variable (but you can obtain the correct topic in the `topicNameFilePath`).
 
 ### Broken but Fixable
 * Connection tear down is likely to lead to will messages being sent with some backends due to problems with signal handling.
