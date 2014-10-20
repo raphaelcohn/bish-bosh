@@ -37,7 +37,7 @@ bishbosh_connection_handler_CONNACK()
 	# On topic a/b
 	# Unretained
 	# Using the contents of file '/path/to/message'
-	#bishbosh_publishFile 1 'a/b' no '/path/to/message'
+	bishbosh_publishText 1 'a/b' no 'hello qos 1'
 	
 	# Publish a QoS 2 message
 	# On topic a/b

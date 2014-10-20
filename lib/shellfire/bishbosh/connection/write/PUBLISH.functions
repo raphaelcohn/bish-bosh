@@ -85,8 +85,8 @@ _bishbosh_connection_write_PUBLISH_setMessage()
 }
 
 _bishbosh_connection_write_PUBLISH_setQoS()
-{	
-	controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + (QoS << 2) ))
+{
+	controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + (QoS << 1) ))
 	remainingLength=$(( remainingLength + 2 ))
 }
 
@@ -117,9 +117,6 @@ _bishbosh_connection_write_PUBLISH_writeMessagePingAndUnlink()
 core_dependency_requires '*' mv ln
 _bishbosh_connection_write_PUBLISH_storeMessage()
 {
-	local packetIdentifier="$bishbosh_connection_packetIdentifier_forWriting"
-	local ourPacketIdentifierFolderPath
-
 	printf '%s' $QoS >"$ourPacketIdentifierFolderPath"/qos
 	
 	# We only store recovery information for Clean Session = 0
