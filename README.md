@@ -139,7 +139,7 @@ bishbosh_server=test.mosquitto.org
 bishbosh_clientId=<some-client-id>
 
 bishbosh_connect_cleanSession=0
-bishbosh_connect_willTopic='/some/will/topic'
+bishbosh_connect_willTopic='some/will/topic'
 bishbosh_connect_willMessageFilePath=/path/to/will/message
 bishbosh_connect_willQoS=1
 bishbosh_connect_willRetain=1
