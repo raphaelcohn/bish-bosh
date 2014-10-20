@@ -96,7 +96,9 @@ bishbosh_connection_packetIdentifier_initialise()
 				continue
 			fi
 			
-			transmissionCounter="$(<"$transmissionCounterFile")"; then
+			transmissionCounter="$(<"$transmissionCounterFile")"
+			
+			if [ $transmissionCounter -ge $bishbosh_connection_packetIdentifier_transmissionCounter ]; then
 				bishbosh_connection_packetIdentifier_transmissionCounter=$((transmissionCounter+1))
 			fi
 			

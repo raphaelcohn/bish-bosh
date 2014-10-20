@@ -1,4 +1,4 @@
-core_usesIn bishbosh/connection read write handler background foreground clientId
+core_usesIn bishbosh/connection read write handler background foreground clientId packetIdentifier
 core_usesIn core children
 
 core_dependency_requires '*' mkdir
