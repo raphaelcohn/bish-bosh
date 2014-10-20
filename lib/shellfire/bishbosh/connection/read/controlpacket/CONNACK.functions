@@ -66,7 +66,7 @@ bishbosh_connection_read_controlpacket_CONNACK()
 
 bishbosh_connection_read_controlpacket_CONNACK_retransmit()
 {
-	pushd "$bishbosh_connection_sessionPublicationsPath"
+	pushd "$bishbosh_connection_sessionRetransmissionPath"
 		
 		local packetIdentifier
 		
@@ -82,10 +82,14 @@ bishbosh_connection_read_controlpacket_CONNACK_retransmit()
 			
 				packetIdentifier="$(core_compatibility_basename "$(pwd -P)")"
 				
-				if [ -f 'pubrel' ]; then
-					bishbosh_connection_write_rePUBREL
-				elif [ -f 'message' ]; then
-					bishbosh_connection_write_rePUBLISH
+				if [ -f 'message-sent' ]; then
+					if [ -f 'pubrec-received' ]; then
+						bishbosh_connection_write_rePUBREL
+					else
+						bishbosh_connection_write_rePUBLISH
+					fi
+				elif [ -f 'message-received' ]; then
+					bishbosh_connection_write_rePUBREC
 				elif [ -f 'subscribe' ]; then
 					bishbosh_connection_write_reSUBSCRIBE
 				elif [ -f 'unsubscribe' ]; then

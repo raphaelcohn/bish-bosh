@@ -84,77 +84,89 @@ _bishbosh_connection_read_PUBLISH()
 	bishbosh_connection_read_length
 	local topicLength=$length
 	
-	local topicName
-	local remainingTopicLength=$messageLength
+	local temporaryTheirPacketIdentifierFolderPath
+	temporaryTheirPacketIdentifierFolderPath="$bishbosh_connection_sessionTheirPacketIdentifiersPath"/temporary
+	rm -rf "$temporaryTheirPacketIdentifierFolderPath" 2>/dev/null || true
+	mkdir -m 0700 -p "$temporaryTheirPacketIdentifierFolderPath"
+	
+	# This design preserves any embedded line feeds, including terminal ones
+	local remainingTopicLength=$topicLength
 	local byte
 	while [ $remainingTopicLength -ne 0 ]
 	do
 		bishbosh_connection_read_byte_blocking byte
-		topicName="${topicName}$(bishbosh_connection_write_byte $byte)"
+		bishbosh_connection_write_byte $byte >>"$temporaryTheirPacketIdentifierFolderPath"/topic-name
 		remainingTopicLength=$((remainingTopicLength-1))
 	done
 	
 	local packetIdentifier
-	bishbosh_connection_read_packetIdentifier
-	
-	local messageLength=$((remainingLength-2-topicLength-2))
-	
-	# Not good enough for sorting
-	local messageFileBasePath="$bishbosh_connection_sessionReceivePath"/$QoS/$packetIdentifier
-	local messageFilePath="$messageFileBasePath".message
-
-	local remainingMessageLength=$messageLength
-	
-	local isADuplicate
-	local byte
-	
-	if [ -f "$messageFileBasePath".complete ]; then
-		isADuplicate=1
-	
-		while [ $remainingMessageLength -ne 0 ]
-		do
-			bishbosh_connection_read_byte_blocking byte
-			remainingMessageLength=$((remainingMessageLength-1))
-		done
-
-		bishbosh_connection_handler_PUBLISH_again
-		
+	local messageLength
+	local theirPacketIdentifierFolderPath
+	if [ $QoS -eq 0 ]; then
+		packetIdentifier=qos0
+		# -2 for topicLength size bytes
+		messageLength=$((remainingLength-topicLength-2))
+		bishbosh_connection_packetIdentifier_theirPacketIdentifierFolderPath
+		rm -rf "$theirPacketIdentifierFolderPath" 2>/dev/null || true
 	else
-		isADuplicate=0
+		bishbosh_connection_read_packetIdentifier
+		# -2 for packetIdentifier, -2 for topicLength size bytes == -4
+		messageLength=$((remainingLength-topicLength-4))
+	fi
 	
+	local readMessage
+	if [ -d "$theirPacketIdentifierFolderPath" ]; then
+		if [ -f "$theirPacketIdentifierFolderPath"/transmission-counter ]; then
+			readMessage=0
+		else
+			readMessage=1
+		fi
+	else
+		mv "$temporaryTheirPacketIdentifierFolderPath" "$theirPacketIdentifierFolderPath"
+		readMessage=1
+	fi
+	
+	local remainingMessageLength=$messageLength
+	local byte
+	if [ $readMessage -eq 1 ]; then
 		while [ $remainingMessageLength -ne 0 ]
 		do
 			bishbosh_connection_read_byte_blocking byte
 			bishbosh_connection_write_byte $byte
 			remainingMessageLength=$((remainingMessageLength-1))
-		done >"$messageFilePath"
-		
-		printf '' >"$messageFileBasePath".complete
+		done >"$theirPacketIdentifierFolderPath"/message-received
 		
 		bishbosh_connection_handler_PUBLISH
+		
+	else
+		while [ $remainingMessageLength -ne 0 ]
+		do
+			bishbosh_connection_read_byte_blocking byte
+			remainingMessageLength=$((remainingMessageLength-1))
+		done
+		
+		bishbosh_connection_handler_PUBLISH_again
 	fi
 	
 	case $QoS in
 		
 		0)
-			set +f
-			rm -rf "$messageFileBasePath".* 2>/dev/null
-			set -f
+			rm -rf "$theirPacketIdentifierFolderPath" 2>/dev/null
 		;;
 		
 		1)
 			bishbosh_connection_packetIdentifier_forWriting=$packetIdentifier
 			bishbosh_connection_write_PUBACK
-
-			set +f
-			rm -rf "$messageFileBasePath".* 2>/dev/null
-			set -f
+			
+			rm -rf "$theirPacketIdentifierFolderPath" 2>/dev/null
 		;;
 		
 		2)
+			bishbosh_connection_packetIdentifier_incrementTransmissionCounter
+			printf '%s' $transmissionCounter >"$theirPacketIdentifierFolderPath"/transmission-counter
+			
 			bishbosh_connection_packetIdentifier_forWriting=$packetIdentifier
 			bishbosh_connection_write_PUBREC
-			printf '' >"$messageFileBasePath".sent-pubrec
 		;;
 		
 	esac

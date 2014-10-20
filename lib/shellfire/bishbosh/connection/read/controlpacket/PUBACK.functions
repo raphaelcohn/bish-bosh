@@ -8,11 +8,11 @@ bishbosh_connection_read_controlpacket_PUBACK()
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
 	
-	local packetIdentifierFolderPath
-	bishbosh_connection_packetIdentifier_packetIdentifierFolderPath
+	local ourPacketIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_ourPacketIdentifierFolderPath
 	
 	local unknownPacketIdentifier
-	if [ -f "$packetIdentifierFolderPath"/publish ]; then
+	if [ -f "$ourPacketIdentifierFolderPath"/publish ]; then
 		unknownPacketIdentifier=0
 	else
 		unknownPacketIdentifier=1
@@ -22,5 +22,5 @@ bishbosh_connection_read_controlpacket_PUBACK()
 	
 	bishbosh_connection_handler_PUBACK
 	
-	bishbosh_connection_packetIdentifier_retire
+	bishbosh_connection_packetIdentifier_retireOneOfOurs
 }

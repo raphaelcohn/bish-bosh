@@ -7,13 +7,14 @@ bishbosh_connection_read_controlpacket_PUBREL()
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
 	
-	local messageFileBasePath="$bishbosh_connection_sessionReceivePath"/2/$packetIdentifier
+	local theirPacketIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_theirPacketIdentifierFolderPath
+	
 	local unknownPacketIdentifier
-	if [ -f "$messageFileBasePath".sent-pubrec ]; then
+	if [ -f "$theirPacketIdentifierFolderPath"/transmission-counter ]; then
 		unknownPacketIdentifier=0
 	else
 		unknownPacketIdentifier=1
-		printf '' >"$messageFileBasePath".sent-pubrec
 	fi
 	
 	bishbosh_connection_handler_PUBREL
@@ -21,7 +22,5 @@ bishbosh_connection_read_controlpacket_PUBREL()
 	bishbosh_connection_packetIdentifier_forWriting=$packetIdentifier
 	bishbosh_connection_write_PUBCOMP
 	
-	set +f
-	rm -rf "$messageFileBasePath".* 2>/dev/null
-	set -f
+	rm -rf "$theirPacketIdentifierFolderPath" 2>/dev/null
 }

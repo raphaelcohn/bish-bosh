@@ -18,9 +18,12 @@ bishbosh_connection_packetIdentifier_initialise()
 		fi
 	fi
 	
-	# packet-identifiers: Can be overridden, but not listed in help or README.md
-	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionPacketIdentifiersPath "$bishbosh_connection_sessionPath" packet-identifiers
+	# our-packet-identifiers: Can be overridden, but not listed in help or README.md
+	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionOurPacketIdentifiersPath "$bishbosh_connection_sessionPath" our-packet-identifiers
 	
+	# their-packet-identifiers: Can be overridden, but not listed in help or README.md
+	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionTheirPacketIdentifiersPath "$bishbosh_connection_sessionPath" their-packet-identifiers
+		
 	# retransmission: Can be overridden, but not listed in help or README.md
 	_bishbosh_connection_defaultFolderPath bishbosh_connection_sessionRetransmissionPath "$bishbosh_connection_sessionPath" retransmission
 	
@@ -37,7 +40,7 @@ bishbosh_connection_packetIdentifier_initialise()
 	local transmissionCounter
 	local paddedTransmissionCounter
 	local specificRetransmissionPath
-	pushd "$bishbosh_connection_sessionPacketIdentifiersPath"
+	pushd "$bishbosh_connection_sessionOurPacketIdentifiersPath"
 		set +f
 		for packetIdentifier in *
 		do
@@ -47,12 +50,12 @@ bishbosh_connection_packetIdentifier_initialise()
 				if [ ! -e "$packetIdentifier" ]; then
 					continue
 				fi
-				core_exitError $core_commandLine_exitCode_DATAERR "What is '$packetIdentifier' doing in stored session state at '$bishbosh_connection_sessionPacketIdentifiersPath'?"
+				core_exitError $core_commandLine_exitCode_DATAERR "What is '$packetIdentifier' doing in sent stored session state at '$bishbosh_connection_sessionOurPacketIdentifiersPath'?"
 			fi
 			
 			transmissionCounterFile="$packetIdentifier"/transmission-counter
 			if [ ! -f "$transmissionCounterFile" ]; then
-				core_message WARN "Cleaning up packet identifier '$packetIdentifier' that lacks a transmission-counter"
+				core_message WARN "Cleaning up sent packet identifier '$packetIdentifier' that lacks a transmission-counter"
 				rm -rf "$packetIdentifier"
 				continue
 			fi
@@ -67,16 +70,46 @@ bishbosh_connection_packetIdentifier_initialise()
 			
 			paddedTransmissionCounter="$(printf '%09s' $transmissionCounter)"
 			specificRetransmissionPath="$bishbosh_connection_sessionRetransmissionPath"/"$paddedTransmissionCounter"
-			ln -s "$bishbosh_connection_sessionPacketIdentifiersPath"/"$packetIdentifier" "$specificRetransmissionPath" || core_exitError $core_commandLine_exitCode_DATAERR "Retransmission already '$transmissionCounter' (padded as '$paddedTransmissionCounter') already exists for '$packetIdentifier' at path '$specificRetransmissionPath'."
+			ln -s "$bishbosh_connection_sessionOurPacketIdentifiersPath"/"$packetIdentifier" "$specificRetransmissionPath" || core_exitError $core_commandLine_exitCode_DATAERR "Sent retransmission '$transmissionCounter' (padded as '$paddedTransmissionCounter') already exists for '$packetIdentifier' at path '$specificRetransmissionPath'."
 		done
 		set -f
 	popd
 	
-	# transmissionCounter=$((1${paddedTransmissionCounter}-1000000000))
-	# This packet identifier may not be usable, but the logic for finding the next identifier will be succesful
+	# PUBRECs to resend
+	pushd "$bishbosh_connection_sessionTheirPacketIdentifiersPath"
+		set +f
+		for packetIdentifier in *
+		do
+			set -f 
+			if [ ! -d "$packetIdentifier" ]; then
+				# ie '*'
+				if [ ! -e "$packetIdentifier" ]; then
+					continue
+				fi
+				core_exitError $core_commandLine_exitCode_DATAERR "What is '$packetIdentifier' doing in received stored session state at '$bishbosh_connection_sessionOurPacketIdentifiersPath'?"
+			fi
+			
+			transmissionCounterFile="$packetIdentifier"/transmission-counter
+			if [ ! -f "$transmissionCounterFile" ]; then
+				core_message WARN "Cleaning up sent packet identifier '$packetIdentifier' that lacks a transmission-counter"
+				rm -rf "$packetIdentifier"
+				continue
+			fi
+			
+			transmissionCounter="$(<"$transmissionCounterFile")"; then
+				bishbosh_connection_packetIdentifier_transmissionCounter=$((transmissionCounter+1))
+			fi
+			
+			paddedTransmissionCounter="$(printf '%09s' $transmissionCounter)"
+			specificRetransmissionPath="$bishbosh_connection_sessionRetransmissionPath"/"$paddedTransmissionCounter"
+			ln -s "$bishbosh_connection_sessionTheirPacketIdentifiersPath"/"$packetIdentifier" "$specificRetransmissionPath" || core_exitError $core_commandLine_exitCode_DATAERR "Received retransmission '$transmissionCounter' (padded as '$paddedTransmissionCounter') already exists for '$packetIdentifier' at path '$specificRetransmissionPath'."
+		done
+		
+		set -f
+	popd
 }
 
-bishbosh_connection_packetIdentifier_use()
+bishbosh_connection_packetIdentifier_useOneOfOurs()
 {
 	# publish, subscribe, unsubcribe
 	local kind="$1"
@@ -88,7 +121,7 @@ bishbosh_connection_packetIdentifier_use()
 	fi
 	bishbosh_connection_packetIdentifier_inFlight=$((bishbosh_connection_packetIdentifier_inFlight+1))
 	
-	while [ -d "$bishbosh_connection_sessionPacketIdentifiersPath"/$bishbosh_connection_packetIdentifier_forWriting ]
+	while [ -d "$bishbosh_connection_sessionOurPacketIdentifiersPath"/$bishbosh_connection_packetIdentifier_forWriting ]
 	do
 		if [ $bishbosh_connection_packetIdentifier_forWriting -eq 65535 ]; then
 			bishbosh_connection_packetIdentifier_forWriting=1
@@ -97,32 +130,38 @@ bishbosh_connection_packetIdentifier_use()
 		fi
 	done
 	
-	packetIdentifierFolderPath="$bishbosh_connection_sessionPacketIdentifiersPath"/"$bishbosh_connection_packetIdentifier_forWriting"
-	mkdir -m 0700 -p "$packetIdentifierFolderPath"
+	ourPacketIdentifierFolderPath="$bishbosh_connection_sessionOurPacketIdentifiersPath"/"$bishbosh_connection_packetIdentifier_forWriting"
+	mkdir -m 0700 -p "$ourPacketIdentifierFolderPath"
 	
 	printf '' >"$kind"
 	
 	$callback "$@"
 	
+	bishbosh_connection_packetIdentifier_incrementTransmissionCounter
+	
 	# only once transmission counter is written is this publish, etc, good to be sent
+	printf '%s' "$transmissionCounter" >"$ourPacketIdentifierFolderPath"/transmission-counter
+}
+
+bishbosh_connection_packetIdentifier_incrementTransmissionCounter()
+{
 	local transmissionCounter=$bishbosh_connection_packetIdentifier_transmissionCounter
 	bishbosh_connection_packetIdentifier_transmissionCounter=$((bishbosh_connection_packetIdentifier_transmissionCounter+1))
-	printf '%s' "$transmissionCounter" >"$packetIdentifierFolderPath"/transmission-counter
 }
 
 # Assumes  packetIdentifier  already set
-bishbosh_connection_packetIdentifier_retire()
+bishbosh_connection_packetIdentifier_retireOneOfOurs()
 {
 	bishbosh_connection_packetIdentifier_inFlight=$((bishbosh_connection_packetIdentifier_inFlight-1))
 	
-	packetIdentifierFolderPath="$bishbosh_connection_sessionPacketIdentifiersPath"/"$packetIdentifier"
-	rm -rf "$packetIdentifierFolderPath"
+	ourPacketIdentifierFolderPath="$bishbosh_connection_sessionOurPacketIdentifiersPath"/"$packetIdentifier"
+	rm -rf "$ourPacketIdentifierFolderPath"
 }
 
 # Assumes  packetIdentifier  already set
-bishbosh_connection_packetIdentifier_packetIdentifierFolderPath()
+bishbosh_connection_packetIdentifier_ourPacketIdentifierFolderPath()
 {
-	packetIdentifierFolderPath="$bishbosh_connection_sessionPublicationsPath"/$packetIdentifier
+	ourPacketIdentifierFolderPath="$bishbosh_connection_sessionPublicationsPath"/$packetIdentifier
 }
 
 bishbosh_connection_packetIdentifier_write()
@@ -130,4 +169,9 @@ bishbosh_connection_packetIdentifier_write()
 	bishbosh_connection_write_twoByteLength $bishbosh_connection_packetIdentifier_forWriting
 	unset bishbosh_connection_packetIdentifier_forWriting
 }
-	
+
+# Assumes  packetIdentifier  already set
+bishbosh_connection_packetIdentifier_theirPacketIdentifierFolderPath()
+{
+	theirPacketIdentifierFolderPath="$bishbosh_connection_sessionPublicationsPath"/$packetIdentifier
+}

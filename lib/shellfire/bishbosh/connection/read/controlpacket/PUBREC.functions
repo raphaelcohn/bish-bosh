@@ -7,15 +7,15 @@ bishbosh_connection_read_controlpacket_PUBREC()
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
 	
-	local packetIdentifierFolderPath
-	bishbosh_connection_packetIdentifier_packetIdentifierFolderPath
+	local ourPacketIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_ourPacketIdentifierFolderPath
 	
 	local unknownPacketIdentifier
 	local duplicate
-	if [ -f "$packetIdentifierFolderPath"/pubrel ]; then
+	if [ -f "$ourPacketIdentifierFolderPath"/pubrec-received ]; then
 		unknownPacketIdentifier=0
 		duplicate=1
-	elif [ -f "$packetIdentifierFolderPath"/publish ]; then
+	elif [ -f "$ourPacketIdentifierFolderPath"/publish ]; then
 		unknownPacketIdentifier=0
 		duplicate=0
 	else
@@ -26,6 +26,8 @@ bishbosh_connection_read_controlpacket_PUBREC()
 	fi
 	
 	bishbosh_connection_handler_PUBREC
+	
+	printf '' >"$ourPacketIdentifierFolderPath"/pubrec-received
 	
 	bishbosh_connection_packetIdentifier_forWriting=$packetIdentifier
 	bishbosh_connection_write_PUBREL

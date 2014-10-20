@@ -7,11 +7,11 @@ bishbosh_connection_read_controlpacket_PUBCOMP()
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
 	
-	local packetIdentifierFolderPath
-	bishbosh_connection_packetIdentifier_packetIdentifierFolderPath
+	local ourPacketIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_ourPacketIdentifierFolderPath
 	
 	local unknownPacketIdentifier
-	if [ -f "$packetIdentifierFolderPath"/pubrel ]; then
+	if [ -f "$ourPacketIdentifierFolderPath"/pubrec-received ]; then
 		unknownPacketIdentifier=0
 	else
 		# Handle from now on
@@ -22,5 +22,5 @@ bishbosh_connection_read_controlpacket_PUBCOMP()
 	
 	bishbosh_connection_handler_PUBCOMP
 	
-	bishbosh_connection_packetIdentifier_retire
+	bishbosh_connection_packetIdentifier_retireOneOfOurs
 }

@@ -7,8 +7,8 @@ bishbosh_connection_write_PUBREL()
 	printf '\142\002'
 	bishbosh_connection_packetIdentifier_write
 
-	# Assumes packetIdentifierFolderPath is in scope (it should be)
-	printf '' >"$packetIdentifierFolderPath"/pubrel	
+	# Assumes ourPacketIdentifierFolderPath is in scope (it should be)
+	printf '' >"$ourPacketIdentifierFolderPath"/pubrel	
 	
 	bishbosh_connection_ping_recordLastSentControlPacketAt
 }
@@ -17,8 +17,8 @@ bishbosh_connection_write_rePUBREL()
 {
 	core_message INFO "re-PUBREL-ing packet identifier '$packetIdentifier'"
 
-	local packetIdentifierFolderPath
-	bishbosh_connection_packetIdentifier_packetIdentifierFolderPath
+	local ourPacketIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_ourPacketIdentifierFolderPath
 	bishbosh_connection_packetIdentifier_forWriting=$packetIdentifier
 	bishbosh_connection_write_PUBREL
 }

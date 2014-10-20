@@ -12,10 +12,12 @@ bishbosh_connection_write_PUBREC()
 
 bishbosh_connection_write_rePUBREC()
 {
-	core_message INFO "re-PUBREC-ing packet identifier '$bishbosh_connection_packetIdentifier_forWriting'"
+	core_message INFO "re-PUBREC-ing packet identifier '$packetIdentifier'"
 	
 	# 5 << 4 in octal, followed by 2 (remaining length)
 	printf '\120\002'
+	
+	bishbosh_connection_packetIdentifier_forWriting=$packetIdentifier
 	bishbosh_connection_packetIdentifier_write
 	
 	unbishbosh_connection_ping_recordLastSentControlPacketAt

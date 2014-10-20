@@ -110,7 +110,7 @@ _bishbosh_connection_write_PUBLISH_writeMessagePingAndUnlink()
 	bishbosh_connection_ping_recordLastSentControlPacketAt
 	
 	if [ $messageUnlinkFile -eq 1 ]; then
-		rm -f $messageUnlinkFile || true
+		rm -f $messageUnlinkFile 2>/dev/null || true
 	fi
 }
 
@@ -142,27 +142,27 @@ core_dependency_requires '*' mv ln
 _bishbosh_connection_write_PUBLISH_storeMessage()
 {
 	local packetIdentifier="$bishbosh_connection_packetIdentifier_forWriting"
-	local packetIdentifierFolderPath
+	local ourPacketIdentifierFolderPath
 
-	printf '%s' $QoS >"$packetIdentifierFolderPath"/qos
+	printf '%s' $QoS >"$ourPacketIdentifierFolderPath"/qos
 	
 	# We only store recovery information for Clean Session = 0
 	# Clean Session = 1 is discarded on reconnect
 	if [ $bishbosh_connection_write_CONNECT_cleanSession -eq 0 ]; then
 		
 		if [ $bishbosh_connection_write_PUBLISH_retain ]; then
-			printf '' >"$packetIdentifierFolderPath"/retain
+			printf '' >"$ourPacketIdentifierFolderPath"/retain
 		fi
 
-		printf '%s' "$topicName" >"$packetIdentifierFolderPath"/topic-name
+		printf '%s' "$topicName" >"$ourPacketIdentifierFolderPath"/topic-name
 		
 		if [ $messageUnlinkFile -eq 1 ]; then
-			mv "$messageFilePath" "$packetIdentifierFolderPath"/message
+			mv "$messageFilePath" "$ourPacketIdentifierFolderPath"/message-sent
 		elif [ -n "$messageFilePath" ]; then
 			# hard links are better but may not work
-			ln "$messageFilePath" "$packetIdentifierFolderPath"/message || ln -s "$messageFilePath" "$packetIdentifierFolderPath"/message
+			ln "$messageFilePath" "$ourPacketIdentifierFolderPath"/message-sent 2>/dev/null || ln -s "$messageFilePath" "$ourPacketIdentifierFolderPath"/message-sent
 		else
-			printf '%s' "$message" >"$packetIdentifierFolderPath"/message
+			printf '%s' "$message" >"$ourPacketIdentifierFolderPath"/message-sent
 		fi
 	fi
 }
@@ -188,7 +188,7 @@ bishbosh_connection_write_PUBLISH_1()
 	
 	_bishbosh_connection_write_PUBLISH_setQoS
 	
-	bishbosh_connection_packetIdentifier_use publish _bishbosh_connection_write_PUBLISH_storeMessage
+	bishbosh_connection_packetIdentifier_useOneOfOurs publish _bishbosh_connection_write_PUBLISH_storeMessage
 	
 	_bishbosh_connection_write_PUBLISH_writeCommon
 	
@@ -218,7 +218,7 @@ bishbosh_connection_write_PUBLISH_2()
 	
 	_bishbosh_connection_write_PUBLISH_setQoS
 	
-	bishbosh_connection_packetIdentifier_use publish _bishbosh_connection_write_PUBLISH_storeMessage
+	bishbosh_connection_packetIdentifier_useOneOfOurs publish _bishbosh_connection_write_PUBLISH_storeMessage
 	
 	_bishbosh_connection_write_PUBLISH_writeCommon
 	
@@ -229,7 +229,7 @@ bishbosh_connection_write_PUBLISH_2()
 
 _bishbosh_connection_write_rePUBLISH_setRetainFlag()
 {
-	if [ -f "$packetIdentifierFolderPath"/retain ]; then
+	if [ -f "$ourPacketIdentifierFolderPath"/retain ]; then
 		# RETAIN flag (1<<0)
 		controlPacketTypeAndFlags=$(( controlPacketTypeAndFlags + 1 ))
 	fi
@@ -237,7 +237,7 @@ _bishbosh_connection_write_rePUBLISH_setRetainFlag()
 
 _bishbosh_connection_write_rePUBLISH_setTopicName()
 {
-	topicName="$(<"$packetIdentifierFolderPath"/topic-name)"
+	topicName="$(<"$ourPacketIdentifierFolderPath"/topic-name)"
 		
 	topicNameFieldLength=${#topicName}
 	remainingLength=$(( remainingLength + 2 + topicNameFieldLength ))
@@ -246,22 +246,22 @@ _bishbosh_connection_write_rePUBLISH_setTopicName()
 _bishbosh_connection_write_rePUBLISH_setMessage()
 {
 	message=''
-	messageFilePath="$packetIdentifierFolderPath"/message
+	messageFilePath="$ourPacketIdentifierFolderPath"/message-sent
 	messageFieldLength=$(bishbosh_filesize_${bishbosh_filesizeAlgorithm} "$messageFilePath")
 	messageUnlinkFile=0
 }
 
 _bishbosh_connection_write_rePUBLISH_setQoS()
 {
-	if [ -f "$packetIdentifierFolderPath"/1 ]; then
+	if [ -f "$ourPacketIdentifierFolderPath"/1 ]; then
 		QoS=1
-	elif [ -f "$packetIdentifierFolderPath"/2 ]; then
+	elif [ -f "$ourPacketIdentifierFolderPath"/2 ]; then
 		QoS=2
 	else
-		core_exitError $core_commandLine_exitCode_DATAERR "There is not QoS 1 or 2 file for packet identifier '$packetIdentifier' in stored session state at '$bishbosh_connection_sessionPacketIdentifiersPath'."
+		core_exitError $core_commandLine_exitCode_DATAERR "There is not QoS 1 or 2 file for packet identifier '$packetIdentifier' in stored session state at '$bishbosh_connection_sessionOurPacketIdentifiersPath'."
 	fi
 	
-	QoS=$(<"$packetIdentifierFolderPath"/qos)
+	QoS=$(<"$ourPacketIdentifierFolderPath"/qos)
 }
 
 # requires packetIdentifier
@@ -272,8 +272,8 @@ bishbosh_connection_write_rePUBLISH()
 	# 3 << 4
 	local controlPacketTypeAndFlags=48
 	local remainingLength=0
-	local packetIdentifierFolderPath
-	bishbosh_connection_packetIdentifier_packetIdentifierFolderPath
+	local ourPacketIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_ourPacketIdentifierFolderPath
 	
 	_bishbosh_connection_write_rePUBLISH_setRetainFlag
 	

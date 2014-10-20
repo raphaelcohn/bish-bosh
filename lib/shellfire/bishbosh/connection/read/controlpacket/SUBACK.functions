@@ -8,11 +8,11 @@ bishbosh_connection_read_controlpacket_SUBACK()
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
 	
-	local packetIdentifierFolderPath
-	bishbosh_connection_packetIdentifier_packetIdentifierFolderPath
+	local ourPacketIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_ourPacketIdentifierFolderPath
 	
 	local unknownPacketIdentifier
-	if [ -f "$packetIdentifierFolderPath"/subscribe ]; then
+	if [ -f "$ourPacketIdentifierFolderPath"/subscribe ]; then
 		unknownPacketIdentifier=0
 	else
 		unknownPacketIdentifier=1
@@ -30,7 +30,7 @@ bishbosh_connection_read_controlpacket_SUBACK()
 	
 	set --
 	
-	local topicFiltersPath="$packetIdentifierFolderPath"/topic-filters
+	local topicFiltersPath="$ourPacketIdentifierFolderPath"/topic-filters
 	local returnCode
 	local index=0
 	while [ $index -ne $returnCodeCount ]
@@ -58,5 +58,5 @@ bishbosh_connection_read_controlpacket_SUBACK()
 	
 	bishbosh_connection_handler_SUBACK "$@"
 	
-	bishbosh_connection_packetIdentifier_retire
+	bishbosh_connection_packetIdentifier_retireOneOfOurs
 }

@@ -40,7 +40,7 @@ _bishbosh_connection_write_SUBSCRIBE_validateArguments()
 
 _bishbosh_connection_write_SUBSCRIBE_store()
 {
-	local topicFiltersPath="$packetIdentifierFolderPath"/topic-filters
+	local topicFiltersPath="$ourPacketIdentifierFolderPath"/topic-filters
 	
 	local topicFilter
 	local topicQoS
@@ -69,7 +69,7 @@ bishbosh_connection_write_SUBSCRIBE()
 	local remainingLength=2
 	_bishbosh_connection_write_SUBSCRIBE_validateArguments "$@"
 	
-	bishbosh_connection_packetIdentifier_use subscribe _bishbosh_connection_write_SUBSCRIBE_store
+	bishbosh_connection_packetIdentifier_useOneOfOurs subscribe _bishbosh_connection_write_SUBSCRIBE_store
 	
 	# 8 << 4 + 1 << 1 in octal
 	printf '\202'
@@ -95,10 +95,10 @@ bishbosh_connection_write_SUBSCRIBE()
 # requires packetIdentifier
 bishbosh_connection_write_reSUBSCRIBE()
 {
-	local packetIdentifierFolderPath
-	bishbosh_connection_packetIdentifier_packetIdentifierFolderPath
+	local ourPacketIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_ourPacketIdentifierFolderPath
 	
-	local topicFiltersPath="$packetIdentifierFolderPath"/topic-filters
+	local topicFiltersPath="$ourPacketIdentifierFolderPath"/topic-filters
 	if [ ! -d "$topicFiltersPath" ]; then
 		core_message WARN "There are no topic filters in '$topicFiltersPath'; data is corrupt"
 		return 0
