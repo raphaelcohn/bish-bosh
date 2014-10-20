@@ -26,18 +26,21 @@ bishbosh_connection_handler_CONNACK()
 		'/and/also/topic/not/wanted'
 	
 	# Publish a QoS 0 message
-	#bishbosh_publish_retain=no
-	bishbosh_publish_topicName='a/b'
-	bishbosh_publish_message='X'
-	#bishbosh_publish_messageFilePath="example.message"
-	#bishbosh_publish_messageUnlinkFile=no
-	bishbosh_publish 0
+	# On topic a/b
+	# Unretained
+	# With value 'X'
+	bishbosh_publishText 0 'a/b' no 'X'
 	
 	# Publish a QoS 1 message
-	# Note arguments are not reset between publishes
-	bishbosh_publish 1
+	# On topic a/b
+	# Unretained
+	# Using the contents of file '/path/to/message'
+	bishbosh_publishFile 1 'a/b' no '/path/to/message'
 	
 	# Publish a QoS 2 message
-	# Note arguments are not reset between publishes
-	bishbosh_publish 2
+	# On topic a/b
+	# Retained
+	# Using the contents of file '/path/to/message/to/remove/after/send'
+	# Then remove '/path/to/message/to/remove/after/send' after send (QoS 2 takes a copy)
+	bishbosh_publishFileAndRemove 2 'a/b' yes '/path/to/message/to/remove/after/send'
 }

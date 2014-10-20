@@ -266,14 +266,39 @@ bishbosh_connection_write_rePUBLISH()
 	_bishbosh_connection_write_PUBLISH_writeMessagePingAndUnlink
 }
 
-bishbosh_publish()
+bishbosh_publishText()
+{
+	if [ $# -eq 3 ]; then
+		local bishbosh_publish_message=''
+	else
+		local bishbosh_publish_message="$4"
+	fi
+	_bishbosh_publish "$1" "$2" "$3"
+}
+
+bishbosh_publishFile()
+{
+	local bishbosh_publish_messageFilePath="$4"
+	local bishbosh_publish_messageUnlinkFile=no
+	_bishbosh_publish "$1" "$2" "$3"
+}
+
+bishbosh_publishFileAndRemove()
+{
+	local bishbosh_publish_messageFilePath="$4"
+	local bishbosh_publish_messageUnlinkFile=yes
+	_bishbosh_publish "$1" "$2" "$3"
+}
+
+_bishbosh_publish()
 {
 	local QoS=$1
-	shift 1
+	local bishbosh_publish_topicName="$2"
+	local bishbosh_publish_retain="$3"
 	
 	if [ $QoS -eq 0 ]; then
-		_bishbosh_connection_write_PUBLISH_QoS0 "$@"
+		_bishbosh_connection_write_PUBLISH_QoS0
 	else
-		_bishbosh_connection_write_PUBLISH_QoS "$@"
+		_bishbosh_connection_write_PUBLISH_QoS
 	fi
 }
