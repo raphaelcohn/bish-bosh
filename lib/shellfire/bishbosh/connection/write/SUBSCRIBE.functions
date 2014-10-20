@@ -4,16 +4,20 @@ _bishbosh_connection_write_SUBSCRIBE_validateArguments()
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' must contain at least one pair"
 	fi
 	
-	local pendingSubscribeByPacketIdentifierPath="$bishbosh_connection_sessionSubscriptionsSubscribingPath"/"$bishbosh_connection_packetIdentifier_forWriting"
-	mkdir -m 0700 -p "$pendingSubscribeByPacketIdentifierPath"
+	if [ $(($#%2)) -ne 0 ]; then
+		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' must contain pairs"
+	fi	
 	
+	local topicFilter
+	local topicQoS
 	local index=0
-	while [ $# -gt 1 ]
+	local topicFilterFieldLength
+	while [ $# -gt 0 ]
 	do
 		topicFilter="$1"
 		bishbosh_connection_validate_topicFilter 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' $index "$topicFilter"
 		
-		topicQoS="$2"
+		topicQoS=$2
 		case "$topicQoS" in
 			
 			0|1|2)
@@ -21,61 +25,60 @@ _bishbosh_connection_write_SUBSCRIBE_validateArguments()
 			;;
 			
 			*)
-				bishbosh_connection_write_SUBSCRIBE_cleanUpState
 				core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' at pair index '$index' must contain QoS values between 0 to 2 (inclusive), not '$topicQoS'"
 			;;
 		esac
 		
-		# This rather odd looking path produces fixed-width numbers
-		printf '%s\t%s\n' "${topicQoS}" "${topicFilter}" >"$pendingSubscribeByPacketIdentifierPath"/"$(printf '%09s' $index)"
+		topicFilterFieldLength=${#topicFilter}
+		# 3 == 2 bytes length + 1 byte QoS
+		remainingLength=$(( remainingLength + 3 + topicFilterFieldLength ))
 		
 		shift 2
 		index=$((index+1))
-		topicFilterFieldLength=${#topicFilter}
-		# 3 is topicFilter length bytes (2) + QoS length (1)
-		remainingLength=$(( remainingLength + 3 + topicFilterFieldLength ))
 	done
-	
-	printf '%s\n' $index >"$pendingSubscribeByPacketIdentifierPath".count
-	
-	if [ $# -eq 1 ]; then
-		bishbosh_connection_write_SUBSCRIBE_cleanUpState
-		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_SUBSCRIBE_topicQoSPairs' must contain balanced pairs"
-	fi
 }
 
-core_dependency_requires '*' rm
-bishbosh_connection_write_SUBSCRIBE_cleanUpState()
+_bishbosh_connection_write_SUBSCRIBE_store()
 {
-	rm -f "$pendingSubscribeByPacketIdentifierPath" "$pendingSubscribeByPacketIdentifierPath".count
+	local topicFiltersPath="$packetIdentifierFolderPath"/topic-filters
+	
+	local topicFilter
+	local topicQoS
+	local index=0
+	local indexPath
+	while [ $# -gt 0 ]
+	do
+		topicFilter="$1"
+		topicQoS=$2
+		
+		# This rather odd looking syntax produces fixed-width numbers which sort easily in a glob-expression
+		indexPath="$topicFiltersPath"/"$(printf '%09s' $index)"
+		
+		mkdir -m 0700 -p "$indexPath"
+		printf '%s' $topicQoS >"$indexPath"/topic-qos
+		printf '%s' "$topicFilter" >"$indexPath"/topic-filter
+		
+		shift 2
+		index=$((index+1))
+	done
 }
 
 core_usesIn bishbosh/connection write
 bishbosh_connection_write_SUBSCRIBE()
 {
-	REDO PACKET IDENTIFIER NEXT
-	
-	
 	local remainingLength=2
-	local topicFilter
-	local topicQoS
-	local topicFilterFieldLength
 	_bishbosh_connection_write_SUBSCRIBE_validateArguments "$@"
 	
-	local index=0
-	while [ $index -lt $# ]
-	do
-		topicFilter="${index}"
-		topicQoS=$2
-		index=$((index+2))
-	done
+	bishbosh_connection_packetIdentifier_use subscribe _bishbosh_connection_write_SUBSCRIBE_store
 	
 	# 8 << 4 + 1 << 1 in octal
 	printf '\202'
 	bishbosh_connection_write_remainingLength $remainingLength
 	bishbosh_connection_packetIdentifier_write
-	
-	while $# -gt 0
+
+	local topicFilter
+	local topicQoS
+	while [ $# -gt 0 ]
 	do
 		topicFilter="$1"
 		topicQoS=$2
@@ -85,6 +88,70 @@ bishbosh_connection_write_SUBSCRIBE()
 		printf '%s' "$topicFilter"
 		bishbosh_connection_write_byte $topicQoS
 	done
+	
+	bishbosh_connection_ping_recordLastSentControlPacketAt
+}
+
+# requires packetIdentifier
+bishbosh_connection_write_reSUBSCRIBE()
+{
+	local packetIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_packetIdentifierFolderPath
+	
+	local topicFiltersPath="$packetIdentifierFolderPath"/topic-filters
+	if [ ! -d "$topicFiltersPath" ]; then
+		core_message WARN "There are no topic filters in '$topicFiltersPath'; data is corrupt"
+		return 0
+	fi
+	
+	local remainingLength=2
+
+	local paddedIndex
+	
+	local topicFilterFieldLength
+	pushd "$topicFiltersPath"
+	
+		set +f
+		for paddedIndex in *
+		do
+			set -f
+			if [ ! -e "$paddedIndex" ]; then
+				core_message WARN "There are no padded indices in '$topicFiltersPath'; data is corrupt"
+				return 0
+			fi
+			if [ ! -d "$paddedIndex" ]; then
+				core_message WARN "What is '$topicFiltersPath'/'$paddedIndex' doing there?"
+				continue
+			fi
+			
+			topicFilterFieldLength=$(bishbosh_filesize_${bishbosh_filesizeAlgorithm} "$paddedIndex"/topic-filter)
+			remainingLength=$(( remainingLength + 3 + topicFilterFieldLength ))
+		done
+		set -f
+	
+	popd
+	
+	# 8 << 4 + 1 << 1 in octal
+	printf '\202'
+	bishbosh_connection_write_remainingLength $remainingLength
+	
+	local bishbosh_connection_packetIdentifier_forWriting=$packetIdentifier
+	bishbosh_connection_packetIdentifier_write
+	unset bishbosh_connection_packetIdentifier_forWriting
+	
+	pushd "$topicFiltersPath"
+
+		set +f
+		for paddedIndex in *
+		do
+			set -f
+			topicFilterFieldLength=$(bishbosh_filesize_${bishbosh_filesizeAlgorithm} "$paddedIndex"/topic-filter)
+			bishbosh_connection_write_file "$paddedIndex"/topic-filter $topicFilterFieldLength
+			bishbosh_connection_write_byte $(<"$paddedIndex"/topic-qos)
+		done
+		set -f
+		
+	popd
 	
 	bishbosh_connection_ping_recordLastSentControlPacketAt
 }

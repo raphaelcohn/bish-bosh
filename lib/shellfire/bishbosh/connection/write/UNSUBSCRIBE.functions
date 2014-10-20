@@ -4,46 +4,127 @@ _bishbosh_connection_write_UNSUBSCRIBE_validateArguments()
 		core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_connection_write_UNSUBSCRIBE_topics' must contain at least one topic"
 	fi
 	
-	local recordFile="$bishbosh_connection_sessionSubscriptionsUnsubscribingPath"/"$bishbosh_connection_packetIdentifier_forWriting"
+	local topicFilter
+	local topicFilterFieldLength
 	while [ $# -gt 0 ]
 	do
 		topicFilter="$1"
 		bishbosh_connection_validate_topicFilter 'bishbosh_connection_write_UNSUBSCRIBE_topics' $index "$topicFilter"
 		shift 1
-	
-		# We could also record the request as the actual packet, then cat it into the stream; potentially more efficient
-		printf '%s' "${topicFilter}" >"$recordFile"
 		
 		topicFilterFieldLength=${#topicFilter}
 		remainingLength=$(( remainingLength + 2 + topicFilterFieldLength ))
 	done
+}
 
-	printf '' >"$recordFile".written
+_bishbosh_connection_write_UNSUBSCRIBE_store()
+{
+	local topicFiltersPath="$packetIdentifierFolderPath"/topic-filters
+	
+	local topicFilter
+	local index=0
+	local indexPath
+	while [ $# -gt 0 ]
+	do
+		topicFilter="$1"
+		
+		# This rather odd looking syntax produces fixed-width numbers which sort easily in a glob-expression
+		indexPath="$topicFiltersPath"/"$(printf '%09s' $index)"
+		
+		mkdir -m 0700 -p "$indexPath"
+		printf '%s' "$topicFilter" >"$indexPath"/topic-filter
+		
+		shift 1
+		index=$((index+1))
+	done
 }
 
 core_usesIn bishbosh/connection write
 bishbosh_connection_write_UNSUBSCRIBE()
 {
-
-	REDO PACKET IDENTIFIER NEXT
-
 	local remainingLength=2
-	local topicFilter
-	local topicFilterFieldLength
 	_bishbosh_connection_write_UNSUBSCRIBE_validateArguments "$@"
+	
+	bishbosh_connection_packetIdentifier_use unsubscribe _bishbosh_connection_write_UNSUBSCRIBE_store
 	
 	# 10 << 4 + 1 << 1 in octal
 	printf '\242'
 	bishbosh_connection_write_remainingLength $remainingLength
+
 	bishbosh_connection_packetIdentifier_write
 	
+	local topicFilter
 	while [ $# -gt 0 ]
 	do
 		topicFilter="$1"
 
 		bishbosh_connection_write_twoByteLength ${#topicFilter}
 		printf '%s' "$topicFilter"
+		
+		shift 1
 	done
+	
+	bishbosh_connection_ping_recordLastSentControlPacketAt
+}
+
+bishbosh_connection_write_reUNSUBSCRIBE()
+{
+	local packetIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_packetIdentifierFolderPath
+	
+	local topicFiltersPath="$packetIdentifierFolderPath"/topic-filters
+	if [ ! -d "$topicFiltersPath" ]; then
+		core_message WARN "There are no topic filters in '$topicFiltersPath'; data is corrupt"
+		return 0
+	fi
+	
+	local remainingLength=2
+
+	local paddedIndex
+	
+	local topicFilterFieldLength
+	pushd "$topicFiltersPath"
+	
+		set +f
+		for paddedIndex in *
+		do
+			set -f
+			if [ ! -e "$paddedIndex" ]; then
+				core_message WARN "There are no padded indices in '$topicFiltersPath'; data is corrupt"
+				return 0
+			fi
+			if [ ! -d "$paddedIndex" ]; then
+				core_message WARN "What is '$topicFiltersPath'/'$paddedIndex' doing there?"
+				continue
+			fi
+			
+			topicFilterFieldLength=$(bishbosh_filesize_${bishbosh_filesizeAlgorithm} "$paddedIndex"/topic-filter)
+			remainingLength=$(( remainingLength + 2 + topicFilterFieldLength ))
+		done
+		set -f
+	
+	popd
+	
+	# 10 << 4 + 1 << 1 in octal
+	printf '\242'
+	bishbosh_connection_write_remainingLength $remainingLength
+	
+	local bishbosh_connection_packetIdentifier_forWriting=$packetIdentifier
+	bishbosh_connection_packetIdentifier_write
+	unset bishbosh_connection_packetIdentifier_forWriting
+	
+	pushd "$topicFiltersPath"
+
+		set +f
+		for paddedIndex in *
+		do
+			set -f
+			topicFilterFieldLength=$(bishbosh_filesize_${bishbosh_filesizeAlgorithm} "$paddedIndex"/topic-filter)
+			bishbosh_connection_write_file "$paddedIndex"/topic-filter $topicFilterFieldLength
+		done
+		set -f
+		
+	popd
 	
 	bishbosh_connection_ping_recordLastSentControlPacketAt
 }

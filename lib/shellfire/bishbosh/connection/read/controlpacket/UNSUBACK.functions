@@ -2,11 +2,23 @@ core_usesIn bishbosh/connection error
 bishbosh_connection_read_controlpacket_UNSUBACK()
 {
 	bishbosh_connection_error_ifRemainingLengthNot UNSUBACK 2
-	
+
 	local packetIdentifier
 	bishbosh_connection_read_packetIdentifier
 	
+	local packetIdentifierFolderPath
+	bishbosh_connection_packetIdentifier_packetIdentifierFolderPath
+	
+	local unknownPacketIdentifier
+	if [ -f "$packetIdentifierFolderPath"/subscribe ]; then
+		unknownPacketIdentifier=0
+	else
+		unknownPacketIdentifier=1
+		
+		core_message WARN "Received an UNSUBACK with packet identifier '$packetIdentifier' for an UNSUBSCRIBE that doesn't appear to be ours'"
+	fi
+	
 	bishbosh_connection_handler_UNSUBACK
 	
-	core_TODO 'We should recycle the packet identifier at this point'
+	bishbosh_connection_packetIdentifier_retire
 }

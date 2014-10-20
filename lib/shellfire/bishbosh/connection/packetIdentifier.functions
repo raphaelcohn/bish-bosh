@@ -90,6 +90,7 @@ bishbosh_connection_packetIdentifier_use()
 	# publish, subscribe, unsubcribe
 	local kind="$1"
 	local callback="$2"
+	shift 2
 	
 	if [ $bishbosh_connection_packetIdentifier_inFlight -eq 65535 ]; then
 		core_exitError $core_commandLine_exitCode_DATAERR "All packet identifiers are in flight"
@@ -110,7 +111,7 @@ bishbosh_connection_packetIdentifier_use()
 	
 	printf '' >"$kind"
 	
-	$callback
+	$callback "$@"
 	
 	# only once transmission counter is written is this publish, etc, good to be sent
 	local transmissionCounter=$bishbosh_connection_packetIdentifier_transmissionCounter
@@ -132,22 +133,6 @@ bishbosh_connection_packetIdentifier_packetIdentifierFolderPath()
 {
 	packetIdentifierFolderPath="$bishbosh_connection_sessionPublicationsPath"/$packetIdentifier
 }
-
-
-
-
-bishbosh_connection_packetIdentifier_zeroPrefixPadded()
-{
-	# eg printf '%s\t%s\n' "${topicQoS}" "${topicFilter}" >"$pendingSubscribeByPacketIdentifierPath"/"$(printf '%09s' $index)"
-	printf '%09s' $1
-}
-
-bishbosh_connection_packetIdentifier_removeZeroPrefixPadding()
-{
-	 bishbosh_connection_packetIdentifier_forWriting=$((1${paddedPacketIdentifier}-1000000000))
-}
-
-
 
 bishbosh_connection_packetIdentifier_write()
 {
