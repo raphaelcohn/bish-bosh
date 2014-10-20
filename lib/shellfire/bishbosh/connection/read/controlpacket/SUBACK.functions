@@ -24,6 +24,8 @@ bishbosh_connection_read_controlpacket_SUBACK()
 	if [ $returnCodeCount -eq 0 ]; then
 		bishbosh_connection_error_protocolReadControlPacket SUBACK "Received no return codes"
 	fi
+
+	local topicFiltersPath="$ourPacketIdentifierFolderPath"/topic-filters
 	if [ -d "$topicFiltersPath"/"$(printf '%09s' $returnCodeCount)" ]; then
 		bishbosh_connection_error_protocolReadControlPacket SUBACK "Received too few return codes '$returnCodeCount'"
 	fi

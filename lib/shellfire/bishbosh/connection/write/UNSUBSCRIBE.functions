@@ -47,7 +47,7 @@ _bishbosh_connection_write_UNSUBSCRIBE()
 	local remainingLength=2
 	_bishbosh_connection_write_UNSUBSCRIBE_validateArguments "$@"
 	
-	bishbosh_connection_packetIdentifier_useOneOfOurs unsubscribe _bishbosh_connection_write_UNSUBSCRIBE_store
+	bishbosh_connection_packetIdentifier_useOneOfOurs unsubscribe _bishbosh_connection_write_UNSUBSCRIBE_store "$@"
 	
 	# 10 << 4 + 1 << 1 in octal
 	printf '\242'

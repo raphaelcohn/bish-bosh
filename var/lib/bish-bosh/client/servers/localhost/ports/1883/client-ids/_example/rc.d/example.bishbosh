@@ -31,18 +31,18 @@ bishbosh_connection_handler_CONNACK()
 	# On topic a/b
 	# Unretained
 	# With value 'X'
-	bishbosh_publishText 0 'a/b' no 'X'
+	bishbosh_publishText 0 'a/b' no 'hello world'
 	
 	# Publish a QoS 1 message
 	# On topic a/b
 	# Unretained
 	# Using the contents of file '/path/to/message'
-	bishbosh_publishFile 1 'a/b' no '/path/to/message'
+	#bishbosh_publishFile 1 'a/b' no '/path/to/message'
 	
 	# Publish a QoS 2 message
 	# On topic a/b
 	# Retained
 	# Using the contents of file '/path/to/message/to/remove/after/send'
 	# Then remove '/path/to/message/to/remove/after/send' after send (QoS 2 takes a copy)
-	bishbosh_publishFileAndRemove 2 'a/b' yes '/path/to/message/to/remove/after/send'
+	#bishbosh_publishFileAndRemove 2 'a/b' yes '/path/to/message/to/remove/after/send'
 }

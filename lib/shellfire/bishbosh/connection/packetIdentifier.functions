@@ -135,7 +135,7 @@ bishbosh_connection_packetIdentifier_useOneOfOurs()
 	ourPacketIdentifierFolderPath="$bishbosh_connection_sessionOurPacketIdentifiersPath"/"$bishbosh_connection_packetIdentifier_forWriting"
 	mkdir -m 0700 -p "$ourPacketIdentifierFolderPath"
 	
-	printf '' >"$kind"
+	printf '' >"$ourPacketIdentifierFolderPath"/"$kind"
 	
 	$callback "$@"
 	
@@ -163,7 +163,7 @@ bishbosh_connection_packetIdentifier_retireOneOfOurs()
 # Assumes  packetIdentifier  already set
 bishbosh_connection_packetIdentifier_ourPacketIdentifierFolderPath()
 {
-	ourPacketIdentifierFolderPath="$bishbosh_connection_sessionPublicationsPath"/$packetIdentifier
+	ourPacketIdentifierFolderPath="$bishbosh_connection_sessionOurPacketIdentifiersPath"/$packetIdentifier
 }
 
 bishbosh_connection_packetIdentifier_write()
@@ -174,5 +174,5 @@ bishbosh_connection_packetIdentifier_write()
 # Assumes  packetIdentifier  already set
 bishbosh_connection_packetIdentifier_theirPacketIdentifierFolderPath()
 {
-	theirPacketIdentifierFolderPath="$bishbosh_connection_sessionPublicationsPath"/$packetIdentifier
+	theirPacketIdentifierFolderPath="$bishbosh_connection_sessionOurPacketIdentifiersPath"/$packetIdentifier
 }
