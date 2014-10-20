@@ -131,7 +131,7 @@ ie, prefix with `bishbosh_`, remove the `--` and for every `-` followed by a let
 ### But the really interesting scriptable stuff is done with configuration files or scriptlets
 
 #### Being specific about how a is made connection
-These settings relate to [MQTT]'s **CONNACK** packet.
+These settings relate to [MQTT]'s **CONNECT** packet.
 
 | Configuration Setting | Values | Interpreted as if *unset* | Explanation |
 | --------------------- | ------ | ----------------------- | ----------- |
@@ -150,6 +150,72 @@ These settings relate to [MQTT]'s **CONNACK** packet.
 _\* Technically, a boolean, which might also be `Y`, `YES`, `Yes`, `yes`, `T`, `TRUE`, `True`, `true`, `ON`, `On`, `on` for 1 and `N`, `NO`, `No`, `no`, `F`, `FALSE`, `False`, `false`, `OFF`, `Off` and `off` for 0, but best as a number._
 
 _† Apart from [zsh], no shell can either have variables with Unicode `U+0000` (ACSCII `NUL` as was) in them, or read them directly._
+
+##### Publishing
+Messages can be published using one of three functions:-
+* `bishbosh_publishText`, to send messages as text (ie shell strings, which, apart from [zsh], can't contain Unicode `U+0000`);
+* `bishbosh_publishFile`, to send messages from a file (so they can contain Unicode `U+0000`);
+* `bishbosh_publishFileAndRemove`, which is the same as `bishbosh_publishFile`, but removes the message after it has been sent (of course, any copies neededfor QoS 1 / 2 handling are preserved).
+
+Any unacknowledged **PUBLISH** packets (and **PUBREL** packets) are resent by [bish-bosh] on start-up once **CONNACK** is received.
+
+###### `bishbosh_publishText`
+|Position|Purpose|Valid Values|
+|--------|-------|------------|
+|1|QoS level| `0` to `2` inclusive|
+|2|Topic name|Any valid topic name, although `\n` is currently rejected in topics (see [Specification Violations](#specification-violations))|
+|3|Retain Flag as a Boolean|`yes` or `no`|
+|4|Message text|Any message text. May be empty or omitted (interpreted as empty)|
+
+###### `bishbosh_publishFile`
+|Position|Purpose|Valid Values|
+|--------|-------|------------|
+|1|QoS level| `0` to `2` inclusive|
+|2|Topic name|Any valid topic name, although `\n` is currently rejected in topics (see [Specification Violations](#specification-violations))|
+|3|Retain Flag as a Boolean|`yes` or `no`|
+|4|File path|Any valid file path. Must be readable. Can be empty.|
+
+###### `bishbosh_publishFileAndRemove`
+|Position|Purpose|Valid Values|
+|--------|-------|------------|
+|1|QoS level| `0` to `2` inclusive|
+|2|Topic name|Any valid topic name, although `\n` is currently rejected in topics (see [Specification Violations](#specification-violations))|
+|3|Retain Flag as a Boolean|`yes` or `no`|
+|4|File path|Any valid file path. Must be readable. Can be empty. Must be writable so we can delete it.|
+
+##### Subscribing
+Subscriptions are sent using the function `bishbosh_subscribe`. Any unacknowledged **SUBSCRIBE** packets are resent by [bish-bosh] on start-up once **CONNACK** is received.
+
+Subscriptions are given by specifiying pairs of variable arguments as `topicFilter` - `topicQos`. At least one pair must be supplied. For example
+
+```bash
+bishbosh_subscribe \
+'/topic/qos/0' 0 \
+'/topic/qos/1' 1 \
+'/topic/qos/3' 1
+```
+
+subcribes to:-
+
+* a `topicFilter` of `/topic/qos/0` with a requested `topicQos` of `0`, and
+* a `topicFilter` of `/topic/qos/1` with a requested `topicQos` of `1`, and
+* a `topicFilter` of `/topic/qos/2` with a requested `topicQos` of `2`
+
+##### Unsubscribing
+Unsubscriptions are sent using the function `bishbosh_unsubscribe`. Any unacknowledged **UNSUBSCRIBE** packets are resent by [bish-bosh] on start-up once **CONNACK** is received.
+
+Unsubscriptions are given by specifiying variable arguments of `topicFilter`. At least one `topicFilter` must be supplied. For example
+
+```bash
+bishbosh_unsubscribe \
+'/topic/not/wanted' \
+'/and/also/topic/not/wanted'
+```
+
+unsubscribes from:-
+
+* a `topicFilter` of `/topic/not/wanted`, and
+* a `topicFilter` of `/and/also/topic/not/wanted`
 
 #### Handling read events
 [bish-bosh] supports a number of callbacks, called handlers, whenever something interesting has been read and processed. The default implementations of these just do logging if `--verbose 2` is used.
@@ -748,14 +814,8 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
   * Topic names can not contain `\n`.
   * Topic filters can not contain `\n`.
 
-#### Retranmission
-* Not currently implemented, and, even if it were, MQTT-4.6.0-1 is violated because we do not timestamp message indicators yet (and so packet identifier wrap-around breaks)
-
 ### Broken but Fixable
-* Unsubscribe handling is broken
-* Connection tear down is very brittle, and state can be easily corrupted
-* State transitions are nothing like as close to atomic as they could be
-* We do not handle SIGTERM et al cleanly
+* Connection tear down is likely to lead to will messages being sent with some backends due to problems with signal handling.
 
 ### Useful to do
 * nextPacketIdentifier, set at start, and calculate better
