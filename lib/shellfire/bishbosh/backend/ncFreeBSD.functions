@@ -1,9 +1,9 @@
 core_usesIn core functions
-core_functions_register _bishbosh_backend_registration ncMacOSX
+core_functions_register _bishbosh_backend_registration ncFreeBSD
 
 core_dependency_requires '*' grep
 core_dependency_requires '*' head
-bishbosh_backend_ncMacOSX_check()
+bishbosh_backend_ncFreeBSD_check()
 {
 	if [ "$bishbosh_tunnel" != 'none' ]; then
 		return 1
@@ -18,8 +18,8 @@ bishbosh_backend_ncMacOSX_check()
 		if [ ! -x "$binary" ]; then
 			continue
 		fi
-		if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^usage: nc \[-46AcCDdFhklnrtUuvz\] \[-K tc\] \[-b boundif\] \[-i interval\] \[-p source_port\]$'; then
-			bishbosh_backend_name=ncMacOSX
+		if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^^usage: nc \[-46DdEhklNnrStUuvz\] \[-e policy\] \[-I length\] \[-i interval\] \[-O length\]$'; then
+			bishbosh_backend_name=ncFreeBSD
 			bishbosh_backend_path="$binary"
 			return 0
 		fi
@@ -27,18 +27,18 @@ bishbosh_backend_ncMacOSX_check()
 	return 1
 }
 
-bishbosh_backend_ncMacOSX_checkIfNetcatVariant()
+bishbosh_backend_ncFreeBSD_checkIfNetcatVariant()
 {
-	# eg  'usage: nc [-46AcCDdFhklnrtUuvz] [-K tc] [-b boundif] [-i interval] [-p source_port]'
-	bishbosh_backend_netcatVariantHelpMessageLineExists '^usage: nc \[-46AcCDdFhklnrtUuvz\] \[-K tc\] \[-b boundif\] \[-i interval\] \[-p source_port\]$'
+	# eg  'usage: nc [-46DdEhklNnrStUuvz] [-e policy] [-I length] [-i interval] [-O length]'
+	bishbosh_backend_netcatVariantHelpMessageLineExists '^usage: nc \[-46DdEhklNnrStUuvz\] \[-e policy\] \[-I length\] \[-i interval\] \[-O length\]$'
 }
 
-bishbosh_backend_ncMacOSX_port()
+bishbosh_backend_ncFreeBSD_port()
 {
 	printf '%s' 1883
 }
 
-_bishbosh_backend_ncMacOSX_start_addProxy()
+_bishbosh_backend_ncFreeBSD_start_addProxy()
 {
 	local proxyValue="$1"
 	core_variable_array_append options '-X' "$proxyValue"
@@ -54,16 +54,16 @@ _bishbosh_backend_ncMacOSX_start_addProxy()
 	core_variable_array_append options '-x' "$proxyAddress"
 	
 	if core_variable_isSet bishbosh_proxyUsername; then
-		core_message WARN "The backend ncMacOSX does not support specifing the proxy username"
+		core_message WARN "The backend ncFreeBSD does not support specifing the proxy username"
 	fi
 	if core_variable_isSet bishbosh_proxyPassword; then
-		core_message WARN "The backend ncMacOSX does not support specifing the proxy password"
+		core_message WARN "The backend ncFreeBSD does not support specifing the proxy password"
 	fi
 }
 
 # Also -K tclass and -F options are in the commandline help (but not the man page)!
 core_usesIn core variable variable/array
-bishbosh_backend_ncMacOSX_start()
+bishbosh_backend_ncFreeBSD_start()
 {
 	local options
 	local options_initialised
@@ -88,7 +88,7 @@ bishbosh_backend_ncMacOSX_start()
 		;;
 		
 		serial)
-			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncMacOSX does not support the 'serial' transport."
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncFreeBSD does not support the 'serial' transport."
 		;;
 		
 		*)
@@ -108,19 +108,19 @@ bishbosh_backend_ncMacOSX_start()
 	case "$bishbosh_proxyKind" in
 		
 		SOCKS4)
-			_bishbosh_backend_ncMacOSX_start_addProxy '4'
+			_bishbosh_backend_ncFreeBSD_start_addProxy '4'
 		;;
 		
 		SOCKS4a)
-			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncMacOSX does not support the 'SOCKS4a' bishbosh_proxyKind."
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncFreeBSD does not support the 'SOCKS4a' bishbosh_proxyKind."
 		;;
 		
 		SOCKS5)
-			_bishbosh_backend_ncMacOSX_start_addProxy '5'
+			_bishbosh_backend_ncFreeBSD_start_addProxy '5'
 		;;
 		
 		HTTP)
-			_bishbosh_backend_ncMacOSX_start_addProxy 'connect'
+			_bishbosh_backend_ncFreeBSD_start_addProxy 'connect'
 		;;
 		
 	esac
