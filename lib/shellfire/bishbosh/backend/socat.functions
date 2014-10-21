@@ -21,6 +21,7 @@ bishbosh_backend_socat_check()
 		bishbosh_backend_path="$(core_compatibility_which socat)"
 		return 0
 	fi
+	return 1
 }
 
 bishbosh_backend_socat_port()
