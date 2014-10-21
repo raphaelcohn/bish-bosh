@@ -755,6 +755,11 @@ The widely varying list of dependencies and preferences can be confusing, so her
 * RHEL 6.5 (by implication, because Centos 6.5 works)
 * Mac OS X 10.9 and 10.10 (as nothing much has changed underneath)
 
+### Not Working
+* OpenBSD 5.5 (fails in first line of `core_init_rexecUnderCorrectShell`) (`sh` is actually a runtime-adjusted `pdksh`)?
+  * also occurs under `/bin/ksh`
+  * seems to be a problem with `pdksh` derivative (reproducible on Mac OS X with Homebrew)
+
 ### Optimised
 
 #### For Debian / Ubuntu
