@@ -36,10 +36,10 @@ This will create a folder [bish-bosh] inside your home folder. [bish-bosh] can t
 
 ```bash
 cd ~/bish-bosh
-./bish-bosh --server 'test.mosquitto.org' --client-id 'CLIENT_ID'
+./bish-bosh --client-id 'CLIENT_ID'
 ```
 
-where `CLIENT_ID` is a client id you'd like to use. bosh-bosh will attempt to find its dependencies on the `PATH`, install any missing dependencies (with your permission) if it recognises your package manager, choose an optimum configuration and connect to the server (in this case, a commonly available test one).
+where `CLIENT_ID` is a client id you'd like to use. bosh-bosh will attempt to find its dependencies on the `PATH`, install any missing dependencies (with your permission) if it recognises your package manager, choose an optimum configuration and connect to a MQTT server (by default, `test.mosquitto.org`).
 
 Of course, this might not work on your setup, and so you might need to install some [dependencies](#dependencies) or change your [backend](#backends).
 
