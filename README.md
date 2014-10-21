@@ -730,24 +730,30 @@ Unfortunately, there are a lot of [GNU Bash] versions that are still in common u
 The widely varying list of dependencies and preferences can be confusing, so here's a little guidance.
 
 ### Tested and work 'out-of-the-box'
+* Linux
+  * Ubuntu 14.04.1 LTS
+    * Server install with `sshd` enabled
+  * Ubuntu 12.04.5 LTS
+    * Server install with `sshd` enabled
+  * Ubuntu 10.04.4 LTS
+    * Server install with `sshd` enabled
+  * Debian 6
+  * Centos 7
+    * From the 'minimal' DVD
+  * Centos 6.5
+    * From the 'minimal' DVD
+  * BusyBox
+    * _Note: BusyBox configurations will work on Debian/Ubuntu, too, and so can be used for boot-time [MQTT] activities._
 * Mac OS X 10.8 (Mountain Lion)
   * Unmodified
   * With [Homebrew]
-* Ubuntu 10.04.4 LTS
-  * Server install with `sshd` enabled
-* Ubuntu 12.04.5 LTS
-  * Server install with `sshd` enabled
-* Ubuntu 14.04.1 LTS
-  * Server install with `sshd` enabled
 * FreeBSD 10 (older versions are highly likely to work, too)
-* BusyBox
-  * _Note: BusyBox configurations will work on Debian/Ubuntu, too, and so can be used for boot-time [MQTT] activities._
 
 ### Untested, but should work with no changes
+* RHEL 7 (by implication, because Centos 7 works)
+* RHEL 6.5 (by implication, because Centos 6.5 works)
 * Mac OS X 10.9 and 10.10 (as nothing much has changed underneath)
-* Debian 6 / 7
-* Centos 6.5 (and by implication, RHEL 6.5)
-* Centos 7 (and by implication, RHEL 7)
+* Debian 7
 
 ### Optimised
 
