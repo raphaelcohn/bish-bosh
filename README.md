@@ -744,12 +744,14 @@ The widely varying list of dependencies and preferences can be confusing, so her
     * From the 'minimal' DVD
   * Centos 6.5
     * From the 'minimal' DVD
+  * OpenSUSE 13.1
   * BusyBox on Ubuntu 14.04.1 LTS
     * _Note: BusyBox configurations will work on Debian/Ubuntu, too, and so can be used for boot-time [MQTT] activities._
-* Mac OS X 10.8 (Mountain Lion)
-  * Unmodified
-  * With [Homebrew]
-* FreeBSD 10.0 (older versions are highly likely to work, too)
+* BSD-alike
+  * Mac OS X 10.8 (Mountain Lion)
+    * Unmodified
+    * With [Homebrew]
+  * FreeBSD 10.0
 
 ### Untested, but should work with no changes
 * RHEL 7 (by implication, because Centos 7 works)
@@ -761,6 +763,7 @@ The widely varying list of dependencies and preferences can be confusing, so her
   * also occurs under `/bin/ksh`
   * seems to be a problem with `pdksh` derivative (reproducible on Mac OS X with Homebrew)
 * NetBSD 6.1.5
+  * Similar problems to OpenBSD it seems
 
 ### Optimised
 
