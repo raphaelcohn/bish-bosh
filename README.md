@@ -806,6 +806,9 @@ cd -
 #### For Mac OS X
 No installation should be required.
 
+#### For FreeBSD 10
+No installation should be required.
+
 #### For [Toybox] Embedded Use (as of 0.5.0)
 * BusyBox configured to use as builtins the list of required dependencies (above) and the following
   * `hexdump`
