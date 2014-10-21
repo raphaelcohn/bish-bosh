@@ -726,33 +726,44 @@ Unfortunately, there are a lot of [GNU Bash] versions that are still in common u
 ### A word on [suckless]
 [bish-bosh] hasn't been tested with them, but should work using [suckless sbase](http://tools.suckless.org/sbase) and [suckless ubase](http://tools.suckless.org/ubase) for dependencies.
 
-## Configurations
+## Supported Configurations
 The widely varying list of dependencies and preferences can be confusing, so here's a little guidance.
 
-### Optimum, Fully-featured
+### Tested and work 'out-of-the-box'
+* Mac OS X 10.8 (Mountain Lion)
+  * Unmodified
+  * With [Homebrew]
+* Ubuntu 10.04.4 LTS
+  * Server install with `sshd` enabled
+* Ubuntu 12.04.5 LTS
+  * Server install with `sshd` enabled
+* Ubuntu 14.04.1 LTS
+  * Server install with `sshd` enabled
+* FreeBSD 10 (older versions are highly likely to work, too)
+* BusyBox
+  * _Note: BusyBox configurations will work on Debian/Ubuntu, too, and so can be used for boot-time [MQTT] activities._
 
-#### For Debian 7, Ubuntu 12.04 LTS and 14.04 LTS
-All of these dependencies bar `nc-traditional` should already be installed on a standard Debian or Ubuntu installation:-
-* `bash`
-* `coreutils`
-* `sed`
-* `grep`
-* `bsdmainutils`
-* `libc-bin`
-* `bash`
-* `nc-traditional`
-* `git`, if cloning from [GitHub]
+### Untested, but should work with no changes
+* Mac OS X 10.9 and 10.10 (as nothing much has changed underneath)
+* Debian 6 / 7
+* Centos 6.5 (and by implication, RHEL 6.5)
+* Centos 7 (and by implication, RHEL 7)
 
-In a terminal window running bash or dash, do:-
+### Optimised
 
-```bash
-sudo apt-get update
-sudo apt-get install bash coreutils sed grep bsdmainutils libc-bin bash nc-traditional git
-cd "$HOME"
-git clone https://github.com/raphaelcohn/bish-bosh.git
-git submodule update --init --recursive
-cd -
-```
+#### For Debian / Ubuntu
+* Install one of `socat` or `nmap`.
+* The default shell, `dash`, does not have native read timeouts or `/dev/tcp`. To switch to `bash`, do one of the following:-
+  * Change your `PATH`, or
+  * Edit the first-line of `bish-bosh` and change `sh` to `bash`, or
+  * Change `/bin/sh` to point to `/bin/bash` (not really advisable)
+
+#### For Mac OS X
+* [Homebrew package manager](http://brew.sh/), with Homebrew recipes
+  * `bash`, for bash 4.3
+  * `coreutils`
+  * `socat` or `ncat`
+  * `git`, if cloning from [GitHub]
 
 #### For BusyBox Embedded Use (as of version 1.22.1)
 * BusyBox configured to use as builtins the list of required dependencies (above) and the following
@@ -765,49 +776,6 @@ cd -
   * `od`
 * From [GNU glibc] or [GNU libiconv]
   * `iconv`
-
-_Note: BusyBox configurations will work on Debian/Ubuntu, too, and so can be used for boot-time [MQTT] activities._
-
-#### For Mac OS X
-* [Homebrew package manager](http://brew.sh/), with
-  * `bash`, for bash 4.3
-  * `coreutils`
-  * `gnu-sed`
-  * `grep`
-  * `git`, if cloning from [GitHub]
-
-In a terminal window running bash, do:-
-```bash
-brew update
-brew install bash coreutils gnu-sed grep git
-```
-
-### Minimal Configurations
-
-#### For Debian 7, Ubuntu 12.04 LTS and 14.04 LTS
-As for the optimum configuration, but substituting `dash` for `bash` and `nc-openbsd` for `nc-traditional`. All of the dependencies should already be installed, but if not, in a terminal window do:-
-
-```bash
-sudo apt-get update
-sudo apt-get install dash coreutils sed grep bsdmainutils libc-bin bash nc-openbsd git
-cd "$HOME"
-git clone https://github.com/raphaelcohn/bish-bosh.git
-git submodule update --init --recursive
-cd -
-```
-
-#### For BusyBox Embedded Use (as of version 1.22.1)
-* BusyBox configured to use as builtins the list of required dependencies (above) and the following
-  * `ash` ([GNU Bash]-like features aren't required)
-  * `hexdump`
-  * `dd`
-  * `date`
-
-#### For Mac OS X
-No installation should be required.
-
-#### For FreeBSD 10
-No installation should be required.
 
 #### For [Toybox] Embedded Use (as of 0.5.0)
 * BusyBox configured to use as builtins the list of required dependencies (above) and the following
