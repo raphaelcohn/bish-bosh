@@ -748,7 +748,7 @@ The widely varying list of dependencies and preferences can be confusing, so her
 * Mac OS X 10.8 (Mountain Lion)
   * Unmodified
   * With [Homebrew]
-* FreeBSD 10 (older versions are highly likely to work, too)
+* FreeBSD 10.0 (older versions are highly likely to work, too)
 
 ### Untested, but should work with no changes
 * RHEL 7 (by implication, because Centos 7 works)
