@@ -676,6 +676,7 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the `PATH` an
   * `iconv`, BSD-derived
   * `iconv`, from the [GNU libiconv] package
   * Nothing (validation not performed)
+    * _Note: It is probably possible to use `bsdconv` instead of `iconv`. Raise an issue if that would be useful to you._
 * Validating Topic Filter strings
   * `sed`
   * Nothing (validation not performed)
@@ -756,9 +757,10 @@ The widely varying list of dependencies and preferences can be confusing, so her
 * Mac OS X 10.9 and 10.10 (as nothing much has changed underneath)
 
 ### Not Working
-* OpenBSD 5.5 (fails in first line of `core_init_rexecUnderCorrectShell`) (`sh` is actually a runtime-adjusted `pdksh`)?
+* OpenBSD 5.5 (fails in first line of `core_init_rexecUnderCorrectShell`) (`sh` is actually a runtime-adjusted `pdksh`)
   * also occurs under `/bin/ksh`
   * seems to be a problem with `pdksh` derivative (reproducible on Mac OS X with Homebrew)
+* NetBSD 6.1.5
 
 ### Optimised
 

@@ -18,7 +18,9 @@ bishbosh_connection_validate_initialise()
 				core_exitError $core_commandLine_exitCode_CONFIG "The argument '$argument' is not valid UTF-8"
 			fi
 		}
-		
+	
+	# We can use  bsdconv utf-8:utf-8 1>/dev/null, and look for non-zero output on stderr
+	
 	else
 		
 		core_message WARN "Disabling UTF-8 validation because 'iconv' isn't available"
