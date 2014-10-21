@@ -737,12 +737,13 @@ The widely varying list of dependencies and preferences can be confusing, so her
     * Server install with `sshd` enabled
   * Ubuntu 10.04.4 LTS
     * Server install with `sshd` enabled
-  * Debian 6
+  * Debian 7.7.0
+  * Debian 6.0.7
   * Centos 7
     * From the 'minimal' DVD
   * Centos 6.5
     * From the 'minimal' DVD
-  * BusyBox
+  * BusyBox on Ubuntu 14.04.1 LTS
     * _Note: BusyBox configurations will work on Debian/Ubuntu, too, and so can be used for boot-time [MQTT] activities._
 * Mac OS X 10.8 (Mountain Lion)
   * Unmodified
@@ -753,7 +754,6 @@ The widely varying list of dependencies and preferences can be confusing, so her
 * RHEL 7 (by implication, because Centos 7 works)
 * RHEL 6.5 (by implication, because Centos 6.5 works)
 * Mac OS X 10.9 and 10.10 (as nothing much has changed underneath)
-* Debian 7
 
 ### Optimised
 
