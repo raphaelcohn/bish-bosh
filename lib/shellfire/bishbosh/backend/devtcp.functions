@@ -22,13 +22,15 @@ bishbosh_backend_devtcp_check()
 		bishbosh_backend_path=''
 		return 0
 	fi
-	
-	# '@(#)' is the case for mksh and pdksh
-	if ! core_variable_startsWith "$KSH_VERSION" '@(#)'; then
-		bishbosh_backend_name=devtcp
-		bishbosh_backend_path=''
-		return 0
-	fi	
+
+	if core_variable_isSet KSH_VERSION; then
+		# '@(#)' is the case for mksh and pdksh
+		if ! core_variable_startsWith "$KSH_VERSION" '@(#)'; then
+			bishbosh_backend_name=devtcp
+			bishbosh_backend_path=''
+			return 0
+		fi
+	fi
 	
 	return 1
 }
