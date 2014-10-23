@@ -2,11 +2,31 @@
 
 _program()
 {
-	core_usesIn core temporaryFiles
+	core_usesIn core temporaryFiles compatibility
 	core_usesIn bishbosh validate filesize backend connection
+	
+	bishbosh_adjustReadLatencyIfNecessary()
+	{
+		if core_variable_isSet BASH_VERSINFO; then
+			if [ ${BASH_VERSINFO[0]} -eq 3 ]; then
+				if [ $bishbosh_readLatency -lt 1000 ]; then
+					core_message WARN "bash 3 does not support fractional read latency (we're forcing bishbosh_readLatency to 1000 ms) [discovered on Mac OS X when run as default sh]"
+					bishbosh_readLatency=1000
+					bishbosh_readLatency_inFractionalSeconds=1
+				fi
+			fi
+		fi
+		if ! core_compatibility_sleepSupportsFractionalSeconds; then
+			core_message WARN "sleep does not support fractional seconds for read latency (we're forcing bishbosh_readLatency to 1000 ms) [discovered on AIX]"
+			bishbosh_readLatency=1000
+			bishbosh_readLatency_inFractionalSeconds=1
+		fi
+	}
 	
 	bishbosh()
 	{
+		bishbosh_adjustReadLatencyIfNecessary
+	
 		bishbosh_backend_find
 		
 		local TMP_FOLDER
@@ -862,16 +882,7 @@ _program_commandLine_validate()
 	else
 		bishbosh_validate_latency $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_readLatency' "$bishbosh_readLatency"
 	fi
-
-	if core_variable_isSet BASH_VERSINFO; then
-		if [ ${BASH_VERSINFO[0]} -eq 3 ]; then
-			if [ $bishbosh_readLatency -lt 1000 ]; then
-				core_message WARN "bash 3 does not support fractional read latency (we're forcing bishbosh_readLatency to 1000 ms) [discovered on Mac OS X when run as default sh]"
-				bishbosh_readLatency=1000
-				bishbosh_readLatency_inFractionalSeconds=1
-			fi
-		fi
-	fi
+	
 	if core_variable_isUnset bishbosh_readLatency_inFractionalSeconds; then
 		if [ $bishbosh_readLatency -lt 1 ]; then
 			bishbosh_readLatency_inFractionalSeconds=0
