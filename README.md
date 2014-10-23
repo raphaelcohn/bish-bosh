@@ -633,11 +633,13 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the `PATH` an
   * `hexdump`, BSD-derived (part of the `bsdmainutils` package in Debian/Ubuntu; usually installed by default)
   * `hexdump`, in [BusyBox]
   * `hexdump`, in [Toybox]
+  * `god`, from GNU `coreutils` package when installed on AIX and Mac OS X with Homebrew
   * `od`, from GNU `coreutils` package
   * `od`, in [BusyBox]
   * `od`, in [Toybox]
   * `od`, BSD-derived
 * Turning off buffering of hexadecimal conversion
+  * `gstdbuf`, from GNU `coreutils` package when installed on AIX and Mac OS X with Homebrew
   * `stdbuf`, from the GNU `coreutils` package
   * `stdbuf`, FreeBSD
   * `unbuffer`, from the expect package (known as `expect-dev` on Debian/Ubuntu)
@@ -704,6 +706,11 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the `PATH` an
   * Nothing, if not running in a terminal
 
 _\* It may be possible to also use EGD sockets and other programs and sources (eg a TPM or `rng-tools`). Please get in touch if this is interesting to you._
+
+### Optimal Choices
+* For efficient reading
+  * the use of GNU coreutils' `stdbuf` (or `gstdbuf`) and GNU coreutils' `od` (or `god`)
+  * the use of a shell that supports read timeouts (`-t`)
 
 ### A word on [GNU Bash] versions
 Unfortunately, there are a lot of [GNU Bash] versions that are still in common use. Versions 3 and 4 of Bash differ in their support of key features (such as associative arrays). Even then, Bash 4.1 is arguably not particularly useful with associative arrays, though, as its declare syntax lacks the `-g` global setting. [bish-bosh] tries to maintain compatibility with `bash` as at version 3.1/3.2, even though it's obsolescent, because it occurs on two common platforms. A quick guide to common bash version occurrence is below.
@@ -905,6 +912,11 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 * proxy env variables (originated in wget)
   * typical values are http_proxy=https://USER@PASSWORD:ADDRESS:PORT/
   * would need to parse no_proxy="test.mosquitto.org,127.0.0.1,localaddress,.localdomain.com" and https_proxy, too.
+
+###AIX Testing Notes
+* <http://www.perzl.org/aix/index.php?n=Main.ListOfPackages>
+* <http://aix4admins.blogspot.co.uk/2011/06/commands-oslevel-shows-actual-bos-level.html>
+* [AIX Toolbox for Linux](http://www-03.ibm.com/systems/power/software/aix/linux/toolbox/download.html) and <ftp://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/>
 
 [bish-bosh]: https://github.com/raphaelcohn/bish-bosh  "bish-bosh on GitHub"
 [shellfire]: https://github.com/shellfire-dev  "shellfire on GitHub"

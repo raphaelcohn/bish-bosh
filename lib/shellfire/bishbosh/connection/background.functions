@@ -43,6 +43,7 @@ bishbosh_connection_background_hexConversion()
 			break
 		fi
 		
+		# AIX od supports -w1 (ie matches GNU od switches above)
 		if core_compatibility_whichNoOutput od; then
 			set -- _bishbosh_connection_background_hexConversion_dd od -A n -t u1
 			break
@@ -69,7 +70,7 @@ bishbosh_connection_background_hexConversion()
 						continue
 					fi
 					core_message INFO "Using unbuffer with od ($odTool)"
-					# Only works with GNU od, because of the -w1 argument
+					# Only works with GNU od (or AIX od, but can't detect that yet), because of the -w1 argument
 					set -- unbuffer "$odTool" -A n -t u1 -w1 -v
 					break 2
 				done
