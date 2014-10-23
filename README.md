@@ -759,7 +759,7 @@ The widely varying list of dependencies and preferences can be confusing, so her
     * Unmodified
     * With [Homebrew]
   * FreeBSD 10.0
-
+	
 ### Untested, but should work with no changes
 * RHEL 7 (by implication, because Centos 7 works)
 * RHEL 6.5 (by implication, because Centos 6.5 works)
@@ -771,6 +771,11 @@ The widely varying list of dependencies and preferences can be confusing, so her
   * seems to be a problem with `pdksh` derivative (reproducible on Mac OS X with Homebrew)
 * NetBSD 6.1.5
   * Similar problems to OpenBSD it seems
+* AIX
+  * AIX 6.1 _nearly_ works
+    * _Note: Explicitly set `TERM=dumb`._
+    * _Note: There is only the `openssl` backend available: Try `./bish-bosh --client-id 'CLIENT_ID' --verbose 0 --tunnel tls --tunnel-tls-verify off --backends openssl --verbose 3`._
+	* Ideally, install `bash` and a more modern `sleep` to get a much better experience.
 
 ### Optimised
 

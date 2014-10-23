@@ -36,7 +36,7 @@ bishbosh_connection_foreground_recordBackgroundJob()
 bishbosh_connection_foreground_monitorForChildExit()
 {
 	core_message DEBUG "Our Pid is $$"
-	core_message NOTICE "${_program_name} with $(core_terminal_effect 2 reversed) kill $$ "
+	core_message NOTICE "Terminate ${_program_name} with $(core_terminal_effect 2 reversed) kill $$ "
 	
 	while true
 	do
