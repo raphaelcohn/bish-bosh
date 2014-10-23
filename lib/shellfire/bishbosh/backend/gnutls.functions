@@ -88,26 +88,7 @@ bishbosh_backend_gnutls_start()
 	if [ $bishbosh_connectTimeout -ne $_program_default_connectTimeout ]; then
 		core_message WARN "The backend gnutls does not support the option '--connect-timeout' (or the configuration setting 'bishbosh_connectTimeout')"
 	fi
-	
-	case $(core_init_verbosity) in
 		
-		0)
-			core_variable_array_append options -quiet
-		;;
-		
-		1)
-			core_variable_array_append options --verbose
-		;;
-		
-		2)
-			core_variable_array_append options --verbose  --verbose --print-cert
-		;;
-		
-		*)
-			core_variable_array_append options --verbose  --verbose --print-cert -d $(core_init_verbosity)
-		;;
-	esac
-	
 	if core_variable_isTrue "$bishbosh_tunnelTlsUseDer"; then
 		core_variable_array_append options --x509fmtder
 	fi
@@ -143,5 +124,6 @@ bishbosh_backend_gnutls_start()
 	
 	bishbosh_backend_debugOptions
 	
+	# gnutls-cli outputs noise to stdout, finishing with "- Simple Client Mode:\n\n" when done. There is no quiet switch.
 	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
 }
