@@ -402,7 +402,7 @@ By default, [bish-bosh] has a list of [backends](#status-of-supported-backends) 
 | `-l`, `--lock-path` | `PATH` | `bishbosh_lockPath` | *See help output* | `PATH` to a location to screate a Mutex lock so only one instance connects per-server, per-port, per-client-id at a time. |
 | `--filesize-algorithm` | `ALGO` | `bishbosh_filesizeAlgorithm` | `ls` | Specify a more efficient filesize algorithm `ALGO` if you have the `stat` program and know which one it is. Choices are `ls`, `GNUAndBusyBoxStat`, `BSDStat` and `ToyboxStat` (not recommended due to lack of a `-L` switch). |
 | `--read-latency` | `MSECS` | `bishbosh_readLatency` | *See help output* | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak blocking read timeouts. blocking read timeouts are experimental and may not work properly in your shell. The value `0` may be interpreted differently by different shells and should be used with caution. |
-| `--lock-latency` | `MSECS` | `bishbosh_lockLatency` | *See help output* | `MSECS` is a value in milliseconds between 0 and 1000 inclusive to tweak lock acquisitions. Locking is currently done using `mkdir`, which is believed to be an atomic operation on most common filesystems. |
+
 Ordinarily, you should not need to change any of these settings.
 
 The `--client-path` controls where [bish-bosh] looks for script information for a particular client. When [bish-bosh] is installed, it typically defaults to `/var/lib/bish-bosh/client`.

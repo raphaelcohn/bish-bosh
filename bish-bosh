@@ -118,13 +118,6 @@ _program_commandLine_parseInitialise()
 	else
 		_program_configurationSet_bishbosh_readLatency=1
 	fi
-
-	_program_default_lockLatency=1
-	if core_variable_isSet bishbosh_lockLatency; then
-		_program_configurationSet_bishbosh_lockLatency=0
-	else
-		_program_configurationSet_bishbosh_lockLatency=1
-	fi
 	
 	if core_variable_isSet bishbosh_transport; then
 		_program_configurationSet_bishbosh_transport=0
@@ -235,10 +228,7 @@ if on the PATH."
                             inclusive. 0 has different meaning in
                             'zsh' as opposed to 'bash'.
                             Defaults to '${_program_default_readLatency}'.
-                            Default varies by detected shell.
-      --lock-latency MSECS  Maximum time to sleep for when trying to acquire a
-                            lock in MSECS milliseconds between 0 and 1000
-                            inclusive. Defaults to '${_program_default_lockLatency}'.
+                            Default varies by detected shell and OS.
       --transport TRANSPT   TRANSPT of inet, inet4, inet6, unix or serial.
                             Defaults to 'inet'
       --source-address S    Bind to network interface with address S.
@@ -328,7 +318,6 @@ if on the PATH."
   bishbosh_lockPath       Equivalent to --lock-path
   bishbosh_filesizeAlgorithm  Equivalent to --filesize-algorithm
   bishbosh_readLatency    Equivalent to --read-latency
-  bishbosh_lockLatency    Equivalent to --lock-latency
   bishbosh_transport      Equivalent to --transport
   bishbosh_sourceAddress  Equivalent to --source-address
   bishbosh_sourcePort     Equivalent to --source-port
@@ -440,10 +429,6 @@ _program_commandLine_optionExists()
 		;;
 		
 		read-latency)
-			echo 'yes-argumented'
-		;;
-		
-		lock-latency)
 			echo 'yes-argumented'
 		;;
 		
@@ -598,11 +583,6 @@ _program_commandLine_processOptionWithArgument()
 		read-latency)
 			bishbosh_validate_latency $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
 			bishbosh_readLatency="$optionValue"
-		;;
-		
-		lock-latency)
-			bishbosh_validate_latency $core_commandLine_exitCode_USAGE 'option' "$optionNameIncludingHyphens" "$optionValue"
-			bishbosh_lockLatency="$optionValue"
 		;;
 		
 		transport)
@@ -904,23 +884,6 @@ _program_commandLine_validate()
 		else
 			bishbosh_readLatency_inFractionalSeconds=1
 		fi
-	fi
-	
-	if core_variable_isUnset bishbosh_lockLatency; then
-		bishbosh_lockLatency="$_program_default_lockLatency"
-	else
-		bishbosh_validate_latency $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_lockLatency' "$bishbosh_lockLatency"
-	fi
-	if [ $bishbosh_lockLatency -lt 1 ]; then
-		bishbosh_lockLatency_inFractionalSeconds=0
-	elif [ $bishbosh_lockLatency -lt 10 ]; then
-		bishbosh_lockLatency_inFractionalSeconds=0.00${bishbosh_lockLatency}
-	elif [ $bishbosh_lockLatency -lt 100 ]; then
-		bishbosh_lockLatency_inFractionalSeconds=0.0${bishbosh_lockLatency}
-	elif [ $bishbosh_lockLatency -lt 1000 ]; then
-		bishbosh_lockLatency_inFractionalSeconds=0.${bishbosh_lockLatency}
-	else
-		bishbosh_lockLatency_inFractionalSeconds=1
 	fi
 	
 	if core_variable_isUnset bishbosh_transport; then
