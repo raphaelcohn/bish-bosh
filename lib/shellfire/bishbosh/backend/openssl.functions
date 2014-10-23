@@ -26,8 +26,9 @@ bishbosh_backend_openssl_start()
 	local options
 	local options_initialised
 	core_variable_array_initialise options
-
-	core_variable_array_append options s_client -bugs -ign_eof -nbio -no_ssl2 -no_ssl3
+	
+	# -nbio -no_ssl2 -no_ssl3
+	core_variable_array_append options s_client -bugs -quiet
 	
 	case "$bishbosh_transport" in
 		
@@ -92,20 +93,13 @@ bishbosh_backend_openssl_start()
 	case $(core_init_verbosity) in
 		
 		0)
-			core_variable_array_append options -quiet
-		;;
-		
-		1)
-			core_variable_array_append options -prexit
-		;;
-		
-		2)
-			core_variable_array_append options -prexit -showcerts -state
+			:
 		;;
 		
 		*)
-			core_variable_array_append options -prexit -showcerts -state -debug -msg
+			core_variable_array_append options -state
 		;;
+		
 	esac
 	
 	local encoding
