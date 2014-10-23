@@ -90,13 +90,15 @@ bishbosh_backend_openssl_start()
 		core_message WARN "The backend openssl does not support the option '--connect-timeout' (or the configuration setting 'bishbosh_connectTimeout')"
 	fi
 	
+	local disableNoisyStdErr
 	case $(core_init_verbosity) in
 		
 		0)
-			:
+			disableNoisyStdErr=1
 		;;
 		
 		*)
+			disableNoisyStdErr=0
 			core_variable_array_append options -state
 		;;
 		
@@ -135,7 +137,14 @@ bishbosh_backend_openssl_start()
 	
 	core_variable_array_append options -connect "$bishbosh_server":"$bishbosh_port"
 	
+	#core_variable_array_append options -servername "$bishbosh_server"
+	core_variable_array_append options -no_ticket
+	
 	bishbosh_backend_debugOptions
 	
-	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	if [ $disableNoisyStdErr -eq 1 ]; then
+		core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" 2>/dev/null &
+	else
+		core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+	fi
 }
