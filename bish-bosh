@@ -986,7 +986,7 @@ _program_commandLine_validate()
 		if core_variable_isSet bishbosh_tunnelTlsUseDer; then
 			core_validate_isBoolean $core_commandLine_exitCode_CONFIG 'configuration setting' 'bishbosh_tunnelTlsUseDer' "$bishbosh_tunnelTlsUseDer"
 		else
-			bishbosh_tunnelTlsUseDer=${_program_default_bishbosh_tunnelTlsVerify}
+			bishbosh_tunnelTlsUseDer=${_program_default_bishbosh_tunnelTlsUseDer}
 		fi
 		
 		if core_variable_isSet bishbosh_tunnelTlsVerify; then

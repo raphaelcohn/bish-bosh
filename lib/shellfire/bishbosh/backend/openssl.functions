@@ -85,7 +85,7 @@ bishbosh_backend_openssl_start()
 		
 	esac
 	
-	if [ $bishbosh_connectTimeout -ne 0 ]; then
+	if [ $bishbosh_connectTimeout -ne $_program_default_connectTimeout ]; then
 		core_message WARN "The backend openssl does not support the option '--connect-timeout' (or the configuration setting 'bishbosh_connectTimeout')"
 	fi
 	

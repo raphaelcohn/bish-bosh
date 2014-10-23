@@ -153,7 +153,6 @@ bishbosh_backend_socat_start()
 				
 				*)
 					if [ "$bishbosh_tunnel" = 'tls' ]; then
-						
 						if core_variable_isTrue "$bishbosh_tunnelTlsUseDer"; then
 							core_exitError $core_commandLine_exitCode_CONFIG "The backend socat does not support DER certificates and keys."
 						fi
