@@ -810,7 +810,7 @@ These configurations can be made to work if there's enough interest, but are unl
       * Run `bash` to get a shell (it's 3.1)!
 	  * Change `PATH`, eg `PATH=/usr/bin:"$PATH"`
 	  * `cp bash.exe sh.exe` (`ln -s` doesn't seem to work, it creates `.lnk` files)
-  * UnxUtls, Xming, LBW, MKS Toolkit
+  * Xming, LBW, MKS Toolkit
 * Linux
 
 ### Can Not Work
@@ -827,6 +827,8 @@ These configurations can not work without _a lot_ of re-engineering, and, even t
   * MinGW / MSYS (with `msys-base`, `mingw32-base`, `msys-mktemp`, `msys-openssl`)
 	* Script stack dumps - no indication why
     * Similar to Git-Bash but does have `od`
+  * [UnxUtils](http://sourceforge.net/projects/unxutils/)
+    * `mkfifo` is non-functional
   * Interix / Subsystem for UNIX Applications
     * No `bash`, no `nc`, so not obvious what can be used to create a socket
 	* Uses `pdksh`, so can probably be script-compatible when OpenBSD is
