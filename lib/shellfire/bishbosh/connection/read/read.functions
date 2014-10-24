@@ -4,10 +4,22 @@ bishbosh_connection_read_nonBlockingFeatureTest()
 {	
 	local testFifoPath="$(bishbosh_connection_mkfifo 'non-blocking-read-feature-test')"
 	exec 3<>"$testFifoPath"
-	printf '%s\n' 'test' >&3
+
+	local exitCode
+	# This code fails on Cygwin 1.7. Don't know why, but this related message suggests FIFOs aren't particularly robust (https://cygwin.com/ml/cygwin/2009-07/msg00233.html)
+	set +e
+	printf '%s\n' 'test' >&3 2>/dev/null
+	exitCode=$?
+	set -e
+	
+	if [ $exitCode -ne 0 ]; then
+		core_message WARN "It seems there might be problems with FIFOs - we're assuming you're on Cygwin"
+		bishbosh_connection_supportsNonBlockingRead=1
+		bishbosh_connection_exitCodeForReadTimeout=1
+		return 0
+	fi
 	
 	local testVariable=''
-	local exitCode
 	set +e
 	read -r -u 3 -t $bishbosh_readLatency_inFractionalSeconds testVariable 2>/dev/null
 	exitCode=$?

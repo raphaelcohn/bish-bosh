@@ -737,7 +737,7 @@ Unfortunately, there are a lot of [GNU Bash] versions that are still in common u
 ## Supported Configurations
 The widely varying list of dependencies and preferences can be confusing, so here's a little guidance.
 
-### Tested and work 'out-of-the-box'
+### Tested and works 'out-of-the-box' with no changes
 * Linux
   * Ubuntu 14.04.1 LTS
     * Server install with `sshd` enabled
@@ -759,23 +759,43 @@ The widely varying list of dependencies and preferences can be confusing, so her
     * Unmodified
     * With [Homebrew]
   * FreeBSD 10.0
-	
+
 ### Untested, but should work with no changes
 * RHEL 7 (by implication, because Centos 7 works)
 * RHEL 6.5 (by implication, because Centos 6.5 works)
 * Mac OS X 10.9 and 10.10 (as nothing much has changed underneath)
 
-### Not Working
-* OpenBSD 5.5 (fails in first line of `core_init_rexecUnderCorrectShell`) (`sh` is actually a runtime-adjusted `pdksh`)
-  * also occurs under `/bin/ksh`
-  * seems to be a problem with `pdksh` derivative (reproducible on Mac OS X with Homebrew)
-* NetBSD 6.1.5
-  * Similar problems to OpenBSD it seems
+### Nearly Working
 * AIX
-  * AIX 6.1 _nearly_ works
+  * 7.1 _nearly_ works
+  * 6.1 _nearly_ works
+    * The backend `openssl` doesn't seem to work correctly, although we are seeing debug lines, but they're empty
     * _Note: Explicitly set `TERM=dumb`._
     * _Note: There is only the `openssl` backend available: Try `./bish-bosh --client-id 'CLIENT_ID' --verbose 0 --tunnel tls --tunnel-tls-verify off --backends openssl --verbose 3`._
 	* Ideally, install `bash` and a more modern `sleep` to get a much better experience.
+* Windows
+  * Cygwin 1.7.32
+    * `/home/raphcohn/bish-bosh/lib/shellfire/bishbosh/connection/read/read.functions: line 7: printf: write error: Communication error on send`
+
+### Not Working
+* OpenBSD 5.5 (fails in first line of `core_init_rexecUnderCorrectShell`) (`sh` is actually a runtime-adjusted `pdksh`)
+  * also occurs under `/bin/ksh`
+  * seems to be a problem with `pdksh` (reproducible on Mac OS X with Homebrew)
+* NetBSD 6.1.5
+  * Similar problems to OpenBSD it seems
+
+### Can not Work
+* Windows
+  * Git-Bash 1.9.4
+    * Distribution lacks `mkfifo` / `mknod`, `od` / `hexdump`, `dd`
+	* Does have `wc`, `head` and `tail`, so it might be possible to have a poor man's FIFOs
+	* Also has `tclsh`
+	* Script core dumps on fork in init.functions in any event
+  * MinGW / MSYS
+    * With packages
+	  * `msys-base`, `mingw32-base`, `msys-mktemp`, `msys-openssl`
+	* `od` exists but no `dd`, `mknod` or `mkfifo`
+	* Script core dumps on fork in init.functions in any event (is it a 32-bit / 64-bit compatibility issue)?
 
 ### Optimised
 
@@ -917,11 +937,6 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 * proxy env variables (originated in wget)
   * typical values are http_proxy=https://USER@PASSWORD:ADDRESS:PORT/
   * would need to parse no_proxy="test.mosquitto.org,127.0.0.1,localaddress,.localdomain.com" and https_proxy, too.
-
-###AIX Testing Notes
-* <http://www.perzl.org/aix/index.php?n=Main.ListOfPackages>
-* <http://aix4admins.blogspot.co.uk/2011/06/commands-oslevel-shows-actual-bos-level.html>
-* [AIX Toolbox for Linux](http://www-03.ibm.com/systems/power/software/aix/linux/toolbox/download.html) and <ftp://public.dhe.ibm.com/aix/freeSoftware/aixtoolbox/>
 
 [bish-bosh]: https://github.com/raphaelcohn/bish-bosh  "bish-bosh on GitHub"
 [shellfire]: https://github.com/shellfire-dev  "shellfire on GitHub"
