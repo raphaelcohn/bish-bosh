@@ -804,12 +804,12 @@ The widely varying list of dependencies and preferences can be confusing, so her
 These configurations can be made to work if there's enough interest, but are unlikely to be optimal.
 
 * Windows
-  * [GOW](https://github.com/bmatzelle/gow)
-    * On 0.7 and 0.8, create `C:\Program Files (x86)\Gow\etc` (see [here](https://github.com/bmatzelle/gow/issues/65#issuecomment-16725415))
-	* Run `bash` to get a shell (it's 3.1)!
-	* Change `PATH`, eg `PATH=/usr/bin:"$PATH"`
-	* `cp bash.exe sh.exe` (`ln -s` doesn't seem to work, it creates `.lnk` files)
-	* Problem seems to be that loading functions is recursive, because the `IFS` setting is broken
+  * [GOW](https://github.com/bmatzelle/gow) 0.8
+    * `mkfifo` is incapable of creating FIFOs, otherwise this _should_ work.
+      * On 0.7 and 0.8, create `C:\Program Files (x86)\Gow\etc` (see [here](https://github.com/bmatzelle/gow/issues/65#issuecomment-16725415))
+      * Run `bash` to get a shell (it's 3.1)!
+	  * Change `PATH`, eg `PATH=/usr/bin:"$PATH"`
+	  * `cp bash.exe sh.exe` (`ln -s` doesn't seem to work, it creates `.lnk` files)
   * UnxUtls, Xming, LBW, MKS Toolkit
 * Linux
 
@@ -824,15 +824,13 @@ These configurations can not work without _a lot_ of re-engineering, and, even t
 	* Alternatives
 	  * Does have `wc`, `head` and `tail`, so it might be possible to have a poor man's FIFOs
 	  * Also has `tclsh`
-	* Script core dumps on fork in init.functions in any event
   * MinGW / MSYS (with `msys-base`, `mingw32-base`, `msys-mktemp`, `msys-openssl`)
+	* Script stack dumps - no indication why
     * Similar to Git-Bash but does have `od`
-	* Script core dumps on fork in init.functions in any event (is it a 32-bit / 64-bit compatibility issue)?
   * Interix / Subsystem for UNIX Applications
     * No `bash`, no `nc`, so not obvious what can be used to create a socket
 	* Uses `pdksh`, so can probably be script-compatible when OpenBSD is
 	* There is `telnet`, but telnet tunnelling isn't straightforward
-	* No `/tmp` or `TMPDIR` setting (but `TEMP` and `TMP` are set to DOS-paths)
 	* No `env`, and `PATH` isn't set up nicely
   * DJGPP
     * This uses `bash` 2.04, which is just too old
