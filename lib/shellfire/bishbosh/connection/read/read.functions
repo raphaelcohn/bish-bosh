@@ -13,7 +13,7 @@ bishbosh_connection_read_nonBlockingFeatureTest()
 	set -e
 	
 	if [ $exitCode -ne 0 ]; then
-		core_message WARN "It seems there might be problems with FIFOs - we're assuming you're on Cygwin"
+		core_message INFO "It seems there might be problems with FIFOs - we're assuming you're on Cygwin"
 		bishbosh_connection_supportsNonBlockingRead=1
 		bishbosh_connection_exitCodeForReadTimeout=1
 		return 0
