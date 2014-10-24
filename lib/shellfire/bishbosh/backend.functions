@@ -15,7 +15,11 @@ bishbosh_backend_find()
 			if core_variable_isUnset bishbosh_port; then
 				bishbosh_port=$(bishbosh_backend_${backendName}_port)
 			fi
-			core_message INFO "Using backend '$bishbosh_backend_name' on path '$bishbosh_backend_path' with port '$bishbosh_port'"
+			if [ -n "$bishbosh_backend_path" ]; then
+				core_message INFO "Using backend '$bishbosh_backend_name' (on path '$bishbosh_backend_path') with port '$bishbosh_port'"
+			else
+				core_message INFO "Using backend '$bishbosh_backend_name' with port '$bishbosh_port'"
+			fi
 			return 0
 		fi
 	done
