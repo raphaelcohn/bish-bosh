@@ -739,18 +739,28 @@ The widely varying list of dependencies and preferences can be confusing, so her
 
 ### Tested and works 'out-of-the-box' with no changes
 * Linux
-  * Ubuntu 14.04.1 LTS
+  * Ubuntu 14.04
+    * Tested on 14.04.1 LTS Server
     * Server install with `sshd` enabled
-  * Ubuntu 12.04.5 LTS
+  * Ubuntu 12.04
+    * Tested on 12.04.5 LTS Server
     * Server install with `sshd` enabled
-  * Ubuntu 10.04.4 LTS
+  * Ubuntu 10.04
+    * Tested on 10.04.4 LTS Server
     * Server install with `sshd` enabled
-  * Debian 7.7.0
-  * Debian 6.0.7
+  * Debian 7
+    * Tested on 7.7.0
+  * Debian 6
+    * Tested on 6.0.7
   * Centos 7
+    * Tested on 7.0
     * From the 'minimal' DVD
-  * Centos 6.5
+  * Centos 6
+    * Tested on 6.5
     * From the 'minimal' DVD
+  * Centos 5
+    * Tested on 5.11
+    * From the DVD part 1
   * OpenSUSE 13.1
   * BusyBox on Ubuntu 14.04.1 LTS
     * _Note: BusyBox configurations will work on Debian/Ubuntu, too, and so can be used for boot-time [MQTT] activities._
@@ -763,9 +773,12 @@ The widely varying list of dependencies and preferences can be confusing, so her
   * Cygwin 1.7.32
 
 ### Untested, but should work with no changes
-* RHEL 7 (by implication, because Centos 7 works)
-* RHEL 6.5 (by implication, because Centos 6.5 works)
-* Mac OS X 10.9 and 10.10 (as nothing much has changed underneath)
+* Linux
+  * RHEL 7 (nearly identical to Centos)
+  * RHEL 6.5
+* BSD-alike
+  * Mac OS X 10.9 (as nothing much has changed underneath)
+  * Mac OS X 10.10
 
 ### Nearly Working
 * AIX
@@ -783,19 +796,48 @@ The widely varying list of dependencies and preferences can be confusing, so her
   * seems to be a problem with `pdksh` (reproducible on Mac OS X with Homebrew)
 * NetBSD 6.1.5
   * Similar problems to OpenBSD it seems
+* Unix
+  * HP_UX 11i
+    * HP's `mktemp` fails, badly. Without HP-UX access, making this work is a non-starter.
 
-### Can not Work
+### Might Work
+These configurations can be made to work if there's enough interest, but are unlikely to be optimal.
+
+* Windows
+  * [GOW](https://github.com/bmatzelle/gow)
+    * On 0.7 and 0.8, create `C:\Program Files (x86)\Gow\etc` (see [here](https://github.com/bmatzelle/gow/issues/65#issuecomment-16725415))
+	* Run `bash` to get a shell (it's 3.1)!
+	* Change `PATH`, eg `PATH=/usr/bin:"$PATH"`
+	* `cp bash.exe sh.exe` (`ln -s` doesn't seem to work, it creates `.lnk` files)
+	* Problem seems to be that loading functions is recursive, because the `IFS` setting is broken
+  * UnxUtls, Xming, LBW, MKS Toolkit
+* Linux
+
+### Can Not Work
+These configurations can not work without _a lot_ of re-engineering, and, even then, would be barely functional. That said, if you have an use case to make them work, get in touch. Nothing's impossible. That said, for Windows, why not just use Cygwin?
+
 * Windows
   * Git-Bash 1.9.4
-    * Distribution lacks `mkfifo` / `mknod`, `od` / `hexdump`, `dd`
-	* Does have `wc`, `head` and `tail`, so it might be possible to have a poor man's FIFOs
-	* Also has `tclsh`
+    * Lacks any way of creating FIFOs (`mkfifo` / `mknod`)
+	* Lacks any hexadecimal conversion (`od` / `hexdump`)
+	* Lacks `dd` for a poor man's buffering
+	* Alternatives
+	  * Does have `wc`, `head` and `tail`, so it might be possible to have a poor man's FIFOs
+	  * Also has `tclsh`
 	* Script core dumps on fork in init.functions in any event
-  * MinGW / MSYS
-    * With packages
-	  * `msys-base`, `mingw32-base`, `msys-mktemp`, `msys-openssl`
-	* `od` exists but no `dd`, `mknod` or `mkfifo`
+  * MinGW / MSYS (with `msys-base`, `mingw32-base`, `msys-mktemp`, `msys-openssl`)
+    * Similar to Git-Bash but does have `od`
 	* Script core dumps on fork in init.functions in any event (is it a 32-bit / 64-bit compatibility issue)?
+  * Interix / Subsystem for UNIX Applications
+    * No `bash`, no `nc`, so not obvious what can be used to create a socket
+	* Uses `pdksh`, so can probably be script-compatible when OpenBSD is
+	* There is `telnet`, but telnet tunnelling isn't straightforward
+	* No `/tmp` or `TMPDIR` setting (but `TEMP` and `TMP` are set to DOS-paths)
+	* No `env`, and `PATH` isn't set up nicely
+  * DJGPP
+    * This uses `bash` 2.04, which is just too old
+  * UWIN
+    * Uses [`ksh93`].
 
 ### Optimised
 
