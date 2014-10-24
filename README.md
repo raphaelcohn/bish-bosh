@@ -790,7 +790,7 @@ The widely varying list of dependencies and preferences can be confusing, so her
 	* Ideally, install `bash` and a more modern `sleep` to get a much better experience.
     * `/home/raphcohn/bish-bosh/lib/shellfire/bishbosh/connection/read/read.functions: line 7: printf: write error: Communication error on send`
 
-### Not Working
+### Not Working Yet
 * OpenBSD 5.5 (fails in first line of `core_init_rexecUnderCorrectShell`) (`sh` is actually a runtime-adjusted `pdksh`)
   * also occurs under `/bin/ksh`
   * seems to be a problem with `pdksh` (reproducible on Mac OS X with Homebrew)
@@ -799,6 +799,7 @@ The widely varying list of dependencies and preferences can be confusing, so her
 * Unix
   * HP_UX 11i
     * HP's `mktemp` fails, badly. Without HP-UX access, making this work is a non-starter.
+  * Solaris
 
 ### Might Work
 These configurations can be made to work if there's enough interest, but are unlikely to be optimal.
@@ -810,8 +811,9 @@ These configurations can be made to work if there's enough interest, but are unl
       * Run `bash` to get a shell (it's 3.1)!
 	  * Change `PATH`, eg `PATH=/usr/bin:"$PATH"`
 	  * `cp bash.exe sh.exe` (`ln -s` doesn't seem to work, it creates `.lnk` files)
-  * Xming, LBW, MKS Toolkit
-* Linux
+  * [GnuWin32](http://gnuwin32.sourceforge.net/)
+  * Xming
+  * MKS Toolkit
 
 ### Can Not Work
 These configurations can not work without _a lot_ of re-engineering, and, even then, would be barely functional. That said, if you have an use case to make them work, get in touch. Nothing's impossible. That said, for Windows, why not just use Cygwin?
@@ -834,6 +836,7 @@ These configurations can not work without _a lot_ of re-engineering, and, even t
 	* Uses `pdksh`, so can probably be script-compatible when OpenBSD is
 	* There is `telnet`, but telnet tunnelling isn't straightforward
 	* No `env`, and `PATH` isn't set up nicely
+	* We could try to snaffle from Debian-Interix and Gentoo-prefix, but Interix is officially dead
   * DJGPP
     * This uses `bash` 2.04, which is just too old
   * UWIN
