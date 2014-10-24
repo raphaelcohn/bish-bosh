@@ -759,6 +759,8 @@ The widely varying list of dependencies and preferences can be confusing, so her
     * Unmodified
     * With [Homebrew]
   * FreeBSD 10.0
+* Windows
+  * Cygwin 1.7.32
 
 ### Untested, but should work with no changes
 * RHEL 7 (by implication, because Centos 7 works)
@@ -773,8 +775,6 @@ The widely varying list of dependencies and preferences can be confusing, so her
     * _Note: Explicitly set `TERM=dumb`._
     * _Note: There is only the `openssl` backend available: Try `./bish-bosh --client-id 'CLIENT_ID' --verbose 0 --tunnel tls --tunnel-tls-verify off --backends openssl --verbose 3`._
 	* Ideally, install `bash` and a more modern `sleep` to get a much better experience.
-* Windows
-  * Cygwin 1.7.32
     * `/home/raphcohn/bish-bosh/lib/shellfire/bishbosh/connection/read/read.functions: line 7: printf: write error: Communication error on send`
 
 ### Not Working
