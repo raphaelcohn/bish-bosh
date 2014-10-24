@@ -812,7 +812,7 @@ These configurations can be made to work if there's enough interest, but are unl
 	  * Change `PATH`, eg `PATH=/usr/bin:"$PATH"`
 	  * `cp bash.exe sh.exe` (`ln -s` doesn't seem to work, it creates `.lnk` files)
   * [GnuWin32](http://gnuwin32.sourceforge.net/)
-  * Xming
+    * `mkfifo` is incapable of creating FIFOs, otherwise this _should_ work.
   * MKS Toolkit
 
 ### Can Not Work
