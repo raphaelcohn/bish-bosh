@@ -794,6 +794,7 @@ The widely varying list of dependencies and preferences can be confusing, so her
 * OpenBSD 5.5 (fails in first line of `core_init_rexecUnderCorrectShell`) (`sh` is actually a runtime-adjusted `pdksh`)
   * also occurs under `/bin/ksh`
   * seems to be a problem with `pdksh` (reproducible on Mac OS X with Homebrew)
+  * It is in the `core_variable_isSet` eval - for some reason it doesn't like the syntax if unset
 * NetBSD 6.1.5
   * Similar problems to OpenBSD it seems
 * Unix
