@@ -770,6 +770,10 @@ The widely varying list of dependencies and preferences can be confusing, so her
     * With [Homebrew]
   * FreeBSD 10.0
   * OpenBSD 5.5
+  * MirBSD #10 (2008)
+  * NetBSD 6.1.5
+    * You'll need to `pkg_add netcat`
+    * You may need to modify the first line of `bish-bosh` to `#!/usr/bin/env ksh` (we had problems with `/etc/shrc` interfering)
 * Windows
   * Cygwin 1.7.32
 
@@ -789,11 +793,8 @@ The widely varying list of dependencies and preferences can be confusing, so her
     * _Note: Explicitly set `TERM=dumb`._
     * _Note: There is only the `openssl` backend available: Try `./bish-bosh --client-id 'CLIENT_ID' --verbose 0 --tunnel tls --tunnel-tls-verify off --backends openssl --verbose 3`._
 	* Ideally, install `bash` and a more modern `sleep` to get a much better experience.
-    * `/home/raphcohn/bish-bosh/lib/shellfire/bishbosh/connection/read/read.functions: line 7: printf: write error: Communication error on send`
 
 ### Not Working Yet
-* NetBSD 6.1.5
-  * Similar problems to OpenBSD it seems
 * Unix
   * HP_UX 11i
     * HP's `mktemp` fails, badly. Without HP-UX access, making this work is a non-starter.
@@ -831,7 +832,6 @@ These configurations can not work without _a lot_ of re-engineering, and, even t
     * `mkfifo` is non-functional
   * Interix / Subsystem for UNIX Applications
     * No `bash`, no `nc`, so not obvious what can be used to create a socket
-	* Uses `pdksh`, so can probably be script-compatible when OpenBSD is
 	* There is `telnet`, but telnet tunnelling isn't straightforward
 	* No `env`, and `PATH` isn't set up nicely
 	* We could try to snaffle from Debian-Interix and Gentoo-prefix, but Interix is officially dead
@@ -875,26 +875,32 @@ These configurations can not work without _a lot_ of re-engineering, and, even t
 * `dash` shell
 
 ## Supported Shells
-[bish-bosh] tries very hard to make sure it works under any POSIX-compliant shell. However, in practice, that's quite hard to do; many features on the periphery of POSIX compliance, are subtly different (eg signal handling during read). That can lead to a matrix of pain. We constrain the list to widely-used shells common in the sorts of places you'd want to use [bish-bosh]: system administration, one-off scripting, boot-time and embedded devices with no compiler toolchain. Consequently, we test against:-
+[bish-bosh] tries very hard to make sure it works under any POSIX-compliant shell. However, in practice, that's quite hard to do; many features on the periphery of POSIX compliance, are subtly different (eg signal handling during read). That can lead to a matrix of pain. We constrain the list to widely-used shells common in the sorts of places you'd want to use [bish-bosh]: system administration, one-off scripting, boot-time and embedded devices with no compiler toolchain. Consequently, we try to support in decreasing priority order:-
 
 * The [Almquist]-derived shells, specifically
   * [DASH]
   * [BusyBox]'s ash
 * [GNU Bash]
+* The [ksh88]-derived shells
+  * [pdksh] final version 5.2.14 of 1999
+  * [pdksh] as modified by OpenBSD
+  * [mksh]
+  * [ksh88] as used in AIX
 
-All of these shells support dynamically-scoped `local` variables, something we make extensive use of. Some of them also support read timeouts, which is very useful for making [bish-bosh] responsive.
-
-### Zsh and KornShell
-[bish-bosh] is not actively tested under [zsh] although it should work once the inevitable few bugs are fixed. [zsh] is a nice interactive shell, and good for scripting, too. In particular, it is the only shell where it's possible for the `read` builtin to read data containing Unicode `U+0000` (ACSCII `NUL` as was), and is also trully non-blocking.
-
-We try hard to maintain some compatibility with KornShell ksh88 derivatives; [bish-bosh] may work under [mksh] or [pdksh], although the latter hasn't been actively updated since 1999. At this time, [ksh93] is known not to work. We have no access to [ksh88] so can't support it.
+All of these shells support dynamically-scoped `local` variables, something we make extensive use of. Some of them also support read timeouts, which is very useful for making [bish-bosh] responsive. The [pdksh]-derived shells (including [mksh]) are challenging to support, as they're not in full POSIX compliance.
 
 ### Unsupported Shells
-The following shells are untested and unsupported:-
 
+#### [zsh]
+[bish-bosh] is not actively tested under [zsh] although it should work once the inevitable few bugs are fixed. [zsh] is a nice interactive shell, and good for scripting, too. In particular, it is the only shell where it's possible for the `read` builtin to read data containing Unicode `U+0000` (ACSCII `NUL` as was), and is also trully non-blocking. [bish-bosh] can not take advantage of these features yet, however.
+
+#### [ksh93]
+At this time, [ksh93] is known not to work and looks like a lot of work to make work. This means UWIN won't work, either.
+
+#### Others
 * [oksh], a Linux derivative of OpenBSD's ksh shell
 * [yash]
-* [ksh88]
+* The original [ksh88]
 
 ## Status of Supported Backends
 
@@ -909,7 +915,7 @@ The following shells are untested and unsupported:-
 | **ncMirBSD** | `nc` | Mac OS X | `none` | Fully functional | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. No usernames or passwords. | Yes | Yes |
 | **ncMacOSX** | `nc` | Mac OS X | `none` | Fully functional | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. No usernames or passwords. | Yes | Yes |
 | **ncDebianOpenBSD** | `nc.openbsd` | [Debian OpenBSD](https://packages.debian.org/wheezy/netcat-openbsd) | `none` | Fully functional‡ | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames only for `HTTP`. | Yes | Yes |
-| **ncDebianTraditional** | `nc.traditional` | [Debian Traditional](https://packages.debian.org/wheezy/netcat-traditional) / Hobbit | `none` | Fully functional | Yes | Yes | No | No | No | Yes | Yes |
+| **ncDebianTraditional** | `nc.traditional` | [Debian Traditional](https://packages.debian.org/wheezy/netcat-traditional) / [Hobbit](http://nc110.sourceforge.net/) | `none` | Fully functional | Yes | Yes | No | No | No | Yes | Yes |
 | **ncGNU** | `nc` | [GNU](http://netcat.sourceforge.net/) | `none` | Fully functional | No | No | No | No | No | Yes | Yes |
 | **ncToybox** | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] | `none` | Fully functional‡ | No | No | No | Yes | No | Yes | Yes |
 | **ncBusyBox** | `nc` / `busybox nc` | [BusyBox] | `none` | Fully functional‡ | No | No | No | Yes | No | No | Yes |
