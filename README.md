@@ -387,7 +387,7 @@ _ \* This value is a boolean. Use `0` for false, `1` for true ._
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-b`, `--backends` | `A,B,…` | `bishbosh_backends` | `gnutls,openssl,socat,ncat,nc6,nc,ncDebianOpenBSD,ncFreeBSD,ncMacOSX,ncDebianTraditional,ncGNU,ncToybox,ncBusyBox,devtcp,cryptcat` | [Backends](#status-of-supported-backends) are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. The backend `nc` represents all the netcat permutations. |
+| `-b`, `--backends` | `A,B,…` | `bishbosh_backends` | `openssl,socat,ncat,nc6,nc,ncDebianOpenBSD,ncFreeBSD,ncOpenBSD,ncMacOSX,ncDebianTraditional,ncGNU,ncToybox,ncBusyBox,devtcp,cryptcat` | [Backends](#status-of-supported-backends) are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. The backend `nc` represents all the netcat permutations. |
 
 A backend is the strategy [bish-bosh] uses to connect to a [MQTT] server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. An example of this is the `nc` backend. [bish-bosh] ships with a large number of [backends](#status-of-supported-backends) to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
 
@@ -903,12 +903,12 @@ The following shells are untested and unsupported:-
 
 | Backend | Filename | Variant | Tunnels | Status | [`--transport inet4`](#source-routing-settings) | [`--transport inet6`](#source-routing-settings) | [`--transport unix`](#source-routing-settings) | [`--transport serial`](#source-routing-settings) | [Proxy](#proxy-settings)  | [`--source-server HOST`](#source-routing-settings) | [`--source-port PORT`](#source-routing-settings) |
 | ------- | -------- | ------- | ------------ | ------ | ----------------------------------------------- | ----------------------------------------------- | ---------------------------------------------- | ------------------------------------------------ | ------------------------- | -------------------------------------------------- | ------------------------------------------------ |
-| **gnutls** | `gnutls-cli` | - | `tls` | Fully functional | No | No | No | No | No | No | No |
 | **openssl** | `gnutls` | [OpenSSL] / [LibreSSL] | `tls` | Fully functional | No | No | No | No | No | No | No |
 | **ncat** | `ncat`| [Nmap ncat](http://nmap.org/ncat/) | `none`, `tls` | Fully functional‡ | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames and passwords supported for `HTTP`, usernames only for SOCKS. | Yes | Yes | **nc6** | `nc6` | [netcat6](http://www.deepspace6.net/projects/netcat6.html) | `none` | Fully functional‡ | Yes | Yes | No | No | No | Yes | Yes |
 | **socat** | `socat` | [socat](http://www.dest-unreach.org/socat/) | `none`, `tls` | Fully functional | Yes | Yes | Yes | Yes | `SOCKS4`, `SOCKS4a` and `HTTP`. Usernames are supported. | Yes | Yes |
 | **nc** | 'Meta' backend | Any **nc\*** backend | `none` | Fully functional* | Yes† | Yes† | Yes† | Yes† | Yes† | Yes† | Yes† |
 | **ncFreeBSD** | `nc` | FreeBSD | `none` | Fully functional | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes | Yes |
+| **ncFreeBSD** | `nc` | OpenBSD | `none` | Fully functional | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes | Yes |
 | **ncMacOSX** | `nc` | Mac OS X | `none` | Fully functional | Yes | Yes | Yes | No | SOCKS4, SOCKS5 and HTTP. No usernames or passwords. | Yes | Yes |
 | **ncDebianOpenBSD** | `nc.openbsd` | [Debian OpenBSD](https://packages.debian.org/wheezy/netcat-openbsd) | `none` | Fully functional‡ | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames only for `HTTP`. | Yes | Yes |
 | **ncDebianTraditional** | `nc.traditional` | [Debian Traditional](https://packages.debian.org/wheezy/netcat-traditional) / Hobbit | `none` | Fully functional | Yes | Yes | No | No | No | Yes | Yes |
@@ -917,6 +917,7 @@ The following shells are untested and unsupported:-
 | **ncBusyBox** | `nc` / `busybox nc` | [BusyBox] | `none` | Fully functional‡ | No | No | No | Yes | No | No | Yes |
 | **devtcp** | `bash` / `ksh` | [GNU Bash] / [ksh93] | `none` | Fully functional | No | No | No | ? maybe ? | No | No | No |
 | **cryptcat** | `cryptcat` | - | MQTT Encryting variant of netcat, but, because the password is supplied on the command line, insecure. |
+| **gnutls** | `gnutls` | [OpenSSL] / [LibreSSL] | `tls` | Broken | No | No | No | No | No | No | No |
 
 _\* Refers to the meta backend itself. A detected backend may not be._
 

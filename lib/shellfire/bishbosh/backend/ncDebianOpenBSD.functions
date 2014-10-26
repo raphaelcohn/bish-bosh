@@ -1,7 +1,7 @@
 core_usesIn core functions
 core_functions_register _bishbosh_backend_registration ncDebianOpenBSD
 
-# Not installed by default on Ubuntu/Debian (the version by Hobbit, last updated 2004 on freecode, now points to GNU netcat)
+# Default on Debian, lacks -e and -c (execute program / script)
 bishbosh_backend_ncDebianOpenBSD_check()
 {
 	if [ "$bishbosh_tunnel" != 'none' ]; then

@@ -1,9 +1,9 @@
 core_usesIn core functions
-core_functions_register _bishbosh_backend_registration ncFreeBSD
+core_functions_register _bishbosh_backend_registration ncOpenBSD
 
 core_dependency_requires '*' grep
 core_dependency_requires '*' head
-bishbosh_backend_ncFreeBSD_check()
+bishbosh_backend_ncOpenBSD_check()
 {
 	if [ "$bishbosh_tunnel" != 'none' ]; then
 		return 1
@@ -18,8 +18,8 @@ bishbosh_backend_ncFreeBSD_check()
 		if [ ! -x "$binary" ]; then
 			continue
 		fi
-		if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^usage: nc \[-46DdEhklNnrStUuvz\] \[-e policy\] \[-I length\] \[-i interval\] \[-O length\]$'; then
-			bishbosh_backend_name=ncFreeBSD
+		if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^usage: nc \[-46DdFhklNnrStUuvz\] \[-I length\] \[-i interval\] \[-O length\]$'; then
+			bishbosh_backend_name=ncOpenBSD
 			bishbosh_backend_path="$binary"
 			return 0
 		fi
@@ -27,43 +27,44 @@ bishbosh_backend_ncFreeBSD_check()
 	return 1
 }
 
-bishbosh_backend_ncFreeBSD_checkIfNetcatVariant()
+bishbosh_backend_ncOpenBSD_checkIfNetcatVariant()
 {
-	# eg  'usage: nc [-46DdEhklNnrStUuvz] [-e policy] [-I length] [-i interval] [-O length]'
-	bishbosh_backend_netcatVariantHelpMessageLineExists '^usage: nc \[-46DdEhklNnrStUuvz\] \[-e policy\] \[-I length\] \[-i interval\] \[-O length\]$'
+	# eg  'usage: nc [-46DdFhklNnrStUuvz] [-I length] [-i interval] [-O length]'
+	bishbosh_backend_netcatVariantHelpMessageLineExists '^usage: nc \[-46DdFhklNnrStUuvz\] \[-I length\] \[-i interval\] \[-O length\]$'
 }
-
-bishbosh_backend_ncFreeBSD_port()
+bishbosh_backend_ncOpenBSD_port()
 {
 	printf '%s' 1883
 }
 
-_bishbosh_backend_ncFreeBSD_start_addProxy()
+_bishbosh_backend_ncOpenBSD_start_addProxy()
 {
 	local proxyValue="$1"
 	core_variable_array_append options '-X' "$proxyValue"
 	
-	local proxyAddress
+	local proxyAddress="$bishbosh_proxyAddress"
 	if core_variable_isSet bishbosh_proxyPort; then
 		# Note, if using an IPv6 address, we'll need surrounding []
 		proxyAddress="${proxyAddress}:${bishbosh_proxyPort}"
-	else
-		proxyAddress="$bishbosh_proxyAddress"
 	fi
 	
 	core_variable_array_append options '-x' "$proxyAddress"
 	
 	if core_variable_isSet bishbosh_proxyUsername; then
-		core_message WARN "The backend ncFreeBSD does not support specifing the proxy username"
+		if [ "$proxyValue" = 'connect' ]; then
+			core_variable_array_append options -P "$bishbosh_proxyUsername"
+		else
+			core_message WARN "The backend ncOpenBSD does not support specifing the proxy username for proxy kinds other than 'HTTP'"
+		fi
 	fi
+	
 	if core_variable_isSet bishbosh_proxyPassword; then
-		core_message WARN "The backend ncFreeBSD does not support specifing the proxy password"
+		core_message WARN "The backend ncOpenBSD does not support specifing the proxy password"
 	fi
 }
 
-# Also -K tclass and -F options are in the commandline help (but not the man page)!
 core_usesIn core variable variable/array
-bishbosh_backend_ncFreeBSD_start()
+bishbosh_backend_ncOpenBSD_start()
 {
 	local options
 	local options_initialised
@@ -88,7 +89,7 @@ bishbosh_backend_ncFreeBSD_start()
 		;;
 		
 		serial)
-			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncFreeBSD does not support the 'serial' transport."
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncOpenBSD does not support the 'serial' transport."
 		;;
 		
 		*)
@@ -108,19 +109,19 @@ bishbosh_backend_ncFreeBSD_start()
 	case "$bishbosh_proxyKind" in
 		
 		SOCKS4)
-			_bishbosh_backend_ncFreeBSD_start_addProxy '4'
+			_bishbosh_backend_ncOpenBSD_start_addProxy '4'
 		;;
 		
 		SOCKS4a)
-			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncFreeBSD does not support the 'SOCKS4a' bishbosh_proxyKind."
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncOpenBSD does not support the 'SOCKS4a' bishbosh_proxyKind."
 		;;
 		
 		SOCKS5)
-			_bishbosh_backend_ncFreeBSD_start_addProxy '5'
+			_bishbosh_backend_ncOpenBSD_start_addProxy '5'
 		;;
 		
 		HTTP)
-			_bishbosh_backend_ncFreeBSD_start_addProxy 'connect'
+			_bishbosh_backend_ncOpenBSD_start_addProxy 'connect'
 		;;
 		
 	esac
