@@ -769,6 +769,7 @@ The widely varying list of dependencies and preferences can be confusing, so her
     * Unmodified
     * With [Homebrew]
   * FreeBSD 10.0
+  * OpenBSD 5.5
 * Windows
   * Cygwin 1.7.32
 
@@ -791,10 +792,6 @@ The widely varying list of dependencies and preferences can be confusing, so her
     * `/home/raphcohn/bish-bosh/lib/shellfire/bishbosh/connection/read/read.functions: line 7: printf: write error: Communication error on send`
 
 ### Not Working Yet
-* OpenBSD 5.5 (fails in first line of `core_init_rexecUnderCorrectShell`) (`sh` is actually a runtime-adjusted `pdksh`)
-  * also occurs under `/bin/ksh`
-  * seems to be a problem with `pdksh` (reproducible on Mac OS X with Homebrew)
-  * It is in the `core_variable_isSet` eval - for some reason it doesn't like the syntax if unset
 * NetBSD 6.1.5
   * Similar problems to OpenBSD it seems
 * Unix

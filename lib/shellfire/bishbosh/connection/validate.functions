@@ -68,7 +68,6 @@ bishbosh_connection_validate_initialise()
 
 		_bishbosh_connection_validate_clientId_restrictedCharacters()
 		{
-			# OpenBSD /BusyBox tr uses '-c' instead of '-C'
 			local stripped="$(printf '%s' "$bishbosh_clientId" | tr -d -c '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')"
 			if [ ${#stripped} -ne ${#bishbosh_clientId} ]; then
 				core_message WARN "Not all MQTT servers support a ClientId with characters other than 0-9, a-z and A-Z."
