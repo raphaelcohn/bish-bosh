@@ -2,6 +2,17 @@ core_usesIn bishbosh/connection/read controlpacket byte
 
 bishbosh_connection_read_nonBlockingFeatureTest()
 {	
+	case "$core_init_detectedShell" in
+		
+		# For some reason, pdksh / mksh just block forever
+		pdksh|mksh)
+			bishbosh_connection_supportsNonBlockingRead=0
+			bishbosh_connection_exitCodeForReadTimeout=-1
+			return 0
+		;;
+		
+	esac
+	
 	local testFifoPath="$(bishbosh_connection_mkfifo 'non-blocking-read-feature-test')"
 	exec 3<>"$testFifoPath"
 

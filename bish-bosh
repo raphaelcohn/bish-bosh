@@ -128,7 +128,7 @@ _program_commandLine_parseInitialise()
 		_program_configurationSet_bishbosh_filesizeAlgorithm=1
 	fi
 	
-	if [ "$core_init_preferredShell" = 'zsh' ]; then
+	if [ "$core_init_shellDetected" = 'zsh' ]; then
 		_program_default_readLatency=0
 	else
 		_program_default_readLatency=100

@@ -7,30 +7,15 @@ bishbosh_backend_devtcp_check()
 		return 1
 	fi
 	
-	case "$core_init_preferredShell" in
+	case "$core_init_shellDetected" in
 		
-		# but not pdksh or mksh
-		bash|ksh|ksh93)
+		bash|ksh93)
 			bishbosh_backend_name=devtcp
 			bishbosh_backend_path=''
 			return 0
 		;;
+		
 	esac
-	
-	if core_variable_isSet BASH_VERSION; then
-		bishbosh_backend_name=devtcp
-		bishbosh_backend_path=''
-		return 0
-	fi
-
-	if core_variable_isSet KSH_VERSION; then
-		# '@(#)' is the case for mksh and pdksh
-		if ! core_variable_startsWith "$KSH_VERSION" '@(#)'; then
-			bishbosh_backend_name=devtcp
-			bishbosh_backend_path=''
-			return 0
-		fi
-	fi
 	
 	return 1
 }
