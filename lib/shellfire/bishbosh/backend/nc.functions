@@ -1,6 +1,6 @@
 core_usesIn core functions
 core_functions_register _bishbosh_backend_registration nc
-core_usesIn bishbosh/backend ncFreeBSD ncOpenBSD ncMacOSX ncDebianOpenBSD ncGNU ncDebianTraditional ncToybox ncBusyBox
+core_usesIn bishbosh/backend ncFreeBSD ncOpenBSD ncMacOSX ncMirBSD ncDebianOpenBSD ncGNU ncDebianTraditional ncToybox ncBusyBox
 
 bishbosh_backend_nc_check()
 {

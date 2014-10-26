@@ -1,0 +1,155 @@
+core_usesIn core functions
+core_functions_register _bishbosh_backend_registration ncMirBSD
+
+core_dependency_requires '*' grep
+core_dependency_requires '*' head
+bishbosh_backend_ncMirBSD_check()
+{
+	if [ "$bishbosh_tunnel" != 'none' ]; then
+		return 1
+	fi
+	
+	local binary
+	for binary in /usr/bin/nc "$(core_compatibility_which nc)"
+	do
+		if [ -z "$binary" ]; then
+			continue
+		fi
+		if [ ! -x "$binary" ]; then
+			continue
+		fi
+		if "$binary" -h 2>&1 | head -n 1 | grep -q -E '^usage: nc \[-46DdhIklnrStUuvz\] \[-i interval\] \[-p source_port\]$'; then
+			bishbosh_backend_name=ncMirBSD
+			bishbosh_backend_path="$binary"
+			return 0
+		fi
+	done
+	return 1
+}
+
+bishbosh_backend_ncMirBSD_checkIfNetcatVariant()
+{
+	# eg  'usage: nc [-46DdhIklnrStUuvz] [-i interval] [-p source_port]'
+	bishbosh_backend_netcatVariantHelpMessageLineExists '^usage: nc \[-46DdhIklnrStUuvz\] \[-i interval\] \[-p source_port\]$'
+}
+
+bishbosh_backend_ncMirBSD_port()
+{
+	printf '%s' 1883
+}
+
+_bishbosh_backend_ncMirBSD_start_addProxy()
+{
+	local proxyValue="$1"
+	core_variable_array_append options '-X' "$proxyValue"
+	
+	local proxyAddress
+	if core_variable_isSet bishbosh_proxyPort; then
+		# Note, if using an IPv6 address, we'll need surrounding []
+		proxyAddress="${proxyAddress}:${bishbosh_proxyPort}"
+	else
+		proxyAddress="$bishbosh_proxyAddress"
+	fi
+	
+	core_variable_array_append options '-x' "$proxyAddress"
+	
+	if core_variable_isSet bishbosh_proxyUsername; then
+		core_message WARN "The backend ncMirBSD does not support specifing the proxy username"
+	fi
+	if core_variable_isSet bishbosh_proxyPassword; then
+		core_message WARN "The backend ncMirBSD does not support specifing the proxy password"
+	fi
+}
+
+# Also -K tclass and -F options are in the commandline help (but not the man page)!
+core_usesIn core variable variable/array
+bishbosh_backend_ncMirBSD_start()
+{
+	local options
+	local options_initialised
+	core_variable_array_initialise options
+	
+	case "$bishbosh_transport" in
+		
+		inet)
+			:
+		;;
+		
+		inet4)
+			core_variable_array_append options '-4'
+		;;
+		
+		inet6)
+			core_variable_array_append options '-6'
+		;;
+		
+		unix)
+			core_variable_array_append options '-U'
+		;;
+		
+		serial)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncMirBSD does not support the 'serial' transport."
+		;;
+		
+		*)
+			core_exitError $core_commandLine_exitCode_SOFTWARE "Please validate the values for bishbosh_transport ('$bishbosh_transport')"
+		;;
+		
+	esac
+	
+	if core_variable_isSet bishbosh_sourceAddress; then
+		core_variable_array_append options '-s' "$bishbosh_sourceAddress"
+	fi
+	
+	if core_variable_isSet bishbosh_sourcePort; then
+		core_variable_array_append options '-p' "$bishbosh_sourcePort"
+	fi
+	
+	case "$bishbosh_proxyKind" in
+		
+		SOCKS4)
+			_bishbosh_backend_ncMirBSD_start_addProxy '4'
+		;;
+		
+		SOCKS4a)
+			core_exitError $core_commandLine_exitCode_CONFIG "The backend ncMirBSD does not support the 'SOCKS4a' bishbosh_proxyKind."
+		;;
+		
+		SOCKS5)
+			_bishbosh_backend_ncMirBSD_start_addProxy '5'
+		;;
+		
+		HTTP)
+			_bishbosh_backend_ncMirBSD_start_addProxy 'connect'
+		;;
+		
+	esac
+	
+	if [ $bishbosh_connectTimeout -ne 0 ]; then
+		core_variable_array_append options -w $bishbosh_connectTimeout
+	fi
+	
+	case $(core_init_verbosity) in
+		
+		0)
+			:
+		;;
+		
+		1)
+			core_variable_array_append options -v
+		;;
+		
+		*)
+			core_variable_array_append options -v -v
+		;;
+	esac
+
+	core_variable_array_append options "$bishbosh_server"
+		
+	core_variable_array_append options "$bishbosh_port"
+	
+	bishbosh_backend_debugOptions
+	
+	# Problem: nc listens for SIGINT (even if we do trap '' INT), and so we can't stop Ctrl-C killing it before we've written a disconnect
+	core_variable_array_passToFunctionAsArguments options "$bishbosh_backend_path" <"$bishbosh_connection_toServerFifo" >"$bishbosh_connection_fromServerFifo" &
+}
