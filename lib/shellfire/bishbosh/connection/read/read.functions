@@ -2,7 +2,7 @@ core_usesIn bishbosh/connection/read controlpacket byte
 
 bishbosh_connection_read_nonBlockingFeatureTest()
 {	
-	case "$core_init_detectedShell" in
+	case "$core_init_shellDetected" in
 		
 		# For some reason, pdksh / mksh just block forever
 		pdksh|mksh)
