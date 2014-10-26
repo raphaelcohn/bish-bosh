@@ -8,11 +8,15 @@ bishbosh_backend_ncDebianTraditional_check()
 		return 1
 	fi
 	
-	if core_compatibility_whichNoOutput nc.traditional; then
-		bishbosh_backend_name=ncDebianTraditional
-		bishbosh_backend_path="$(core_compatibility_which nc.traditional)"
-		return 0
-	fi
+	local nameVariant
+	for nameVariant in nc.traditional netcat nc
+	do
+		if core_compatibility_whichNoOutput "$nameVariant"; then
+			bishbosh_backend_name=ncDebianTraditional
+			bishbosh_backend_path="$(core_compatibility_which "$nameVariant")"
+			return 0
+		fi
+	done
 	return 1
 }
 

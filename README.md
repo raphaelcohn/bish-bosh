@@ -769,6 +769,8 @@ The widely varying list of dependencies and preferences can be confusing, so her
     * Unmodified
     * With [Homebrew]
   * FreeBSD 10.0
+  * DragonFly BSD 3.8.2
+    * You'll need to `pkg install netcat`
   * OpenBSD 5.5
   * MirBSD #10 (2008)
   * NetBSD 6.1.5
@@ -915,7 +917,7 @@ At this time, [ksh93] is known not to work and looks like a lot of work to make 
 | **ncMirBSD** | `nc` | Mac OS X | `none` | Fully functional | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. No usernames or passwords. | Yes | Yes |
 | **ncMacOSX** | `nc` | Mac OS X | `none` | Fully functional | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. No usernames or passwords. | Yes | Yes |
 | **ncDebianOpenBSD** | `nc.openbsd` | [Debian OpenBSD](https://packages.debian.org/wheezy/netcat-openbsd) | `none` | Fully functional‡ | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames only for `HTTP`. | Yes | Yes |
-| **ncDebianTraditional** | `nc.traditional` | [Debian Traditional](https://packages.debian.org/wheezy/netcat-traditional) / [Hobbit](http://nc110.sourceforge.net/) | `none` | Fully functional | Yes | Yes | No | No | No | Yes | Yes |
+| **ncDebianTraditional** | `nc.traditional` or `netcat` (on DragonFly BSD, *sic*) | [Debian Traditional](https://packages.debian.org/wheezy/netcat-traditional) / [Hobbit](http://nc110.sourceforge.net/) | `none` | Fully functional | Yes | Yes | No | No | No | Yes | Yes |
 | **ncGNU** | `nc` | [GNU](http://netcat.sourceforge.net/) | `none` | Fully functional | No | No | No | No | No | Yes | Yes |
 | **ncToybox** | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] | `none` | Fully functional‡ | No | No | No | Yes | No | Yes | Yes |
 | **ncBusyBox** | `nc` / `busybox nc` | [BusyBox] | `none` | Fully functional‡ | No | No | No | Yes | No | No | Yes |
