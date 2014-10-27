@@ -728,6 +728,7 @@ Unfortunately, there are a lot of [GNU Bash] versions that are still in common u
   * RedHat RHEL 6
   * Centos 6
   * Cygwin (as of Sep 2014, although 4.3 is in the works)
+  * Solaris 11.2
 * bash 4.2
   * Ubuntu 12.04 LTS
 * bash 4.3
@@ -792,6 +793,8 @@ The widely varying list of dependencies and preferences can be confusing, so her
   * Mac OS X 10.10
 
 ### Nearly Working
+* Solaris
+  * 11.2 uses ksh93, changing to bash is effective
 * AIX
   * 7.1 _nearly_ works
   * 6.1 _nearly_ works
