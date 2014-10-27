@@ -80,7 +80,7 @@ bishbosh_connection_clientId_randomBytesBase64EncodedALike()
 		if [ -r "$randomFilePath" ]; then
 			if core_compatibility_whichNoOutput dd; then
 				dd bs=1 count=$count if="$randomFilePath" | bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr
-				break
+				return 0
 			fi
 		fi
 	done
@@ -94,6 +94,7 @@ bishbosh_connection_clientId_randomBytesBase64EncodedALike()
 				index=$((index+1))
 			done
 		} | bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr
+		return 0
 	fi
 	
 	if core_compatibility_whichNoOutput awk; then
@@ -105,6 +106,7 @@ bishbosh_connection_clientId_randomBytesBase64EncodedALike()
 				index=$((index+1))
 			done
 		} | bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr
+		return 0
 	fi
 	
 	core_message WARN "Clean Session is 1, the client id is unset and there are not sources of randomness; defaulting to empty (''). This may be rejected by some MQTT servers."
