@@ -738,6 +738,8 @@ Unfortunately, there are a lot of [GNU Bash] versions that are still in common u
 The widely varying list of dependencies and preferences can be confusing, so here's a little guidance.
 
 ### Tested and works 'out-of-the-box' with no changes
+* Windows
+  * Cygwin 1.7.32
 * Linux
   * Ubuntu 14.04
     * Tested on 14.04.1 LTS Server
@@ -776,8 +778,6 @@ The widely varying list of dependencies and preferences can be confusing, so her
   * NetBSD 6.1.5
     * You'll need to `pkg_add netcat`
     * You may need to modify the first line of `bish-bosh` to `#!/usr/bin/env ksh` (we had problems with `/etc/shrc` interfering)
-* Windows
-  * Cygwin 1.7.32
 
 ### Untested, but should work with no changes
 * Linux
@@ -801,20 +801,18 @@ The widely varying list of dependencies and preferences can be confusing, so her
   * HP_UX 11i
     * HP's `mktemp` fails, badly. Without HP-UX access, making this work is a non-starter.
   * Solaris
+* Android 4
+* Chrome OS
 
 ### Might Work
 These configurations can be made to work if there's enough interest, but are unlikely to be optimal.
 
 * Windows
-  * [GOW](https://github.com/bmatzelle/gow) 0.8
-    * `mkfifo` is incapable of creating FIFOs, otherwise this _should_ work.
-      * On 0.7 and 0.8, create `C:\Program Files (x86)\Gow\etc` (see [here](https://github.com/bmatzelle/gow/issues/65#issuecomment-16725415))
-      * Run `bash` to get a shell (it's 3.1)!
-	  * Change `PATH`, eg `PATH=/usr/bin:"$PATH"`
-	  * `cp bash.exe sh.exe` (`ln -s` doesn't seem to work, it creates `.lnk` files)
-  * [GnuWin32](http://gnuwin32.sourceforge.net/)
-    * `mkfifo` is incapable of creating FIFOs, otherwise this _should_ work.
   * MKS Toolkit
+  * Interix
+    * No `env`
+    * No `bash`, no `nc`, so not obvious what can be used to create a socket
+	* We could try to snaffle from Debian-Interix and Gentoo-prefix, but Interix is officially dead
 
 ### Can Not Work
 These configurations can not work without _a lot_ of re-engineering, and, even then, would be barely functional. That said, if you have an use case to make them work, get in touch. Nothing's impossible. That said, for Windows, why not just use Cygwin?
@@ -830,13 +828,16 @@ These configurations can not work without _a lot_ of re-engineering, and, even t
   * MinGW / MSYS (with `msys-base`, `mingw32-base`, `msys-mktemp`, `msys-openssl`)
 	* Script stack dumps - no indication why
     * Similar to Git-Bash but does have `od`
+  * [GOW](https://github.com/bmatzelle/gow) 0.8
+    * `mkfifo` is incapable of creating FIFOs, otherwise this _should_ work.
+      * On 0.7 and 0.8, create `C:\Program Files (x86)\Gow\etc` (see [here](https://github.com/bmatzelle/gow/issues/65#issuecomment-16725415))
+      * Run `bash` to get a shell (it's 3.1)!
+	  * Change `PATH`, eg `PATH=/usr/bin:"$PATH"`
+	  * `cp bash.exe sh.exe` (`ln -s` doesn't seem to work, it creates `.lnk` files)
+  * [GnuWin32](http://gnuwin32.sourceforge.net/)
+    * `mkfifo` is incapable of creating FIFOs, otherwise this _should_ work.
   * [UnxUtils](http://sourceforge.net/projects/unxutils/)
     * `mkfifo` is non-functional
-  * Interix / Subsystem for UNIX Applications
-    * No `bash`, no `nc`, so not obvious what can be used to create a socket
-	* There is `telnet`, but telnet tunnelling isn't straightforward
-	* No `env`, and `PATH` isn't set up nicely
-	* We could try to snaffle from Debian-Interix and Gentoo-prefix, but Interix is officially dead
   * DJGPP
     * This uses `bash` 2.04, which is just too old
   * UWIN

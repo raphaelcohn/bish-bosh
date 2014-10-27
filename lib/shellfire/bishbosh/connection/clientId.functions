@@ -42,6 +42,11 @@ bishbosh_connection_clientId_random()
 	done
 }
 
+bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr()
+{
+	base64 | tr -d '\n='
+}
+
 bishbosh_connection_clientId_randomBytesBase64EncodedALike()
 {
 	local count=$1
@@ -75,7 +80,7 @@ bishbosh_connection_clientId_randomBytesBase64EncodedALike()
 	do
 		if [ -r "$randomFilePath" ]; then
 			if core_compatibility_whichNoOutput dd; then
-				dd bs=1 count=$count if="$randomFilePath" | base64 | tr -d '\n='
+				dd bs=1 count=$count if="$randomFilePath" | bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr
 				break
 			fi
 		fi
@@ -84,24 +89,24 @@ bishbosh_connection_clientId_randomBytesBase64EncodedALike()
 	if core_variable_isSet RANDOM; then
 		{
 			local index
-			local randomReduced
 			while [ $index -lt $count ]
 			do
 				printf "\\$(printf '%o' $((RANDOM%256)))"
 				index=$((index+1))
 			done
-		} | base64 | tr -d '\n='
+		} | bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr
 	fi
 	
 	if core_compatibility_whichNoOutput awk; then
 		{
 			local index
+			local value
 			while [ $index -lt $count ]
 			do
-				echo | awk -v ORS='' '{ srand(); print int((rand()*1000000)%256)} '
+				printf "\\$(printf '%o' $(echo | awk -v ORS='' '{ srand(); print int((rand()*1000000)%256)} '))"
 				index=$((index+1))
 			done
-		} | base64 | tr -d '\n='
+		} | bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr
 	fi
 	
 	core_message WARN "Clean Session is 1, the client id is unset and there are not sources of randomness; defaulting to empty (''). This may be rejected by some MQTT servers."
