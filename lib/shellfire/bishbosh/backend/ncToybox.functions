@@ -1,16 +1,22 @@
 core_usesIn core functions
 core_functions_register _bishbosh_backend_registration ncToybox
 
-core_dependency_requires '*' grep uname
+core_dependency_requires '*' grep
 bishbosh_backend_ncToybox_check()
 {
 	if [ "$bishbosh_tunnel" != 'none' ]; then
 		return 1
 	fi
 	
+	if core_compatibility_whichNoOutput uname; then
+		set -- toybox toybox-"$(uname -m)"
+	else
+		set -- toybox
+	fi
+	
 	local binary
 	local toyboxName
-	for toyboxName in toybox toybox-"$(uname -m)"
+	for toyboxName in "$@"
 	do
 		if core_compatibility_whichNoOutput "$toyboxName"; then
 			binary="$(core_compatibility_which "$toyboxName")"
