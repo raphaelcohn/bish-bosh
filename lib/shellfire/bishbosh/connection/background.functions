@@ -135,8 +135,8 @@ _bishbosh_connection_background_hexConversion_dd_od()
 		
 		while $bishbosh_connection_background_hexConversion_dd_continue
 		do
-			# Some od implementations output extraneous blank lines (or blank lines with just whitespace)
-			dd bs=1 count=1 2>/dev/null | od "$@" | grep -v '^\w*$'
+			# Some od implementations output extraneous blank lines (or blank lines with just whitespace) and use tabs not spaces
+			dd bs=1 count=1 2>/dev/null | od "$@" | grep -v '^\w*$' | tr -d '\t '
 		done
 	}
 }

@@ -610,7 +610,7 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the `PATH` an
 
 * Various OS workarounds
   * `uname`, if trying to detect Toybox variants;
-  * `uname`, to workaround AIX's broken `od`
+  * `uname`, to workaround AIX's broken `od` (not needed unless using AIX)
 * Detecting which variety of netcat (`nc`) is in use by the meta-backend
   * Option 1
     * `sed`
@@ -637,12 +637,9 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the `PATH` an
   * `hexdump`, in [Toybox]
   * `god`, from GNU `coreutils` package when installed on Mac OS X with Homebrew
   * `od`, from GNU `coreutils` package
-  * `grep` (used to remove guff in `od`) with
-	  * `od`, in [BusyBox]
-	  * `od`, in [Toybox]
-	  * `od`, BSD-derived
-	  * `od`, in AIX
-	    * `uname` required to detect it (AIX `od` is pretty broken)
+  * `od` in [BusyBox] / [Toybox] / AIX / BSD-derived, with the following used to remove guff from `od`
+    * `grep` (to remove trailing lines, and trailing lines with only whitespace)
+	* `tr` (to remove extraneous spaces and tabs)
 * Turning off buffering of hexadecimal conversion
   * `gstdbuf`, from GNU `coreutils` package when installed on Mac OS X with Homebrew
   * `stdbuf`, from the GNU `coreutils` package
