@@ -100,7 +100,6 @@ bishbosh_connection_clientId_randomBytesBase64EncodedALike()
 	if core_compatibility_whichNoOutput awk; then
 		{
 			local index
-			local value
 			while [ $index -lt $count ]
 			do
 				printf "\\$(printf '%o' $(echo | awk -v ORS='' '{ srand(); print int((rand()*1000000)%256)} '))"
