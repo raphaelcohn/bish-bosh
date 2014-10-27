@@ -785,8 +785,10 @@ The widely varying list of dependencies and preferences can be confusing, so her
   * AIX 7.1
     * Known Issues
       * Signal handling is broken in the AIX default shell; `CTRL-C` will result in unkilled processes
-	  * There's an annoying 'pulse' of the screen - something somewhere is echo-ing a new line
+	* You need to install a backend, eg as `su`, install netcat `rpm --install http://www.oss4aix.org/download/RPMS/netcat/netcat-1.10-2.aix5.1.ppc.rpm`
 	* It is recommened to modify the first line of `bish-bosh` to `#!/usr/bin/env bash` after installing bash 4.2+
+  * AIX 6.1
+    * As for AIX 7.1
 
 ### Tested and work with minor changes
 * BSD-alike

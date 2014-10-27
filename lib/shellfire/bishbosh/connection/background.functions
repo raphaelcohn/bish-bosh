@@ -226,6 +226,7 @@ bishbosh_connection_background_processLoop()
 	if [ "${bishbosh_backend_name}" = 'devtcp' ]; then
 		_bishbosh_connection_background_processLoop_body >&4 3<"$bishbosh_connection_fromHexConversionFifo" &
 	else
+		# Something about this goes weird on AIX with output
 		_bishbosh_connection_background_processLoop_body >"$bishbosh_connection_toServerFifo" 3<"$bishbosh_connection_fromHexConversionFifo" &
 	fi
 }
