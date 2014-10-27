@@ -51,7 +51,7 @@ bishbosh_connection_background_hexConversion()
 		
 		if core_compatibility_whichNoOutput hexdump; then
 			core_message INFO "Using hexdump"
-			set -- _bishbosh_connection_background_hexConversion_dd hexdump -e '/1 "%u\n"'
+			set -- _bishbosh_connection_background_hexConversion_dd_hexdump -e '/1 "%u\n"'
 			break
 		fi
 		
@@ -61,11 +61,11 @@ bishbosh_connection_background_hexConversion()
 		#  Mac od has weird spacing, no -w1, extra line at end with lots of whitespace!
 		if core_compatibility_whichNoOutput od; then
 			core_message INFO "Using od with conversion '$odConversionString'"
-			set -- _bishbosh_connection_background_hexConversion_dd od -A n -t "$odConversionString"
+			set -- _bishbosh_connection_background_hexConversion_dd_od -A n -t "$odConversionString"
 			break
 		fi
 		
-		# This DOES NOT SEEM TO WORK
+		# This DOES NOT SEEM TO WORK - there are almost certainly problems with od
 		if core_compatibility_whichNoOutput unbuffer; then
 		
 			if core_compatibility_whichNoOutput hexdump; then
@@ -104,7 +104,7 @@ bishbosh_connection_background_hexConversion()
 	fi
 }
 
-_bishbosh_connection_background_hexConversion_dd()
+_bishbosh_connection_background_hexConversion_dd_hexdump()
 {
 	{
 		trap '' INT HUP ABRT QUIT USR1 USR2
@@ -117,8 +117,26 @@ _bishbosh_connection_background_hexConversion_dd()
 		
 		while $bishbosh_connection_background_hexConversion_dd_continue
 		do
-			# Some od implemenations output extraneous blank lines (or blank lines with just whitespace)
-			dd bs=1 count=1 2>/dev/null | "$@" | grep -v '^\w*$' | tee -a out
+			dd bs=1 count=1 2>/dev/null | hexdump "$@"
+		done
+	}
+}
+
+_bishbosh_connection_background_hexConversion_dd_od()
+{
+	{
+		trap '' INT HUP ABRT QUIT USR1 USR2
+		bishbosh_connection_background_hexConversion_dd_trapHandler()
+		{
+			bishbosh_connection_background_hexConversion_dd_continue=false
+		}
+		bishbosh_connection_background_hexConversion_dd_continue=true
+		trap bishbosh_connection_background_hexConversion_dd_trapHandler TERM
+		
+		while $bishbosh_connection_background_hexConversion_dd_continue
+		do
+			# Some od implementations output extraneous blank lines (or blank lines with just whitespace)
+			dd bs=1 count=1 2>/dev/null | od "$@" | grep -v '^\w*$'
 		done
 	}
 }
