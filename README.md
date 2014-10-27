@@ -781,6 +781,12 @@ The widely varying list of dependencies and preferences can be confusing, so her
     * You'll need to `pkg install netcat`
   * OpenBSD 5.5
   * MirBSD #10 (2008)
+* AIX
+  * AIX 7.1
+    * Known Issues
+      * Signal handling is broken in the AIX default shell; `CTRL-C` will result in unkilled processes
+	  * There's an annoying 'pulse' of the screen - something somewhere is echo-ing a new line
+	* It is recommened to modify the first line of `bish-bosh` to `#!/usr/bin/env bash` after installing bash 4.2+
 
 ### Tested and work with minor changes
 * BSD-alike
