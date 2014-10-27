@@ -635,13 +635,16 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the `PATH` an
   * `hexdump`, BSD-derived (part of the `bsdmainutils` package in Debian/Ubuntu; usually installed by default)
   * `hexdump`, in [BusyBox]
   * `hexdump`, in [Toybox]
-  * `god`, from GNU `coreutils` package when installed on AIX and Mac OS X with Homebrew
+  * `god`, from GNU `coreutils` package when installed on Mac OS X with Homebrew
   * `od`, from GNU `coreutils` package
-  * `od`, in [BusyBox]
-  * `od`, in [Toybox]
-  * `od`, BSD-derived
+  * `grep` (used to remove guff in `od`) with
+	  * `od`, in [BusyBox]
+	  * `od`, in [Toybox]
+	  * `od`, BSD-derived
+	  * `od`, in AIX
+	    * `uname` required to detect it (AIX `od` is pretty broken)
 * Turning off buffering of hexadecimal conversion
-  * `gstdbuf`, from GNU `coreutils` package when installed on AIX and Mac OS X with Homebrew
+  * `gstdbuf`, from GNU `coreutils` package when installed on Mac OS X with Homebrew
   * `stdbuf`, from the GNU `coreutils` package
   * `stdbuf`, FreeBSD
   * `unbuffer`, from the expect package (known as `expect-dev` on Debian/Ubuntu)

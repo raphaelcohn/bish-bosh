@@ -51,11 +51,14 @@ bishbosh_connection_background_hexConversion()
 		
 		if core_compatibility_whichNoOutput hexdump; then
 			core_message INFO "Using hexdump"
-			set -- _bishbosh_connection_background_hexConversion_dd hexdump -e '"%u\n"'
+			set -- _bishbosh_connection_background_hexConversion_dd hexdump -e '/1 "%u\n"'
 			break
 		fi
 		
-		# AIX od supports -w1 (ie matches GNU od switches above)
+		# od varies enormously
+		#  AIX od supports -w1, has a broken -t u1, extra line at end
+		#  GNU od has single spacing (but one leading whitespace), supports -w1, no extra line
+		#  Mac od has weird spacing, no -w1, extra line at end with lots of whitespace!
 		if core_compatibility_whichNoOutput od; then
 			core_message INFO "Using od with conversion '$odConversionString'"
 			set -- _bishbosh_connection_background_hexConversion_dd od -A n -t "$odConversionString"
@@ -68,7 +71,7 @@ bishbosh_connection_background_hexConversion()
 			if core_compatibility_whichNoOutput hexdump; then
 
 				core_message INFO "Using unbuffer with hexdump"
-				set -- unbuffer hexdump -v -e '"%u\n"'
+				set -- unbuffer hexdump -v -e '/1 "%u\n"'
 				break
 			
 			else
@@ -83,7 +86,8 @@ bishbosh_connection_background_hexConversion()
 						continue
 					fi
 					core_message INFO "Using unbuffer with od ($odTool)"
-					# Only works with GNU od (or AIX od, but can't detect that yet), because of the -w1 argument
+					# Only works with GNU od / AIX od because of the -w1 argument
+					# However, AIX od (and BSD od) inserts a double \n\n
 					set -- unbuffer "$odTool" -A n -t "$odConversionString" -w1 -v
 					break 2
 				done
@@ -113,7 +117,8 @@ _bishbosh_connection_background_hexConversion_dd()
 		
 		while $bishbosh_connection_background_hexConversion_dd_continue
 		do
-			dd bs=1 count=1 2>/dev/null | "$@"
+			# Some od implemenations output extraneous blank lines (or blank lines with just whitespace)
+			dd bs=1 count=1 2>/dev/null | "$@" | grep -v '^\w*$' | tee -a out
 		done
 	}
 }
