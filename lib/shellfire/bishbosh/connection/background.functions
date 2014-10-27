@@ -50,12 +50,14 @@ bishbosh_connection_background_hexConversion()
 		
 		
 		if core_compatibility_whichNoOutput hexdump; then
+			core_message INFO "Using hexdump"
 			set -- _bishbosh_connection_background_hexConversion_dd hexdump -e '"%u\n"'
 			break
 		fi
 		
 		# AIX od supports -w1 (ie matches GNU od switches above)
 		if core_compatibility_whichNoOutput od; then
+			core_message INFO "Using od with conversion '$odConversionString'"
 			set -- _bishbosh_connection_background_hexConversion_dd od -A n -t "$odConversionString"
 			break
 		fi
