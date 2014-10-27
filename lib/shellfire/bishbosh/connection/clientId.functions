@@ -44,6 +44,8 @@ bishbosh_connection_clientId_random()
 
 bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr()
 {
+	# GNU base64 inserts line breaks, hence the use of tr -d '\n'.
+	# This can be disabled in GNU base64, but the switches with Mac OS X base64 differ.
 	base64 | tr -d '\n='
 }
 
@@ -67,9 +69,6 @@ bishbosh_connection_clientId_randomBytesBase64EncodedALike()
 	if ! core_compatibility_whichNoOutput base64; then
 		core_exitError "base64 does not exist; required for random client id generation when openssl and gpg are not present"
 	fi
-
-	# GNU base64 inserts line breaks, hence the use of tr -d '\n'.
-	# This can be disabled in GNU base64, but the switches with Mac OS X base64 differ.
 	
 	if ! core_compatibility_whichNoOutput tr; then
 		core_exitError "tr does not exist (required to remove line breaks from GNU coreutils base64 when generating random client ids and openssl and gpg are not present)"
