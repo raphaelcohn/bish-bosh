@@ -387,7 +387,7 @@ _ \* This value is a boolean. Use `0` for false, `1` for true ._
 
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
-| `-b`, `--backends` | `A,B,…` | `bishbosh_backends` | `openssl,socat,ncat,nc6,nc,ncDebianOpenBSD,ncFreeBSD,ncOpenBSD,ncMirBSD,ncMacOSX,ncDebianTraditional,ncGNU,ncToybox,ncBusyBox,devtcp,cryptcat` | [Backends](#status-of-supported-backends) are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. The backend `nc` represents all the netcat permutations. |
+| `-b`, `--backends` | `A,B,…` | `bishbosh_backends` | `openssl,socat,ncat,nc6,nc,ncDebianOpenBSD,ncFreeBSD,ncOpenBSD,ncMirBSD,ncMacOSX,ncDebianTraditional,ncSolaris,ncGNU,ncToybox,ncBusyBox,devtcp,cryptcat` | [Backends](#status-of-supported-backends) are specified in preference order, comma-separated, with no spaces. To specify just one backend, just give its name, eg `ncat`. The backend `nc` represents all the netcat permutations. |
 
 A backend is the strategy [bish-bosh] uses to connect to a [MQTT] server. It incorporates the encryption capabilities, foibles, and gotchas of the necessary binary that provides a socket connection. Some backends are actually 'meta' backends that use feature detection to work. An example of this is the `nc` backend. [bish-bosh] ships with a large number of [backends](#status-of-supported-backends) to accommodate the varying state of different operating systems, package managers and Linux distributions. In particular, the situation around 'netcat' is particularly bad, with a large number of variants of a popular program.
 
@@ -922,6 +922,7 @@ At this time, [ksh93] is known not to work and looks like a lot of work to make 
 | **ncMacOSX** | `nc` | Mac OS X | `none` | Fully functional | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. No usernames or passwords. | Yes | Yes |
 | **ncDebianOpenBSD** | `nc.openbsd` | [Debian OpenBSD](https://packages.debian.org/wheezy/netcat-openbsd) | `none` | Fully functional‡ | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames only for `HTTP`. | Yes | Yes |
 | **ncDebianTraditional** | `nc.traditional` or `netcat` (on DragonFly BSD, *sic*) | [Debian Traditional](https://packages.debian.org/wheezy/netcat-traditional) / [Hobbit](http://nc110.sourceforge.net/) | `none` | Fully functional | Yes | Yes | No | No | No | Yes | Yes |
+| **ncSolaris** | `nc` | Solaris | `none` | Fully functional | Yes | Yes | Yes | No | `SOCKS4`, `SOCKS5` and `HTTP`. Usernames only for `HTTP`. | Yes | Yes |
 | **ncGNU** | `nc` | [GNU](http://netcat.sourceforge.net/) | `none` | Fully functional | No | No | No | No | No | Yes | Yes |
 | **ncToybox** | `nc` / `toybox nc` / `toybox-$(uname)` /  | [Toybox] | `none` | Fully functional‡ | No | No | No | Yes | No | Yes | Yes |
 | **ncBusyBox** | `nc` / `busybox nc` | [BusyBox] | `none` | Fully functional‡ | No | No | No | Yes | No | No | Yes |

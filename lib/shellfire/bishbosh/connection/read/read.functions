@@ -70,6 +70,7 @@ bishbosh_connection_read_remainingLength()
 {
 	local controlPacket="$1"
 	
+	# For some reason, on AIX, this is empty
 	local remainingLengthByte
 	bishbosh_connection_read_byte_blocking remainingLengthByte
 	if [ $remainingLengthByte -lt 128 ]; then

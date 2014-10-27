@@ -1,6 +1,6 @@
 core_usesIn core functions
 core_functions_register _bishbosh_backend_registration nc
-core_usesIn bishbosh/backend ncFreeBSD ncOpenBSD ncMacOSX ncMirBSD ncDebianOpenBSD ncGNU ncDebianTraditional ncToybox ncBusyBox
+core_usesIn bishbosh/backend ncFreeBSD ncOpenBSD ncMacOSX ncMirBSD ncDebianOpenBSD ncSolaris ncGNU ncDebianTraditional ncToybox ncBusyBox
 
 bishbosh_backend_nc_check()
 {
@@ -15,7 +15,7 @@ bishbosh_backend_nc_check()
 	local binary="$(core_compatibility_which nc)"
 	
 	local ncVariantCheckFunction
-	for ncVariantCheckFunction in ncFreeBSD ncOpenBSD ncMirBSD ncMacOSX ncDebianOpenBSD ncGNU ncDebianTraditional ncToybox ncBusyBox
+	for ncVariantCheckFunction in ncFreeBSD ncOpenBSD ncMirBSD ncMacOSX ncDebianOpenBSD ncSolaris ncGNU ncDebianTraditional ncToybox ncBusyBox
 	do
 		if bishbosh_backend_${ncVariantCheckFunction}_checkIfNetcatVariant; then
 			backendName="$ncVariantCheckFunction"
