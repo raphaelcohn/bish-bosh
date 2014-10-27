@@ -815,15 +815,6 @@ The widely varying list of dependencies and preferences can be confusing, so her
   * Mac OS X 10.9 (as nothing much has changed underneath)
   * Mac OS X 10.10
 
-### Nearly Working
-* AIX
-  * 7.1 _nearly_ works
-  * 6.1 _nearly_ works
-    * The backend `openssl` doesn't seem to work correctly, although we are seeing debug lines, but they're empty
-    * _Note: Explicitly set `TERM=dumb`._
-    * _Note: There is only the `openssl` backend available: Try `./bish-bosh --client-id 'CLIENT_ID' --verbose 0 --tunnel tls --tunnel-tls-verify off --backends openssl --verbose 3`._
-	* Ideally, install `bash` and a more modern `sleep` to get a much better experience.
-
 ### Not Working Yet
 * Unix
   * HP_UX 11i
