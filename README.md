@@ -695,7 +695,7 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the `PATH` an
   * Nothing, if empty client ids are acceptable
   * `openssl`
   * `gpg`
-  * `base64` (any version) and `tr` (required to strip newlines from `base64`; different implementations have different switches for newlines), and one of
+  * `base64` (any version) and `tr`† (required to strip newlines from `base64`; different implementations have different switches for newlines), and one of
     * `dd` with access to either `/dev/urandom` or `/dev/random`
 	* The shell's RANDOM psuedo-environment variable: not cryptographically robust
     * `awk` (any POSIX compliant-version): not cryptographically robust
@@ -706,6 +706,7 @@ These are listed in preference order. Ordinarily, [bish-bosh] uses the `PATH` an
   * Nothing, if not running in a terminal
 
 _\* It may be possible to also use EGD sockets and other programs and sources (eg a TPM or `rng-tools`). Please get in touch if this is interesting to you._
+_† It is probably possible to replace `base64` + `tr` with either `od` or `hexdump`. Get in touch if that would be useful to you._
 
 ### Optimal Choices
 * For efficient reading

@@ -78,6 +78,10 @@ bishbosh_connection_clientId_randomBytesBase64EncodedALike()
 						dd bs=1 count=$count if="$randomFilePath" | bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr
 						return 0
 					fi
+					if core_compatibility_whichNoOutput head; then
+						head -c $count | bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr
+						return 0
+					fi
 				fi
 			done
 
