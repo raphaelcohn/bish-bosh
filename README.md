@@ -779,9 +779,23 @@ The widely varying list of dependencies and preferences can be confusing, so her
     * You'll need to `pkg install netcat`
   * OpenBSD 5.5
   * MirBSD #10 (2008)
+
+### Tested and work with minor changes
+* BSD-alike
   * NetBSD 6.1.5
     * You'll need to `pkg_add netcat`
     * You may need to modify the first line of `bish-bosh` to `#!/usr/bin/env ksh` (we had problems with `/etc/shrc` interfering)
+* Solaris
+  * 11.2
+    * Solaris' default shell is [`ksh93`], which isn't POSIX compliant
+	* Modify the first line of `bish-bosh` to `#!/usr/xpg4/bin/sh`, or,
+	* Change your PATH so `/usr/xpg4/bin` comes before `/usr/bin`.
+	* Please note the following shells have issues:-
+	  * `/usr/gnu/bin/sh`, works ***only*** for the `devtcp` backend
+	  * `/usr/bin/bash`, works ***only*** for the `devtcp` backend
+    * The following shells do not work at all as they are [`ksh93`]:-
+	  * `/usr/bin/sh`
+	  * `/usr/bin/ksh`
 
 ### Untested, but should work
 * Linux
@@ -793,8 +807,6 @@ The widely varying list of dependencies and preferences can be confusing, so her
   * Mac OS X 10.10
 
 ### Nearly Working
-* Solaris
-  * 11.2 uses ksh93, changing to bash is effective
 * AIX
   * 7.1 _nearly_ works
   * 6.1 _nearly_ works
@@ -807,7 +819,7 @@ The widely varying list of dependencies and preferences can be confusing, so her
 * Unix
   * HP_UX 11i
     * HP's `mktemp` fails, badly. Without HP-UX access, making this work is a non-starter.
-  * Solaris
+  * Solaris 10
 * Android 4
 
 ### Might Work
