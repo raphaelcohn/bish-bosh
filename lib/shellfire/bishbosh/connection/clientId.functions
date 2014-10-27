@@ -42,6 +42,7 @@ bishbosh_connection_clientId_random()
 	done
 }
 
+# Broken out because it might be possible to use a different technique
 bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr()
 {
 	# GNU base64 inserts line breaks, hence the use of tr -d '\n'.
@@ -66,47 +67,45 @@ bishbosh_connection_clientId_randomBytesBase64EncodedALike()
 		return 0
 	fi
 	
-	if ! core_compatibility_whichNoOutput base64; then
-		core_exitError "base64 does not exist; required for random client id generation when openssl and gpg are not present"
-	fi
-	
-	if ! core_compatibility_whichNoOutput tr; then
-		core_exitError "tr does not exist (required to remove line breaks from GNU coreutils base64 when generating random client ids and openssl and gpg are not present)"
-	fi
-	
-	local randomFilePath
-	for randomFilePath in /dev/urandom /dev/random
-	do
-		if [ -r "$randomFilePath" ]; then
-			if core_compatibility_whichNoOutput dd; then
-				dd bs=1 count=$count if="$randomFilePath" | bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr
+	if core_compatibility_whichNoOutput base64; then
+		if core_compatibility_whichNoOutput tr; then
+			
+			local randomFilePath
+			for randomFilePath in /dev/urandom /dev/random
+			do
+				if [ -r "$randomFilePath" ]; then
+					if core_compatibility_whichNoOutput dd; then
+						dd bs=1 count=$count if="$randomFilePath" | bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr
+						return 0
+					fi
+				fi
+			done
+
+			if core_variable_isSet RANDOM; then
+				{
+					local index
+					while [ $index -lt $count ]
+					do
+						printf "\\$(printf '%o' $((RANDOM%256)))"
+						index=$((index+1))
+					done
+				} | bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr
 				return 0
 			fi
-		fi
-	done
-
-	if core_variable_isSet RANDOM; then
-		{
-			local index
-			while [ $index -lt $count ]
-			do
-				printf "\\$(printf '%o' $((RANDOM%256)))"
-				index=$((index+1))
-			done
-		} | bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr
-		return 0
-	fi
 	
-	if core_compatibility_whichNoOutput awk; then
-		{
-			local index
-			while [ $index -lt $count ]
-			do
-				printf "\\$(printf '%o' $(echo | awk -v ORS='' '{ srand(); print int((rand()*1000000)%256)} '))"
-				index=$((index+1))
-			done
-		} | bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr
-		return 0
+			if core_compatibility_whichNoOutput awk; then
+				{
+					local index
+					while [ $index -lt $count ]
+					do
+						printf "\\$(printf '%o' $(echo | awk -v ORS='' '{ srand(); print int((rand()*1000000)%256)} '))"
+						index=$((index+1))
+					done
+				} | bishbosh_connection_clientId_randomBytesBase64EncodedALike_base64tr
+				return 0
+			fi
+			
+		fi
 	fi
 	
 	core_message WARN "Clean Session is 1, the client id is unset and there are not sources of randomness; defaulting to empty (''). This may be rejected by some MQTT servers."
