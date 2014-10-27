@@ -721,6 +721,8 @@ Unfortunately, there are a lot of [GNU Bash] versions that are still in common u
   * MinGW
 * bash 3.2
   * Mac OS X
+* bash 4.0
+  * ChromeOS
 * bash 4.1
   * Ubuntu 10.04 LTS
   * RedHat RHEL 6
@@ -738,7 +740,7 @@ Unfortunately, there are a lot of [GNU Bash] versions that are still in common u
 ## Supported Configurations
 The widely varying list of dependencies and preferences can be confusing, so here's a little guidance.
 
-### Tested and works 'out-of-the-box' with no changes
+### Tested and works 'out-of-the-box'
 * Windows
   * Cygwin 1.7.32
 * Linux
@@ -780,10 +782,11 @@ The widely varying list of dependencies and preferences can be confusing, so her
     * You'll need to `pkg_add netcat`
     * You may need to modify the first line of `bish-bosh` to `#!/usr/bin/env ksh` (we had problems with `/etc/shrc` interfering)
 
-### Untested, but should work with no changes
+### Untested, but should work
 * Linux
   * RHEL 7 (nearly identical to Centos)
   * RHEL 6.5
+  * ChromeOS
 * BSD-alike
   * Mac OS X 10.9 (as nothing much has changed underneath)
   * Mac OS X 10.10
@@ -803,7 +806,6 @@ The widely varying list of dependencies and preferences can be confusing, so her
     * HP's `mktemp` fails, badly. Without HP-UX access, making this work is a non-starter.
   * Solaris
 * Android 4
-* Chrome OS
 
 ### Might Work
 These configurations can be made to work if there's enough interest, but are unlikely to be optimal.
