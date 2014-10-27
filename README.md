@@ -810,16 +810,17 @@ The widely varying list of dependencies and preferences can be confusing, so her
 * Linux
   * RHEL 7 (nearly identical to Centos)
   * RHEL 6.5
-  * ChromeOS
+  * Chrome OS
 * BSD-alike
   * Mac OS X 10.9 (as nothing much has changed underneath)
   * Mac OS X 10.10
 
-### Not Working Yet
+### Not Tested Yet
 * Unix
   * HP_UX 11i
     * HP's `mktemp` fails, badly. Without HP-UX access, making this work is a non-starter.
   * Solaris 10
+  * Minix 3.3.0
 * Android 4
 
 ### Might Work
