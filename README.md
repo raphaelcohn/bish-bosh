@@ -550,7 +550,7 @@ _\* An installation as a daemon using a service account would normally set `HOME
 
 _† it is possible for a configuration file here to set `bishbosh_port` (or even `bishbost_clientId`), so influencing the search in 3 - 6._
 
-_‡ It is possible for a configuration file here to set `bishbost_clientId`, so influencing the search in 5 and 6._
+_‡ It is possible for a configuration file here to set `bishbosh_clientId`, so influencing the search in 5 and 6._
 
 _§ Note the leading `_` before `${bishbosh_clientId}`. This is to accommodate Client Ids that are empty or start with `.` or `..`._
 
