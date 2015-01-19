@@ -4,3 +4,6 @@
 [submodule "etc/shellfire/paths.d"]
 	path = etc/shellfire/paths.d
 	url = https://github.com/shellfire-dev/paths.d.git
+[submodule "lib/shellfire/build"]
+	path = lib/shellfire/build
+	url = https://github.com/shellfire-dev/build.git

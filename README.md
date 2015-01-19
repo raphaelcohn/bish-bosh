@@ -366,6 +366,7 @@ bishbosh_connection_handler_CONNACK()
 | Switch | Value | Configuration Setting | Default | Purpose |
 | ------ | ----- | --------------------- | ------- | ------- |
 | `-v`, `--verbose` | `[LEVEL]` | `bishbosh_verbose` | `0` | Adjusts verbosity of output on standard error (stderr). `LEVEL` is optional; omitting causes a +1 increase in verbosity. May be specified multiple times, although levels greater than `2` have no effect currently. `LEVEL` must be an unsigned integer. |
+|`-q`, `--quiet`| | | | Specify (optionally more than once) to reduce verbosity by a step of `1` |
 | `--version` | | | | Version and license information in a GNU-like format on standard error. |
 | `-h`, `--help` | | | | A very long help message recapping most of this document's information. |
 
