@@ -1,5 +1,5 @@
 # [bish-bosh]
-[bish-bosh] is a client and library for using [MQTT], particularly [MQTT 3.1.1](http://www.oasis-open.org/committees/mqtt/) from the shell and command-line for Linux and Unix. It works with [DASH], [GNU Bash] and [BusyBox]'s ash, with a minimal set of helper programs that even the most basic of Unix systems should have.
+[bish-bosh] is a client and library for using [MQTT], particularly [MQTT 3.1.1](http://www.oasis-open.org/committees/mqtt/) from the shell and command-line for Linux and Unix. It works with [DASH], [GNU Bash] and [BusyBox]'s ash, with a minimal set of helper programs that even the most basic of POSIX-compatible systems should have.
 
 Additionally, it is also a command interpreter. Once installed in your `PATH`, it can be used to script [MQTT] sessions, eg
 
@@ -12,9 +12,12 @@ bishbosh_clientId='my-client-id'
 bishbosh_connection_handler_PUBLISH()
 {
 	# bish-bosh handles QoS 1 and 2 for us
-	# and redirects stdout so we can write to the MQTT server
-	printf '%s:' "$topicName" 1>&2
-	cat "$messageFilePath" 1>&2
+	
+	# bish-bosh wires stdout to be data to send, so we need to redirect to stderr
+	printf '%s' "Received a message on topic ${topicName} which was ${messageLength} byte(s) long and is in the file ${messageFilePath}" 1>&2
+	
+	# clean up
+	rm "${messageFilePath}"
 }
 ```
 
@@ -39,7 +42,7 @@ cd ~/bish-bosh
 ./bish-bosh --client-id 12 --verbose 2
 ```
 
-where `CLIENT_ID` is a client id you'd like to use. bosh-bosh will attempt to find its dependencies on the `PATH`, choose an optimum configuration and connect to a MQTT server (by default, `test.mosquitto.org`). This may appear to do very little until you press `CTRL-C`. That's because we haven't given [bish-bosh] anything to do apart from `CONNECT` and `DISCONNECT`. Why not create this file at `/tmp/bish-bosh.example` and see what happens:-
+where `12` is an example of a client id you'd like to use. bosh-bosh will attempt to find its dependencies on the `PATH`, choose an optimum configuration and connect to a [MQTT] server (by default, `test.mosquitto.org`). This may appear to do very little until you press `CTRL-C`. That's because we haven't given [bish-bosh] anything to do apart from `CONNECT` and `DISCONNECT`. Why not create this file at `/tmp/bish-bosh.example` and see what happens:-
 
 ```bash
 cat >/tmp/bish-bosh.example <<EOF
@@ -71,7 +74,7 @@ bishbosh_connection_handler_PUBLISH()
 
 bishbosh_connection_handler_noControlPacketsRead()
 {
-    # Down time - use this to publish some messages, change subscriptions or reload our configuration. Perhaps we could monitor a folder path?
+    # This event happens every few milliseconds - use this to publish some messages, change subscriptions or reload our configuration. Perhaps we could monitor a folder path?
     # bishbosh_publishText 0 'nowt' no 'hello world'
 	echo 'No Control Packages Read' 1>&2
 }
@@ -90,7 +93,7 @@ brew install bish-bosh
 ```
 
 ### Installing into your `PATH` and Packaging
-You might want to install [bish-bosh] in your `PATH`, or package it. [bish-bosh] as checked into [GitHub] _isn't standalone_: it needs to be _fattened_ using [shellfire]. If you want a ready-to-use release, check out [releases](https://github.com/raphaelcohn/bish-bosh/releases). Once in your `PATH`, you can write scripts with `#!/usr/bin/env bish-bosh` as the first line and have standalone bespoke MQTT clients - that can do anything. See [this for an example](#https://github.com/raphaelcohn/bish-bosh#but-the-really-interesting-scriptable-stuff-is-done-with-configuration-files-or-scriptlets) below for an example.
+You might want to install [bish-bosh] in your `PATH`, or package it. [bish-bosh] as checked into [GitHub] _isn't standalone_: it needs to be _fattened_ using [shellfire]. If you want a ready-to-use release, check out [releases](https://github.com/raphaelcohn/bish-bosh/releases). Once in your `PATH`, you can write scripts with `#!/usr/bin/env bish-bosh` as the first line and have standalone bespoke MQTT clients - that can do anything. See [this for an example](#but-the-really-interesting-scriptable-stuff-is-done-with-configuration-files-or-scriptlets) below for an example.
 
 ## Switches and Configuring
 [bish-bosh] has a lot of switches! Most of them you'll hopefully never use: they're to deal with situations where network access isn't straightforward. Perhaps you've got multiple NICs or IP addresses, or a proxy is blocking you from connecting directly. And [all of the switches](#ok-back-to-switches) have sensible defaults. All of [bish-bosh]'s switches can be set using configuration (eg in `/etc`), or even in the scripts you run; the choice is yours. However, the basic invocation is very simple:-
