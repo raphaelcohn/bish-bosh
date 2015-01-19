@@ -1,4 +1,4 @@
-[submodule "core"]
+[submodule "lib/shellfire/core"]
 	path = lib/shellfire/core
 	url = https://github.com/shellfire-dev/core.git
 [submodule "etc/shellfire/paths.d"]
