@@ -1,0 +1,24 @@
+Package: bish-bosh
+Essential: no
+Priority: extra
+Section: misc
+Installed-Size: 378
+Maintainer: Raphael Cohn <raphael.cohn@stormmq.com>
+Architecture: all
+Source: bish-bosh
+Version: 2015.0119.1445-1
+Filename: pool/multiverse/b/bish-bosh/bish-bosh_2015.0119.1445-1_all.deb
+Size: 90916
+MD5sum: 8433f0491ba30bd8b6064bd3d5510e8c
+SHA1: ad8c0f8cefff853186e42e316afcb8152bd62d44
+SHA256: ac95216ee2d25c0bc8802103591fc7afac023cc63a0fbbbd1d9ec6150d16ec6e
+Description: bish-bosh is a MQTT client in shell script
+ It takes shell script snippets and runs them
+ against MQTT servers. It can also enable
+ standalone MQTT shell script programs.
+Homepage: https://github.com/raphaelcohn/bish-bosh
+Bugs: https://github.com/raphaelcohn/bish-bosh/issues
+Build-Essential: no
+Origin: Raphael Cohn
+Supported: 9m
+

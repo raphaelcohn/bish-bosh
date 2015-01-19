@@ -1,0 +1,7 @@
+Package: bish-bosh
+Description-md5: bf79f7fbd14e14be412dd7f68a08c841
+Description-en: bish-bosh is a MQTT client in shell script
+ It takes shell script snippets and runs them
+ against MQTT servers. It can also enable
+ standalone MQTT shell script programs.
+
