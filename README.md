@@ -36,10 +36,49 @@ This will create a folder [bish-bosh] inside your home folder. [bish-bosh] can t
 
 ```bash
 cd ~/bish-bosh
-./bish-bosh --client-id 'CLIENT_ID'
+./bish-bosh --client-id 12 --verbose 2
 ```
 
-where `CLIENT_ID` is a client id you'd like to use. bosh-bosh will attempt to find its dependencies on the `PATH`, install any missing dependencies (with your permission) if it recognises your package manager, choose an optimum configuration and connect to a MQTT server (by default, `test.mosquitto.org`).
+where `CLIENT_ID` is a client id you'd like to use. bosh-bosh will attempt to find its dependencies on the `PATH`, choose an optimum configuration and connect to a MQTT server (by default, `test.mosquitto.org`). This may appear to do very little until you press `CTRL-C`. That's because we haven't given [bish-bosh] anything to do apart from `CONNECT` and `DISCONNECT`. Why not create this file at `/tmp/bish-bosh.example` and see what happens:-
+
+```bash
+cat >/tmp/bish-bosh.example <<EOF
+bishbosh_clientId=12
+
+bishbosh_connection_handler_CONNACK()
+{
+    # Set up some subscriptions... another implementation could read from a standard file
+    bishbosh_subscribe \
+        '/topic/qos/0' 0 \
+        '/topic/qos/1' 1 \
+        '/topic/qos/3' 1
+
+    bishbosh_unsubscribe \
+        '/topic/not/wanted' \
+        '/and/also/topic/not/wanted'
+
+    # Publish a QoS 0 message
+    # On topic a/b
+    # Unretained
+    # With value 'X'
+    bishbosh_publishText 0 'a/b' no 'X'
+}
+
+bishbosh_connection_handler_PUBLISH()
+{
+    echo "Message received: retain=$retain, QoS=$QoS, dup=$dup, topicLength=$topicLength, topicName=$topicName, messageLength=$messageLength, messageFilePath=$messageFilePath"
+}
+
+bishbosh_connection_handler_noControlPacketsRead()
+{
+    # Down time - use this to publish some messages, change subscriptions or reload our configuration. Perhaps we could monitor a folder path?
+    # bishbosh_publishText 0 'nowt' no 'hello world'
+	echo 'No Control Packages Read' 1>&2
+}
+EOF
+```
+
+And run it with `./bish-bosh --verbose 2 -- /tmp/bish-bosh.example`.
 
 Of course, this might not work on your setup, and so you might need to install some [dependencies](#dependencies) or change your [backend](#backends).
 
@@ -51,9 +90,7 @@ brew install bish-bosh
 ```
 
 ### Installing into your `PATH` and Packaging
-You might want to install [bish-bosh] in your `PATH`, or package it. [bish-bosh] as checked into [GitHub] _isn't standalone_: it needs to be _fattened_ using [shellfire]. [shellfire] is a set of common libraries for shell scripting which [bish-bosh] uses. _Fattening_ is the name the [shellfire] project uses for creating a standalone, self-contained shell binary (even one that can include templates, documents and tarballs) that can then reside anywhere.
-
-_Fattening_ is not currently supported, but is planned to be very soon.
+You might want to install [bish-bosh] in your `PATH`, or package it. [bish-bosh] as checked into [GitHub] _isn't standalone_: it needs to be _fattened_ using [shellfire]. If you want a ready-to-use release, check out [releases](https://github.com/raphaelcohn/bish-bosh/releases). Once in your `PATH`, you can write scripts with `#!/usr/bin/env bish-bosh` as the first line and have standalone bespoke MQTT clients - that can do anything. See [this for an example](#https://github.com/raphaelcohn/bish-bosh#but-the-really-interesting-scriptable-stuff-is-done-with-configuration-files-or-scriptlets) below for an example.
 
 ## Switches and Configuring
 [bish-bosh] has a lot of switches! Most of them you'll hopefully never use: they're to deal with situations where network access isn't straightforward. Perhaps you've got multiple NICs or IP addresses, or a proxy is blocking you from connecting directly. And [all of the switches](#ok-back-to-switches) have sensible defaults. All of [bish-bosh]'s switches can be set using configuration (eg in `/etc`), or even in the scripts you run; the choice is yours. However, the basic invocation is very simple:-

@@ -49,7 +49,7 @@ _program_libPath="${_program_path}/lib"
 _program_etcPath="${_program_path}/etc"
 _program_varPath="${_program_path}/var"
 _program_entrypoint='bishbosh'
-_program_ignoreDependencies=yes
+_program_ignoreDependencies=no
 
 _program_commandLine_parseInitialise()
 {
