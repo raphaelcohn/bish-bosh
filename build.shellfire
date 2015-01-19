@@ -1,0 +1,7 @@
+build()
+{
+# Create a folder called 'output'
+build_prepareOutput
+
+core_message NOTICE "Hello World"
+}
