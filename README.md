@@ -93,7 +93,7 @@ brew install bish-bosh
 ```
 
 ### Installing into your `PATH` and Packaging
-You might want to install [bish-bosh] in your `PATH`, or package it. [bish-bosh] as checked into [GitHub] _isn't standalone_: it needs to be _fattened_ using [shellfire]. If you want a ready-to-use release, check out [releases](https://github.com/raphaelcohn/bish-bosh/releases). Once in your `PATH`, you can write scripts with `#!/usr/bin/env bish-bosh` as the first line and have standalone bespoke MQTT clients - that can do anything. See [this for an example](#but-the-really-interesting-scriptable-stuff-is-done-with-configuration-files-or-scriptlets) below for an example.
+You might want to install [bish-bosh] in your `PATH`, or package it. [bish-bosh] as checked into [GitHub] _isn't standalone_: it needs to be _fattened_ using [shellfire]. If you want a ready-to-use release, check out [releases](https://github.com/raphaelcohn/bish-bosh/releases). Once in your `PATH`, you can write scripts with `#!/usr/bin/env bish-bosh` as the first line and have standalone bespoke MQTT clients - that can do anything. See [this for an example](#but-the-really-interesting-scriptable-stuff-is-done-with-configuration-files-or-scriptlets).
 
 ## Switches and Configuring
 [bish-bosh] has a lot of switches! Most of them you'll hopefully never use: they're to deal with situations where network access isn't straightforward. Perhaps you've got multiple NICs or IP addresses, or a proxy is blocking you from connecting directly. And [all of the switches](#ok-back-to-switches) have sensible defaults. All of [bish-bosh]'s switches can be set using configuration (eg in `/etc`), or even in the scripts you run; the choice is yours. However, the basic invocation is very simple:-
