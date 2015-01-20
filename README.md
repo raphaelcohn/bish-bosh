@@ -1,5 +1,7 @@
 # [bish-bosh]
-[bish-bosh] is a client and library for using [MQTT], particularly [MQTT 3.1.1](http://www.oasis-open.org/committees/mqtt/) from the shell and command-line for Linux and Unix. It works with [DASH], [GNU Bash] and [BusyBox]'s ash, with a minimal set of helper programs that even the most basic of POSIX-compatible systems should have.
+[bish-bosh] is a shell script ([ash], [GNU Bash], [BusyBox]) client for [MQTT] [3.1.1](http://www.oasis-open.org/committees/mqtt/) that runs without installation on any POSIX system: Linux, Mac OS X, AIX, FreeBSD, OpenBSD and NetBSD are all known to work. There are no dependencies at all if you're using [BusyBox]; otherwise, it's a *very* minimal set of helper programs that even the most basic of POSIX-compatible systems should have. [bish-bosh] should run almost anywhere, with no installation beyond 'copy file' required, on your router, high-end server, your smart phone, laptop or even an unlocked BT fibre modem.
+
+It's ideal for both one off administration tasks and as a minimal dependency for any other application to be MQTT-capable.
 
 Additionally, it is also a command interpreter. Once installed in your `PATH`, it can be used to script [MQTT] sessions, eg
 
@@ -23,10 +25,10 @@ bishbosh_connection_handler_PUBLISH()
 
 Making the above snippet executable (`chmod +x SCRIPT`) creates a fully-fledged [MQTT] driven program. Ideal for one-off testing, system administrators clearing out queues and simple message driven apps that can use the Unix/Linux ecosystem and philosphy. Also quite handy for small embedded systems without a compiler toolchain and initrd boot time configuration grabbing…
 
-If there's interest, a more advanced version could function as interactive shell driven by ncurses…
+If there's interest, then I could build [bish-bosh] into a [MQTT] broker… That would be quite a win for getting things going in CI pipelines and devops automation, where bootstrapping a set up is quite a chore.
 
 ## Download and Quick Start
-[bish-bosh] can be used simply by cloning from [GitHub]. To clone into your home folder, type:-
+Download the [executable](https://github.com/raphaelcohn/bish-bosh/releases/download/release_2015.0119.1445-1/bish-bosh_2015.0119.1445-1_all) from the [latest release](https://github.com/raphaelcohn/bish-bosh/releases/tag/release_2015.0119.1445-1), or simply clone from [GitHub] into your home folder by typing:-
 
 ```bash
 cd ~
