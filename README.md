@@ -1,7 +1,9 @@
 # [bish-bosh]
-[bish-bosh] is a client and library for using [MQTT], particularly [MQTT 3.1.1](http://www.oasis-open.org/committees/mqtt/) from the shell and command-line for Linux and Unix. It works with [DASH], [GNU Bash] and [BusyBox]'s ash, with a minimal set of helper programs that even the most basic of POSIX-compatible systems should have.
+[bish-bosh] is a MIT-licensed shell script client for [MQTT 3.1.1](http://www.oasis-open.org/committees/mqtt/) that runs *without installation* on any POSIX system on any POSIX shell: Linux, Mac OS X, Cygwin, AIX, FreeBSD, OpenBSD and NetBSD are all known to work, as are the [DASH], [GNU Bash] and [BusyBox] shells. *There are usually no dependencies at all if you're using [BusyBox]*. For everything else, it's a *very* minimal set of helper programs that even the most basic of POSIX-compatible systems should have. Installation can be `cp bish-bosh /path/to`. It'll run on your router, high-end server, your smart phone, laptop or even an unlocked BT fibre modem.
 
-Additionally, it is also a command interpreter. Once installed in your `PATH`, it can be used to script [MQTT] sessions, eg
+## A Command Interpreter for Scripting [MQTT] sessions
+
+You can give [bish-bosh] any number of scripts to run a [MQTT] session. And, if it's on your `PATH`, these can even become [MQTT] driven programs, eg:-
 
 ```bash
 #!/usr/bin/env bish-bosh
@@ -21,12 +23,24 @@ bishbosh_connection_handler_PUBLISH()
 }
 ```
 
-Making the above snippet executable (`chmod +x SCRIPT`) creates a fully-fledged [MQTT] driven program. Ideal for one-off testing, system administrators clearing out queues and simple message driven apps that can use the Unix/Linux ecosystem and philosphy. Also quite handy for small embedded systems without a compiler toolchain and initrd boot time configuration grabbing…
+Making the above snippet executable (`chmod +x SCRIPT`) creates a fully-fledged [MQTT] driven program.
 
-If there's interest, a more advanced version could function as interactive shell driven by ncurses…
+## What's it good for?
+
+***For scripting [MQTT]!***
+
+* One-off testing
+* Administrators clearing out queues
+* Simple message driven apps that can use the Unix/Linux ecosystem and philosphy
+* Handy for small embedded systems without a compiler toolchain
+* Useful for CI environments,
+* Or where installing most of Python isn't an option.
+* Anything where time-to-market matters and message volumes aren't stratospheric
+
+If there's interest, then I could build [bish-bosh] into a [MQTT] broker… That would be quite a win for devops automation, where bootstrapping a set up is quite a chore. If you need to handle XML or JSON messages in your scripts, check out [shellfire]. [bish-bosh] is itself a [shellfire] application.
 
 ## Download and Quick Start
-[bish-bosh] can be used simply by cloning from [GitHub]. To clone into your home folder, type:-
+Download the [executable](https://github.com/raphaelcohn/bish-bosh/releases/download/release_2015.0119.1445-1/bish-bosh_2015.0119.1445-1_all) from the [latest release](https://github.com/raphaelcohn/bish-bosh/releases/tag/release_2015.0119.1445-1), or simply clone from [GitHub] into your home folder by typing:-
 
 ```bash
 cd ~
@@ -146,7 +160,7 @@ So you could keep sensitive data (eg a password) in one file, and everything els
 
 As an added convenience, you can also store configuration scripts on a per-client-id basis, too. This means that common connection settings for a client can be stored, but different runtime invocations catered for. Very useful for system administration tasks.
 
-There's quite a lot of things than can be configured this way. If a setting is missing, [bish-bosh] applies a default. For things like QoS, we got for the lowest; for usernames and passwords and wills, we omit them. So it you've got a [MQTT] server that doesn't need passwords (a bit odd, but possible), then you can just not set it. Please note that not set isn't the same thing as empty:-
+There's quite a lot of things than can be configured this way. If a setting is missing, [bish-bosh] applies a default. For things like QoS, we apply for the lowest; for usernames and passwords and wills, we omit them. So if you've got a [MQTT] server that doesn't need passwords (a bit odd, but possible), then you can just not set it. Please note that not set isn't the same thing as empty:-
 
 ```bash
 bishbosh_connect_username=''
@@ -1073,3 +1087,5 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 [GNU glibc]: https://www.gnu.org/software/libc/ "GNU libc"
 [GNU libiconv]: https://www.gnu.org/software/libiconv/ "GNU libiconv"
 [stunnel]: https://www.stunnel.org/index.html "stunnel"
+[shellfire]: https://github.com/shellfire-dev/shellfire "shellfire home page"
+[swaddle]: https://github.com/raphaelcohn/swaddle "swaddle home page"
