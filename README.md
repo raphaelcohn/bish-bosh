@@ -1,7 +1,9 @@
 # [bish-bosh]
 [bish-bosh] is a MIT-licensed shell script client for [MQTT 3.1.1](http://www.oasis-open.org/committees/mqtt/) that runs without installation on any POSIX system: Linux, Mac OS X, Cygwin, AIX, FreeBSD, OpenBSD and NetBSD are all known to work, as are the [DASH], [GNU Bash] and [BusyBox] shells. There are no dependencies at all if you're using [BusyBox]; otherwise, it's a *very* minimal set of helper programs that even the most basic of POSIX-compatible systems should have. [bish-bosh] should run almost anywhere, with no installation beyond 'copy file' required, on your router, high-end server, your smart phone, laptop or even an unlocked BT fibre modem.
 
-It is also a command interpreter. Once installed in your `PATH`, it can be used to script [MQTT] sessions, eg
+## A Command Interpreter for Scripting [MQTT] sessions
+
+You can give [bish-bosh] any number of scripts to run a [MQTT] session. And, if it's on your `PATH`, these can even become [MQTT] driven programs, eg:-
 
 ```bash
 #!/usr/bin/env bish-bosh
@@ -21,10 +23,12 @@ bishbosh_connection_handler_PUBLISH()
 }
 ```
 
-Making the above snippet executable (`chmod +x SCRIPT`) creates a fully-fledged [MQTT] driven program. Ideal for one-off testing, system administrators clearing out queues and simple message driven apps that can use the Unix/Linux ecosystem and philosphy. Also quite handy for small embedded systems without a compiler toolchain and initrd boot time configuration grabbing… If there's interest, then I could build [bish-bosh] into a [MQTT] broker… That would be quite a win for getting things going in CI pipelines and devops automation, where bootstrapping a set up is quite a chore.
+Making the above snippet executable (`chmod +x SCRIPT`) creates a fully-fledged [MQTT] driven program.
+
+## What's it good for?
+Ideal for one-off testing, system administrators clearing out queues and simple message driven apps that can use the Unix/Linux ecosystem and philosphy. Also quite handy for small embedded systems without a compiler toolchain and initrd boot time configuration grabbing… If there's interest, then I could build [bish-bosh] into a [MQTT] broker… That would be quite a win for getting things going in CI pipelines and devops automation, where bootstrapping a set up is quite a chore.
 
 ## How's all this possible in just the shell?
-
 [bish-bosh] is a [shellfire] application, that is released using [swaddle]. [shellfire] makes it possible to manage all the vagaries of the shell with robust abstractions. [swaddle] takes built applications, packages them, signs themm creates apt & yum repositories and publishes them to GitHub releases and pages.
 
 ## Download and Quick Start
@@ -1075,3 +1079,5 @@ bish-bosh explicitly tries to detect if run with suid or sgid set, and will exit
 [GNU glibc]: https://www.gnu.org/software/libc/ "GNU libc"
 [GNU libiconv]: https://www.gnu.org/software/libiconv/ "GNU libiconv"
 [stunnel]: https://www.stunnel.org/index.html "stunnel"
+[shellfire]: https://github.com/shellfire-dev/shellfire "shellfire home page"
+[swaddle]: https://github.com/raphaelcohn/swaddle "swaddle home page"
