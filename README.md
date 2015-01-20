@@ -1,5 +1,5 @@
 # [bish-bosh]
-[bish-bosh] is a shell script client for [MQTT] [3.1.1](http://www.oasis-open.org/committees/mqtt/) that runs without installation on any POSIX system: Linux, Mac OS X, AIX, FreeBSD, OpenBSD and NetBSD are all known to work, as are the [DASH], [GNU Bash] and [BusyBox] shells. There are no dependencies at all if you're using [BusyBox]; otherwise, it's a *very* minimal set of helper programs that even the most basic of POSIX-compatible systems should have. [bish-bosh] should run almost anywhere, with no installation beyond 'copy file' required, on your router, high-end server, your smart phone, laptop or even an unlocked BT fibre modem.
+[bish-bosh] is a MIT-licensed shell script client for [MQTT] [3.1.1](http://www.oasis-open.org/committees/mqtt/) that runs without installation on any POSIX system: Linux, Mac OS X, Cygwin, AIX, FreeBSD, OpenBSD and NetBSD are all known to work, as are the [DASH], [GNU Bash] and [BusyBox] shells. There are no dependencies at all if you're using [BusyBox]; otherwise, it's a *very* minimal set of helper programs that even the most basic of POSIX-compatible systems should have. [bish-bosh] should run almost anywhere, with no installation beyond 'copy file' required, on your router, high-end server, your smart phone, laptop or even an unlocked BT fibre modem.
 
 It's ideal for both one off administration tasks and as a minimal dependency for any other application to be MQTT-capable. And it's proof that [MQTT] really is a simple, effective message queue protocol.
 
@@ -148,7 +148,7 @@ So you could keep sensitive data (eg a password) in one file, and everything els
 
 As an added convenience, you can also store configuration scripts on a per-client-id basis, too. This means that common connection settings for a client can be stored, but different runtime invocations catered for. Very useful for system administration tasks.
 
-There's quite a lot of things than can be configured this way. If a setting is missing, [bish-bosh] applies a default. For things like QoS, we got for the lowest; for usernames and passwords and wills, we omit them. So it you've got a [MQTT] server that doesn't need passwords (a bit odd, but possible), then you can just not set it. Please note that not set isn't the same thing as empty:-
+There's quite a lot of things than can be configured this way. If a setting is missing, [bish-bosh] applies a default. For things like QoS, we apply for the lowest; for usernames and passwords and wills, we omit them. So if you've got a [MQTT] server that doesn't need passwords (a bit odd, but possible), then you can just not set it. Please note that not set isn't the same thing as empty:-
 
 ```bash
 bishbosh_connect_username=''
