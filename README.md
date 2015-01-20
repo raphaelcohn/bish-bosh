@@ -29,10 +29,15 @@ Making the above snippet executable (`chmod +x SCRIPT`) creates a fully-fledged 
 
 ***For scripting [MQTT]!***
 
-Ideal for one-off testing, system administrators clearing out queues and simple message driven apps that can use the Unix/Linux ecosystem and philosphy. Handy for small embedded systems without a compiler toolchain. Useful for CI environments, or where installing most of Python isn't an option. If there's interest, then I could build [bish-bosh] into a [MQTT] broker… That would be quite a win for getting things going in CI pipelines and devops automation, where bootstrapping a set up is quite a chore.
+* One-off testing
+* Administrators clearing out queues
+* Simple message driven apps that can use the Unix/Linux ecosystem and philosphy
+* Handy for small embedded systems without a compiler toolchain
+* Useful for CI environments,
+* Or where installing most of Python isn't an option.
+* Anything where time-to-market matters and message volumes aren't stratospheric
 
-## How's all this possible in just the shell?
-[bish-bosh] is a [shellfire] application, that is released using [swaddle]. [shellfire] makes it possible to manage all the vagaries of the shell with robust abstractions. [swaddle] takes built applications, packages them, signs them, creates apt & yum repositories and then publishes the results to GitHub releases and pages.
+If there's interest, then I could build [bish-bosh] into a [MQTT] broker… That would be quite a win for devops automation, where bootstrapping a set up is quite a chore. If you need to handle XML or JSON messages in your scripts, check out [shellfire]. [bish-bosh] is itself a [shellfire] application.
 
 ## Download and Quick Start
 Download the [executable](https://github.com/raphaelcohn/bish-bosh/releases/download/release_2015.0119.1445-1/bish-bosh_2015.0119.1445-1_all) from the [latest release](https://github.com/raphaelcohn/bish-bosh/releases/tag/release_2015.0119.1445-1), or simply clone from [GitHub] into your home folder by typing:-
