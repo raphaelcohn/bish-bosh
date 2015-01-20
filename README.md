@@ -1,7 +1,7 @@
 # [bish-bosh]
-[bish-bosh] is a shell script ([ash], [GNU Bash], [BusyBox]) client for [MQTT] [3.1.1](http://www.oasis-open.org/committees/mqtt/) that runs without installation on any POSIX system: Linux, Mac OS X, AIX, FreeBSD, OpenBSD and NetBSD are all known to work. There are no dependencies at all if you're using [BusyBox]; otherwise, it's a *very* minimal set of helper programs that even the most basic of POSIX-compatible systems should have. [bish-bosh] should run almost anywhere, with no installation beyond 'copy file' required, on your router, high-end server, your smart phone, laptop or even an unlocked BT fibre modem.
+[bish-bosh] is a shell script client for [MQTT] [3.1.1](http://www.oasis-open.org/committees/mqtt/) that runs without installation on any POSIX system: Linux, Mac OS X, AIX, FreeBSD, OpenBSD and NetBSD are all known to work, as are the [DASH], [GNU Bash] and [BusyBox] shells. There are no dependencies at all if you're using [BusyBox]; otherwise, it's a *very* minimal set of helper programs that even the most basic of POSIX-compatible systems should have. [bish-bosh] should run almost anywhere, with no installation beyond 'copy file' required, on your router, high-end server, your smart phone, laptop or even an unlocked BT fibre modem.
 
-It's ideal for both one off administration tasks and as a minimal dependency for any other application to be MQTT-capable.
+It's ideal for both one off administration tasks and as a minimal dependency for any other application to be MQTT-capable. And it's proof that [MQTT] really is a simple, effective message queue protocol.
 
 Additionally, it is also a command interpreter. Once installed in your `PATH`, it can be used to script [MQTT] sessions, eg
 
