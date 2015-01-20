@@ -35,6 +35,7 @@ Making the above snippet executable (`chmod +x SCRIPT`) creates a fully-fledged 
 * Handy for small embedded systems without a compiler toolchain
 * Useful for CI environments,
 * Or where installing most of Python isn't an option.
+* Minimal Linux distributions
 * Anything where time-to-market matters and message volumes aren't stratospheric
 
 If there's interest, then I could build [bish-bosh] into a [MQTT] broker… That would be quite a win for devops automation, where bootstrapping a set up is quite a chore. If you need to handle XML or JSON messages in your scripts, check out [shellfire]. [bish-bosh] is itself a [shellfire] application.
