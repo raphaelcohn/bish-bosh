@@ -222,12 +222,15 @@ bishbosh_connection_handler_CONNACK()
 	bishbosh_publishText 0 'a/b' no 'X'
 	
 	# Publish a QoS 1 message
+	# bish-bosh handles the QoS for us
 	# On topic a/b
 	# Unretained
 	# Using the contents of file '/path/to/message'
 	bishbosh_publishFile 1 'a/b' no '/path/to/message'
 	
 	# Publish a QoS 2 message
+	# bish-bosh handles the QoS for us
+	# and will retransmit on re-connect
 	# On topic a/b
 	# Retained
 	# Using the contents of file '/path/to/message/to/remove/after/send'
@@ -243,6 +246,7 @@ bishbosh_connection_handler_PUBLISH()
 bishbosh_connection_handler_noControlPacketsRead()
 {
 	# Down time - use this to publish some messages, change subscriptions or reload our configuration. Perhaps we could monitor a folder path?
+	# Note: bish-bosh silently handles any PING packets on our behalf
 	bishbosh_publishText 0 'nowt' no 'hello world'
 }
 ```
