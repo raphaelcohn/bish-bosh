@@ -1,5 +1,5 @@
 # [bish-bosh]
-[bish-bosh] is a MIT-licensed shell script client for [MQTT 3.1.1](http://www.oasis-open.org/committees/mqtt/) that runs *without installation* on any POSIX system on any POSIX shell: Linux, Mac OS X, Cygwin, AIX, FreeBSD, OpenBSD and NetBSD are all known to work, as are the [DASH], [GNU Bash] and [BusyBox] shells. *There are no dependencies at all if you're using [BusyBox]*. For everything else, it's a *very* minimal set of helper programs that even the most basic of POSIX-compatible systems should have. Installation is *copy file*. It'll run on your router, high-end server, your smart phone, laptop or even an unlocked BT fibre modem.
+[bish-bosh] is a MIT-licensed shell script client for [MQTT 3.1.1](http://www.oasis-open.org/committees/mqtt/) that runs *without installation* on any POSIX system on any POSIX shell: Linux, Mac OS X, Cygwin, AIX, FreeBSD, OpenBSD and NetBSD are all known to work, as are the [DASH], [GNU Bash] and [BusyBox] shells. *There are usually no dependencies at all if you're using [BusyBox]*. For everything else, it's a *very minimal set of helper programs* that even the most basic of POSIX-compatible systems should have. Installation can be `cp bish-bosh /path/to`. It'll run on your router, high-end server, your smart phone, laptop or even an unlocked BT fibre modem.
 
 ## A Command Interpreter for Scripting [MQTT] sessions
 
@@ -29,7 +29,7 @@ Making the above snippet executable (`chmod +x SCRIPT`) creates a fully-fledged 
 Ideal for one-off testing, system administrators clearing out queues and simple message driven apps that can use the Unix/Linux ecosystem and philosphy. Also quite handy for small embedded systems without a compiler toolchain and initrd boot time configuration grabbing… If there's interest, then I could build [bish-bosh] into a [MQTT] broker… That would be quite a win for getting things going in CI pipelines and devops automation, where bootstrapping a set up is quite a chore.
 
 ## How's all this possible in just the shell?
-[bish-bosh] is a [shellfire] application, that is released using [swaddle]. [shellfire] makes it possible to manage all the vagaries of the shell with robust abstractions. [swaddle] takes built applications, packages them, signs themm creates apt & yum repositories and publishes them to GitHub releases and pages.
+[bish-bosh] is a [shellfire] application, that is released using [swaddle]. [shellfire] makes it possible to manage all the vagaries of the shell with robust abstractions. [swaddle] takes built applications, packages them, signs them, creates apt & yum repositories and then publishes the results to GitHub releases and pages.
 
 ## Download and Quick Start
 Download the [executable](https://github.com/raphaelcohn/bish-bosh/releases/download/release_2015.0119.1445-1/bish-bosh_2015.0119.1445-1_all) from the [latest release](https://github.com/raphaelcohn/bish-bosh/releases/tag/release_2015.0119.1445-1), or simply clone from [GitHub] into your home folder by typing:-
