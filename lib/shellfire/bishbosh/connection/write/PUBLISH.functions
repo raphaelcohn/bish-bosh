@@ -43,10 +43,10 @@ _bishbosh_connection_write_PUBLISH_setMessage()
 			core_exitError $core_commandLine_exitCode_CONFIG "The argument 'bishbosh_publish_messageUnlinkFile' can not be specified if 'bishbosh_publish_message' is"
 		fi
 
-		bishbosh_connection_validate_fieldLength PUBLISH message
+		bishbosh_connection_validate_fieldLength PUBLISH bishbosh_publish_message
 		
 		message="$bishbosh_publish_message"
-		messageFieldLength=${#message}
+		messageFieldLength=${#bishbosh_publish_message}
 		messageFilePath=''
 		messageUnlinkFile=0
 	
