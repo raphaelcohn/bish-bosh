@@ -418,7 +418,7 @@ _program_commandLine_optionExists()
 		;;
 		
 		r|random-client-id)
-			echo 'no'
+			echo 'yes-argumentless'
 		;;
 		
 		x|ping-timeout)
