@@ -11,7 +11,7 @@ _program()
 	bishbosh_adjustReadLatencyIfNecessary()
 	{
 		if core_variable_isSet BASH_VERSINFO; then
-			if [ ${BASH_VERSINFO[0]} -eq 3 ]; then
+			if [ ${BASH_VERSINFO:0:1} -eq 3 ]; then
 				if [ $bishbosh_readLatency -lt 1000 ]; then
 					core_message WARN "bash 3 does not support fractional read latency (we're forcing bishbosh_readLatency to 1000 ms) [discovered on Mac OS X when run as default sh]"
 					bishbosh_readLatency=1000

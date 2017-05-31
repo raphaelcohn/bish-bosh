@@ -117,7 +117,7 @@ bishbosh_backend_socat_start()
 						core_exitError $core_commandLine_exitCode_CONFIG "The backend socat does not support the '$bishbosh_proxyKind' proxy kind when the tunnel is 'tls'"
 					fi
 					
-					addressKind="${$bishbosh_proxyKind}:${bishbosh_proxyAddress}:${bishbosh_server}:${bishbosh_port}"
+					addressKind="${bishbosh_proxyKind}:${bishbosh_proxyAddress}:${bishbosh_server}:${bishbosh_port}"
 					if core_variable_isSet bishbosh_proxyPort; then
 						addressKind="${addressKind},socksport=${bishbosh_proxyPort}"
 					fi
@@ -213,7 +213,7 @@ bishbosh_backend_socat_start()
 		
 			esac
 			
-			local binding
+			local binding=''
 			if core_variable_isSet bishbosh_sourceAddress; then
 				binding=",bind=$bishbosh_sourceAddress"
 				if core_variable_isSet bishbosh_sourcePort; then
@@ -223,11 +223,9 @@ bishbosh_backend_socat_start()
 				binding=",sourceport=${bishbosh_sourcePort}"
 			fi
 			
-			local connectTimeout
+			local connectTimeout=''
 			if [ $bishbosh_connectTimeout -ne 0 ]; then
 				connectTimeout=",connect-timeout=${bishbosh_connectTimeout}"
-			else
-				connectTimeout=''
 			fi
 			
 			# keepidle, keepintvl, keepcnt, linger2, mss, mss-late, syncnt
